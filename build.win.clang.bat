@@ -1,0 +1,95 @@
+set ARCH=%VSCMD_ARG_HOST_ARCH%
+
+set CFLAGS= -std=c99 ^
+            -Wall ^
+            -Werror ^
+            -Wextra ^
+            -pedantic ^
+            -O3 ^
+            -Wmissing-field-initializers ^
+            -Wno-unused-parameter ^
+            -Wno-unused-variable ^
+            -Wno-unused-function ^
+            -Wno-missing-braces ^
+            -fstrict-aliasing ^
+            -finput-charset=UTF-8 ^
+            -fexec-charset=UTF-8 ^
+            -ggdb ^
+            -DFL_UNICODE_DB ^
+            -D_FORTIFY_SOURCE=2 ^
+            -I.\src -I..\fllib\include
+
+set LIBSPATH=
+set LIBS=..\fllib\build\debug\libfl.lib 
+
+if "%~2%"=="sanitize" (
+    set CFLAGS=%CFLAGS% -fsanitize=address,undefined
+    if "%ARCH%"=="x64" (
+        set LIBSPATH=%LIBSPATH% -LIBPATH:D:\dev\LLVM\x64\lib\clang\8.0.0\lib\windows
+        set LIBS=%LIBS% clang_rt.ubsan_standalone-x86_64.lib clang_rt.asan-x86_64.lib clang_rt.builtins-x86_64.lib
+    )
+    if "%ARCH%"=="x86" (
+        set LIBSPATH=%LIBSPATH% -LIBPATH:D:\dev\LLVM\x86\lib\clang\8.0.0\lib\windows
+        set LIBS=%LIBS% clang_rt.ubsan_standalone-i386.lib clang_rt.asan-i386.lib clang_rt.builtins-i386.lib
+    )
+)
+
+if "%~1%"=="sbs" (
+    GOTO :SBS
+)
+
+if "%~1%"=="link" (
+    GOTO :LINK
+)
+
+if "%~1%"=="clean" (
+    GOTO :CLEAN
+)
+
+:: sbs
+:SBS
+
+rd /s /q "obj\"
+rd /s /q "build\"
+md .\obj\debug
+
+clang.exe %CFLAGS% -c .\src\file.c  -o .\obj\debug\file.o
+clang.exe %CFLAGS% -c .\src\result.c  -o .\obj\debug\result.o
+clang.exe %CFLAGS% -c .\src\lexer.c  -o .\obj\debug\lexer.o
+clang.exe %CFLAGS% -c .\src\parser.c  -o .\obj\debug\parser.o
+clang.exe %CFLAGS% -c .\src\executor.c  -o .\obj\debug\executor.o
+clang.exe %CFLAGS% -c .\src\build.c  -o .\obj\debug\build.o
+clang.exe %CFLAGS% -c .\src\commands.c  -o .\obj\debug\commands.o
+clang.exe %CFLAGS% -c .\src\main.c  -o .\obj\debug\main.o
+
+:: Link
+:LINK
+
+md .\build\debug
+
+lld-link.exe ^
+    -OUT:build\debug\sbs.exe ^
+    -DEFAULTLIB:libcmt ^
+    -DEFAULTLIB:userenv ^
+    -DEFAULTLIB:advapi32 ^
+    -NOLOGO ^
+    -DEBUG:FULL ^
+    %LIBSPATH% ^
+    %LIBS% ^
+    obj\debug\file.o ^
+    obj\debug\result.o ^
+    obj\debug\lexer.o ^
+    obj\debug\parser.o ^
+    obj\debug\executor.o ^
+    obj\debug\build.o ^
+    obj\debug\commands.o ^
+    obj\debug\main.o
+
+GOTO :EXIT
+
+:CLEAN
+
+rd /s /q "obj\"
+rd /s /q "build\"
+
+:EXIT

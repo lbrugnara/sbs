@@ -1,0 +1,16 @@
+action print {
+    `echo`
+}
+
+action rm-objects {
+    for win-cmd-x86, win-cmd-x64 {
+        `if exist .\obj\sbs-config-debug (rd /s /q .\obj\sbs-config-debug)`,
+        `if exist .\obj\sbs-config-release (rd /s /q .\obj\sbs-config-release)`
+    },
+    for win-ps-x86, win-ps-x64 {
+        `Remove-Item obj/sbs-config* -Recurse -Force`
+    },
+    for win-wsl-x64, win-cygwin-x64 {
+        `/bin/rm -fr obj/sbs-config*`
+    }
+}

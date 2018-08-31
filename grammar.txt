@@ -1,0 +1,146 @@
+build -> include_statement
+       | env_declaration
+       | toolchain_declaration
+       | config_declaration
+       | target_declaration
+       | preset_declaration
+       | action_declaration
+       ;
+
+(* include *)
+include_statement -> 'include' string_array
+
+(* env *)
+env_declaration -> 'env' IDENTIFIER '{' env_body '}'
+               ;
+
+env_body -> 'arch' ':' STRING
+          | actions_object
+
+
+(* toolchain *)
+toolchain_declaration -> 'toolchain' IDENTIFIER extends_declaration? for_declaration? '{' toolchain_body? '}'
+                ;
+
+toolchain_body -> 'compiler' ':' STRING ','?
+                | 'archiver' ':' STRING ','?
+                | 'linker' ':' STRING ','?
+                ;
+
+
+(* config *)
+config_declaration -> 'config' IDENTIFIER extends_declaration? for_declaration? '{' config_body? '}'
+                ;
+
+config_body -> 'compile' ':' '{' config_compile '}'
+             | 'archive' ':' '{' config_archive '}'
+             | 'shared' ':' '{' config_shared '}'
+             | 'executable' ':' '{' config_executable '}'
+             ;
+
+config_compile -> flags_declaration
+                | 'extension' ':' STRING
+                | 'defines' ':' string_array
+                ;
+
+config_archive -> flags_declaration
+                | 'extension' ':' STRING
+                ;
+
+config_shared -> flags_declaration
+               | 'extension' ':' STRING
+               ;
+
+config_executable -> flags_declaration
+                   | 'extension' ':' STRING
+                   ;
+
+(* target *)
+target_declaration -> target_compile
+                    | target_archive
+                    | target_link_shared
+                    | target_link_executable
+                    ;
+
+target_compile -> 'compile' IDENTIFIER '{' target_compile_body '}'
+                ;
+
+target_archive -> 'archive' IDENTIFIER '{' target_archive_body '}'
+                ;
+
+target_link_shared -> 'shared' IDENTIFIER '{' target_link_shared_body '}'
+                ;
+
+target_link_executable -> 'executable' IDENTIFIER '{' target_link_executable_body '}'
+                ;
+
+target_compile_body -> actions_object
+                     | 'include_flag' ':' STRING
+                     | 'includes' ':' string_array
+                     | 'sources' ':' string_array
+                     | 'output_dir' ':' STRING
+                     ;
+
+target_archive_body -> 'output_name' ':' STRING
+                     | actions_object
+                     | 'objects' ':' string_or_id_array
+                     ;
+
+target_link_shared_body -> 'output_name' ':' STRING
+                         | actions_object
+                         | 'objects' ':' string_or_id_array
+                         ;
+
+target_link_executable_body -> 'output_name' ':' STRING
+                         | actions_object
+                         | 'objects' ':' string_or_id_array
+                         ;
+(* action *)
+action_declaration -> 'action' IDENTIFIER '{' action_command* '}'
+                    ;
+
+action_command -> command | for_command
+                ;
+
+for_command -> for_declaration '{' command* '}'
+             ;
+
+command -> COMMAND_STRING | IDENTIFIER
+         ;
+
+(* presets *)
+preset_declaration  -> IDENTIFIER '{' preset_body '}'
+                     ;
+
+preset_body  -> 'env' ':' IDENTIFIER,
+              | 'toolchain' ':' IDENTIFIER,
+              | 'config' ':' IDENTIFIER,
+              | 'target' ':' IDENTIFIER,
+              | actions_object
+
+(* action usage *)
+actions_object -> 'actions' ':' '{' actions_body? '}'
+
+actions_body -> 'before' ':' command_string_or_id_array
+              | 'after' ':' command_string_or_id_array
+              ;
+
+(* common *)
+(* flags *)
+flags_declaration -> 'flags' ':' string_array
+                   ;
+
+extends_declaration -> 'extends' IDENTIFIER ( ',' IDENTIFIER )*
+
+for_declaration -> 'for' IDENTIFIER ( ',' IDENTIFIER )*
+
+string_array -> '[' ( STRING (',' STRING )* )? ']'
+              ;
+
+string_or_id_array -> '[' ( STRING | IDENTIFIER (',' ( STRING | IDENTIFIER ) )* )?  ']'
+                    ;
+
+command_string_or_id_array -> '[' ( COMMAND_STRING | IDENTIFIER (',' ( COMMAND_STRING | IDENTIFIER ) )* )?  ']'
+
+primitive -> IDENTIFIER | STRING | NUMBER
+           ;

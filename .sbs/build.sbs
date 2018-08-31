@@ -1,0 +1,13 @@
+# ${target}
+# ${toolchain}
+# ${config}
+# ${env}
+
+include [
+    "actions.sbs",
+    "win-envs.sbs",
+    "toolchains.sbs",
+    "configs.sbs",
+    "targets.sbs",
+    "presets.sbs"
+]
