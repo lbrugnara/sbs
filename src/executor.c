@@ -44,7 +44,11 @@ struct SbsCommandDriver {
     BashCommandDriver = {
         .driver_command =           "%s\n\necho __tmp__%lu__=$?\n",
         .sentinel_driver_echo =     "echo __tmp__%lu__=$?",
+        #ifdef _WIN32
         .sentinel_driver_result =   "\n__tmp__%lu__=",
+        #else
+        .sentinel_driver_result =   "__tmp__%lu__=",
+        #endif
         .exit_code_format =         "\n__tmp__%lu__=%%d"
     },
     PowershellCommandDriver = {
@@ -192,7 +196,11 @@ bool sbs_executor_run_command(SbsExecutor executor, const char *command)
     if (fl_process_write_to_stdin(custom_executor->process, driver_command, strlen(driver_command)) == 0)
         goto CLEAN;
 
-    printf("%s", command);
+    #ifdef _WIN32
+        printf("%s", command);
+    #else
+        printf("%s\n", command);
+    #endif
 
     // 
     char *output = NULL;

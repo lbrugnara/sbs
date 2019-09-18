@@ -1,4 +1,0 @@
-include [
-    "win/presets.sbs",
-    "linux/presets.sbs"
-]

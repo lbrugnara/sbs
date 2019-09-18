@@ -1,5 +1,0 @@
-action rm-objects {
-    for linux-wsl-x64 {
-        `/bin/rm -fr obj/sbs-config*`
-    }
-}

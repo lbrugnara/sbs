@@ -1,4 +1,0 @@
-include [
-    "win/toolchains.sbs",
-    "linux/toolchains.sbs"
-]

@@ -1,0 +1,12 @@
+executable sbs {
+    output_name: "sbs",
+    output_dir: "build/",
+    actions: {
+        before: [],
+        after: []
+    },
+    objects: [
+        "../fllib/build/debug/libfl.a",
+        sbs-lib
+    ],
+}

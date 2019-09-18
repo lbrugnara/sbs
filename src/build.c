@@ -620,7 +620,8 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
 
         // 2) Build the target
         FlVector vector = build_target(executor, file, env, &extended_toolchain, target, &extended_config);
-        defer_expression(fl_vector_delete(vector));
+        if (vector != NULL)
+            defer_expression(fl_vector_delete(vector));
 
         if (preset && preset->actions.after)
             if (!run_actions(executor, file, env, preset->actions.after))

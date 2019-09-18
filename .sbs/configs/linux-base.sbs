@@ -1,4 +1,4 @@
-config gcc-config for gcc {
+config linux-base {
     
     # Specific attributes for the compile stage.
     # ${source} and ${object} represents the input source file and the output
@@ -6,7 +6,7 @@ config gcc-config for gcc {
     compile: {
         extension: ".o",
         flags: [
-            "-std=c99",
+            "-std=gnu99",
             "-Wall",
             "-Werror",
             "-Wextra",
@@ -36,37 +36,6 @@ config gcc-config for gcc {
         extension: "",
         flags: [
             "-o ${executable}"
-        ]
-    }
-}
-
-# A configuration can extends from another one, in this case the 'gcc-config-release' extends
-# from the 'gcc-config' which means it will extend (merge with)  the base config file.
-# The 'for' clause is still valid, which means 'gcc-config-release' can be used just with the
-# 'clang-win' toolchain
-config gcc-config-release extends gcc-config {
-    compile: {
-        flags: [
-            "-O3",
-            "-D_FORTIFY_SOURCE=2"
-        ]
-    }
-}
-
-# The 'gcc-config-debug' configuration extends the base config with useful debug flags
-config gcc-config-debug extends gcc-config {
-    compile: {
-        flags : [ 
-            "-ggdb", 
-            "-DFL_DEBUG" 
-        ]
-    },
-    archive: {
-        flags: [
-        ]
-    },
-    shared: {
-        flags: [
         ]
     }
 }

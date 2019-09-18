@@ -1,0 +1,15 @@
+preset win-ps-clang-x64 {
+    env: win-ps-x64,
+    toolchain: clang,
+    config: win-debug,
+    target: sbs-objects,
+    actions: {
+        before: [
+            `echo 'Running preset win-ps-x64'`,
+            rm-objects
+        ],
+        after: [
+            `echo 'Finished running preset win-ps-x64'`
+        ]
+    },
+}

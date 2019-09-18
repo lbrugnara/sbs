@@ -19,28 +19,3 @@ compile sbs-objects {
     ],
     output_dir: "obj/",
 }
-
-archive sbs-lib {
-    output_name: "sbs",
-    output_dir: "build/",
-    actions: {
-        before: [],
-        after: []
-    },
-    objects: [
-        sbs-objects
-    ]
-}
-
-executable sbs {
-    output_name: "sbs",
-    output_dir: "build/",
-    actions: {
-        before: [],
-        after: []
-    },
-    objects: [
-        "../fllib/build/debug/libfl.a",
-        sbs-lib
-    ],
-}

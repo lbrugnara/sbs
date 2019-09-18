@@ -227,6 +227,11 @@ enum SbsResult sbs_command_init(int argc, char **argv, char **env)
     return SBS_RES_OK;
 }
 
+static int compare_strings(const void* a, const void* b) 
+{ 
+    return strcmp(*(const char**)a, *(const char**)b); 
+} 
+
 enum SbsResult sbs_command_list(int argc, char **argv, char **env)
 {
     if (argc == 2)
@@ -333,6 +338,8 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
         sbs_file_delete(file);
         return SBS_RES_OK;
     }
+
+    qsort(keys, fl_array_length(keys), sizeof(char*), compare_strings); 
 
     fprintf(stdout, "List of %s in the build file %s\n", resource, file->filename);
     for (size_t i=0; i < fl_array_length(keys); i++)

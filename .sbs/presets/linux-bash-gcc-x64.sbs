@@ -1,7 +1,7 @@
-preset linux-wsl-x64 {
-    env: linux-wsl-x64,
+preset linux-bash-gcc-x64 {
+    env: linux-bash-x64,
     toolchain: gcc,
-    config: gcc-config-debug,
+    config: linux-debug,
     target: sbs-objects,
     actions: {
         before: [

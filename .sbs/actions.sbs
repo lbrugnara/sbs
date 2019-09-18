@@ -1,8 +1,0 @@
-action print {
-    `echo`
-}
-
-include [
-    "win/actions.sbs",
-    "linux/actions.sbs"
-]

@@ -1,0 +1,15 @@
+preset win-cmd-tcc-x86 {
+    env: win-cmd-x86,
+    toolchain: tcc,
+    config: win-debug,
+    target: sbs-objects,
+    actions: {
+        before: [
+            `echo 'Running preset win-cmd-x86'`,
+            rm-objects
+        ],
+        after: [
+            `echo 'Finished running preset win-cmd-x86'`
+        ]
+    },
+}

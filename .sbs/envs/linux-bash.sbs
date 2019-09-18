@@ -1,4 +1,4 @@
-env linux-wsl-x64 {
+env linux-bash-x64 {
     type: bash,
     terminal: "/bin/bash"
     args: [ ],

@@ -1,0 +1,17 @@
+config win-debug extends win-base {
+    compile: {
+        flags : [ 
+            "-ggdb", 
+            "-DFL_DEBUG" 
+        ]
+    },
+    archive: {
+        flags: [
+        ]
+    },
+    shared: {
+        flags: [
+            "-DEBUG:FULL"
+        ]
+    }
+}

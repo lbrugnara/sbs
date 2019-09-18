@@ -6,7 +6,7 @@ action rm-objects {
     for win-ps-x86, win-ps-x64 {
         `Remove-Item obj/sbs-config* -Recurse -Force`
     },
-    for win-wsl-x64, win-cygwin-x64 {
+    for win-wsl-x64, win-cygwin-x64, linux-wsl-x64 {
         `/bin/rm -fr obj/sbs-config*`
     }
 }

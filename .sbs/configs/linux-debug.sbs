@@ -1,0 +1,16 @@
+config linux-debug extends linux-base {
+    compile: {
+        flags : [ 
+            "-ggdb", 
+            "-DFL_DEBUG" 
+        ]
+    },
+    archive: {
+        flags: [
+        ]
+    },
+    shared: {
+        flags: [
+        ]
+    }
+}
