@@ -1,0 +1,12 @@
+# A toolchain can contain a 'for' clause to restrict the environments where it can be used.
+toolchain tcc-win {
+
+    # Compiler specific attributes
+    compiler: "tcc.exe",
+    
+    # Archiver specific attributes
+    archiver: "lib.exe",
+
+    # Linker specific attributes
+    linker: "link.exe"
+}

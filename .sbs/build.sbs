@@ -1,13 +1,20 @@
-# ${target}
-# ${toolchain}
-# ${config}
-# ${env}
-
+# We split the files to keep the build organized
 include [
+    # The actions contains all our custom commands
     "actions.sbs",
-    "win-envs.sbs",
+    
+    # The envs includes the different environments used in a platform
+    "envs.sbs",
+    
+    # The toolchains file lists the different set of tools available
     "toolchains.sbs",
+    
+    # Different set of flags used by different toolchains
     "configs.sbs",
+
+    # The objects/libraries/programs to be built
     "targets.sbs",
+
+    # Predefined set of configurations to quickly build the target using the available environments, toolchains and configurations
     "presets.sbs"
 ]

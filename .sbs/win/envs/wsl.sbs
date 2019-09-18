@@ -1,0 +1,17 @@
+env win-wsl-x64 {
+    type: bash,
+    terminal: 'wsl.exe bash',
+    args: [ ],
+    variables: [
+        "WSLENV=MY_ENV_VAR/u", # https:#devblogs.microsoft.com/commandline/share-environment-vars-between-wsl-and-windows/
+        "MY_ENV_VAR=myenvvar"
+    ],
+    # Scripts to run before doing anything
+    actions: {
+        before: [
+            `echo $MY_ENV_VAR`,
+            `PATH=/mnt/d/dev/LLVM/x64/bin:$PATH`,
+            `clang.exe -v`
+        ]
+    }
+}

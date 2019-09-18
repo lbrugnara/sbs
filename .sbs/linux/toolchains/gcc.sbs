@@ -1,0 +1,12 @@
+# A toolchain can contain a 'for' clause to restrict the environments where it can be used.
+toolchain gcc {
+
+    # Compiler specific attributes
+    compiler: "gcc",
+    
+    # Archiver specific attributes
+    archiver: "ar",
+
+    # Linker specific attributes
+    linker: "gcc"
+}

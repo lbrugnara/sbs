@@ -1,0 +1,6 @@
+include [
+    "envs/cmd.sbs",
+    "envs/cygwin.sbs",
+    "envs/ps.sbs",
+    "envs/wsl.sbs"
+]

@@ -1,0 +1,16 @@
+env win-cygwin-x64 {
+    type: bash,
+    terminal: "D:\dev\cygwin64\bin\bash.exe",
+    args: [ ],
+    variables: [
+        "MY_ENV_VAR=myenvvar"
+    ],
+    # Scripts to run before doing anything
+    actions: {
+        before: [
+            `echo $MY_ENV_VAR`,
+            `PATH=/cygdrive/d/dev/LLVM/x64/bin:$PATH`,
+            `clang.exe -v`
+        ]
+    }
+}

@@ -1,0 +1,12 @@
+# A toolchain can contain a 'for' clause to restrict the environments where it can be used.
+toolchain clang-win {
+
+    # Compiler specific attributes
+    compiler: "clang.exe",
+    
+    # Archiver specific attributes
+    archiver: "llvm-lib.exe",
+
+    # Linker specific attributes
+    linker: "lld-link.exe"
+}

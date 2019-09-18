@@ -1,0 +1,72 @@
+config gcc-config for gcc {
+    
+    # Specific attributes for the compile stage.
+    # ${source} and ${object} represents the input source file and the output
+    # object file respectively
+    compile: {
+        extension: ".o",
+        flags: [
+            "-std=c99",
+            "-Wall",
+            "-Werror",
+            "-Wextra",
+            "-pedantic",
+            "-Wmissing-field-initializers",
+            "-Wno-unused-parameter",
+            "-Wno-unused-variable",
+            "-Wno-unused-function",
+            "-Wno-missing-braces",
+            "-fstrict-aliasing",
+            "-c ${source}",
+            "-o ${object}"
+        ],
+        defines: [
+        ]
+    },
+
+    # Specific attributes for the archive utility
+    archive: {
+        extension: "",
+        flags: [
+        ]
+    },
+
+    # Specific attributes for the shared stage
+    executable: {
+        extension: "",
+        flags: [
+            "-o ${executable}"
+        ]
+    }
+}
+
+# A configuration can extends from another one, in this case the 'gcc-config-release' extends
+# from the 'gcc-config' which means it will extend (merge with)  the base config file.
+# The 'for' clause is still valid, which means 'gcc-config-release' can be used just with the
+# 'clang-win' toolchain
+config gcc-config-release extends gcc-config {
+    compile: {
+        flags: [
+            "-O3",
+            "-D_FORTIFY_SOURCE=2"
+        ]
+    }
+}
+
+# The 'gcc-config-debug' configuration extends the base config with useful debug flags
+config gcc-config-debug extends gcc-config {
+    compile: {
+        flags : [ 
+            "-ggdb", 
+            "-DFL_DEBUG" 
+        ]
+    },
+    archive: {
+        flags: [
+        ]
+    },
+    shared: {
+        flags: [
+        ]
+    }
+}

@@ -1,0 +1,33 @@
+env win-cmd-x86 {
+    type: cmd,
+    args: ["/K", "prompt $S$H"],
+    variables: [
+        "MY_ENV_VAR=myenvvar"
+    ],
+    # Scripts to run before doing anything
+    actions: {
+        before: [
+            `echo %MY_ENV_VAR%`,
+            `set PATH=D:\dev\LLVM\x86\bin\;D:\dev\tcc\x86\;%PATH%`,
+            `clang -v`,
+            `call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat" > nul 2>&1`
+        ]
+    }
+}
+
+env win-cmd-x64 {
+    type: cmd,
+    args: ["/K", "prompt $S$H"],
+    variables: [
+        "MY_ENV_VAR=myenvvar"
+    ],
+    # Scripts to run before doing anything
+    actions: {
+        before: [
+            `echo %MY_ENV_VAR%`,
+            `set PATH=D:\dev\LLVM\x64\bin\;D:\dev\tcc\x64\;%PATH%`,
+            `clang -v`,
+            `call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat" > nul 2>&1`
+        ]
+    }
+}

@@ -1,25 +1,4 @@
-# A toolchain can contain a 'for' clause to restrict the environments where it can be used.
-toolchain clang-win {
-
-    # Compiler specific attributes
-    compiler: "clang.exe",
-    
-    # Archiver specific attributes
-    archiver: "llvm-lib.exe",
-
-    # Linker specific attributes
-    linker: "lld-link.exe"
-}
-
-# A toolchain can contain a 'for' clause to restrict the environments where it can be used.
-toolchain tcc-win {
-
-    # Compiler specific attributes
-    compiler: "tcc.exe",
-    
-    # Archiver specific attributes
-    archiver: "lib.exe",
-
-    # Linker specific attributes
-    linker: "link.exe"
-}
+include [
+    "win/toolchains.sbs",
+    "linux/toolchains.sbs"
+]

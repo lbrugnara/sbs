@@ -1,8 +1,14 @@
+#ifdef _WIN32
+    #define _XOPEN_SOURCE
+#endif
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <fllib.h>
 #include "executor.h"
 #include "types.h"
+
+extern char** environ;
 
 enum SbsExecutorType {
     SBS_EXEC_SYSTEM,
@@ -130,7 +136,7 @@ SbsExecutor sbs_executor_create(struct SbsEnv *env)
             {
                 #ifdef _WIN32
                 _putenv(env->variables[i]);
-                #elif
+                #else
                 putenv(env->variables[i]);
                 #endif
             }

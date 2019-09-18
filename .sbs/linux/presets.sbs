@@ -1,0 +1,15 @@
+preset linux-wsl-x64 {
+    env: linux-wsl-x64,
+    toolchain: gcc,
+    config: gcc-config-debug,
+    target: sbs-objects,
+    actions: {
+        before: [
+            `echo 'Running preset linux-wsl-gcc-x64'`,
+            rm-objects
+        ],
+        after: [
+            `echo 'Finished running preset linux-wsl-gcc-x64'`
+        ]
+    },
+}
