@@ -2,7 +2,7 @@
 #define SBS_EXECUTOR_H
 
 #include <fllib.h>
-#include "types.h"
+#include "objects/environment.h"
 
 typedef struct SbsExecutor *SbsExecutor;
 

@@ -2,11 +2,13 @@
 #include "commands.h"
 #include "result.h"
 #include "build.h"
-#include "file.h"
+#include "objects/file.h"
 
 #define SBS_VERSION_MAJOR 0
 #define SBS_VERSION_MINOR 1
 #define SBS_VERSION_PATCH 0
+
+#define CLI_HEADER "sbs build system (%d.%d.%d)\n"
 
 struct SbsListArguments {
     const char *file;
@@ -23,7 +25,7 @@ static const char *build_flags[] = {
 };
 
 static const char *main_help = 
-    "sbs build system (%d.%d.%d)\n"
+    CLI_HEADER
     "                                                                               \n"
     "Usage: sbs [ <options> | <module> ]                                            \n"
     "                                                                               \n"
@@ -45,7 +47,7 @@ static const char *main_help =
 ;
 
 static const char *list_help =
-    "sbs build system (%d.%d.%d)\n"
+    CLI_HEADER
     "                                                                               \n"
     "Usage: sbs list <options>? <resource>                                          \n"
     "                                                                               \n"
@@ -71,7 +73,7 @@ static const char *list_help =
 ;
 
 static const char *build_help =
-    "sbs build system (%d.%d.%d)\n"
+    CLI_HEADER
     "                                                                               \n"
     "Usage: sbs build [ <preset> <options>? <resources>? | <options>? <resources> ] \n"
     "                                                                               \n"
@@ -110,6 +112,11 @@ static const char *build_help =
     "       sbs list --help                                                         \n"
     "                                                                               \n"
 ;
+
+static void print_cli_header(void)
+{
+    fprintf(stderr, CLI_HEADER, SBS_VERSION_MAJOR, SBS_VERSION_MINOR, SBS_VERSION_PATCH);
+}
 
 static void print_main_help(int argc, char **argv)
 {
@@ -254,8 +261,16 @@ enum SbsResult sbs_command_help(int argc, char **argv, char **env)
  */
 enum SbsResult sbs_command_init(int argc, char **argv, char **env)
 {
+    print_cli_header();
+
     if (!fl_io_file_exists(".sbs"))
-        fl_io_dir_create(".sbs");
+    {
+        if (!fl_io_dir_create(".sbs"))
+        {
+            print_error("Could not create the .sbs folder. Check your permissions");
+            return SBS_RES_ERROR;
+        }
+    }
 
     // Default filename
     const char *build_file = ".sbs/build.sbs";
@@ -263,7 +278,7 @@ enum SbsResult sbs_command_init(int argc, char **argv, char **env)
     // If it exists, we return an error
     if (fl_io_file_exists(build_file))
     {
-        print_error("sbs has already been initialized\n");
+        print_error("sbs has already been initialized");
         return SBS_RES_ERROR;
     }
 
@@ -319,7 +334,8 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
 
         if (!is_valid_flag(arg, (const char*[]){ "--help", "-h", "--file", "-f", NULL }))
         {
-            print_error("Unknown option '%s'.\n", arg, arg);
+            print_cli_header();
+            print_error("Unknown option '%s'.", arg, arg);
             return SBS_RES_WRONG_ARGS;
         }
 
@@ -335,7 +351,8 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
 
         if (!success)
         {
-            print_error("Unknown option '%s'. Did you mean '%s=...'?\n", arg, arg);
+            print_cli_header();
+            print_error("Unknown option '%s'. Did you mean '%s=...'?", arg, arg);
             return SBS_RES_WRONG_ARGS;
         }
     }
@@ -350,13 +367,15 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
     // If present the file argument, make sure the filename is valid
     if (args.file && strlen(args.file) == 0)
     {
-        print_error("File name cannot be empty\n");
+        print_cli_header();
+        print_error("File name cannot be empty");
         return SBS_RES_INVALID_FILE;
     }
 
     // If present the file argument, make sure the file exists
     if (args.file && !fl_io_file_exists(args.file))
     {
+        print_cli_header();
         const char *error = sbs_explain_result(SBS_RES_INVALID_FILE, args.file);
         print_error("%s", error);
         fl_cstring_delete(error);
@@ -403,7 +422,8 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
     else
     {
         sbs_file_delete(file);
-        print_list_help(argc, argv);
+        print_cli_header();
+        print_error("Unkown object type %s", args.resource);
         return SBS_RES_INVALID_RESOURCE;
     }
 
@@ -421,6 +441,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
     // Print the ordered list of requested resources
     qsort(keys, fl_array_length(keys), sizeof(char*), compare_strings); 
 
+    print_cli_header();
     fprintf(stdout, "List of %s in the build file %s\n", resource, file->filename);
     for (size_t i=0; i < fl_array_length(keys); i++)
         fprintf(stdout, "%s\n", keys[i]);
@@ -475,7 +496,7 @@ enum SbsResult sbs_command_build(int argc, char **argv, char **env)
 
         if (!is_valid_flag(arg, build_flags))
         {
-            print_error("Unknown option '%s'.\n", arg, arg);
+            print_error("Unknown option '%s'.", arg, arg);
             return SBS_RES_WRONG_ARGS;
         }
 
@@ -489,7 +510,7 @@ enum SbsResult sbs_command_build(int argc, char **argv, char **env)
         // If the argument is not valid show an error
         if (!success)
         {
-            print_error("Option '%s' has a syntax error. Did you mean '%s=...'?\n", arg, arg);
+            print_error("Option '%s' has a syntax error. Did you mean '%s=...'?", arg, arg);
             return SBS_RES_WRONG_ARGS;
         }
     }
@@ -504,7 +525,7 @@ enum SbsResult sbs_command_build(int argc, char **argv, char **env)
     // If present the file argument, make sure the filename is valid
     if (args.file && strlen(args.file) == 0)
     {
-        print_error("File name cannot be empty\n");
+        print_error("File name cannot be empty");
         return SBS_RES_INVALID_FILE;
     }
 

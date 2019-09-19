@@ -1,0 +1,20 @@
+#ifndef SBS_ENVIRONMENT_H
+#define SBS_ENVIRONMENT_H
+
+#include <fllib.h>
+#include "action.h"
+
+struct SbsEnv {
+    const char *name;
+    const char *type;
+    const char *terminal;
+    char **args;
+    char **variables;
+    struct SbsActions actions;
+};
+
+void sbs_env_map_init(FlHashtable *envs);
+void sbs_env_free(struct SbsEnv *env);
+struct SbsEnv* sbs_env_parse(struct SbsParser *parser);
+
+#endif /* SBS_ENVIRONMENT_H */

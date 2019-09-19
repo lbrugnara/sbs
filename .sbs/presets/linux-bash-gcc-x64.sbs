@@ -1,7 +1,7 @@
 preset linux-bash-gcc-x64-debug {
     env: linux-bash-x64,
     toolchain: gcc,
-    config: linux-clang-debug,
+    config: clang-linux-debug,
     target: sbs-objects,
     actions: {
         before: [
@@ -17,7 +17,7 @@ preset linux-bash-gcc-x64-debug {
 preset linux-bash-gcc-x64-release {
     env: linux-bash-x64,
     toolchain: gcc,
-    config: linux-clang-release,
+    config: clang-linux-release,
     target: sbs-objects,
     actions: {
         before: [

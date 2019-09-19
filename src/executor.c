@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <fllib.h>
 #include "executor.h"
-#include "types.h"
 
 extern char** environ;
 

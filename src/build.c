@@ -1,10 +1,19 @@
 #include <stdio.h>
 #include <fllib.h>
 
-#include "types.h"
 #include "executor.h"
 #include "build.h"
-#include "file.h"
+#include "objects/file.h"
+#include "objects/action.h"
+#include "objects/common.h"
+#include "objects/configuration.h"
+#include "objects/environment.h"
+#include "objects/preset.h"
+#include "objects/target.h"
+#include "objects/toolchain.h"
+#include "objects/lexer.h"
+#include "objects/parser.h"
+#include "objects/file.h"
 
 #define SBS_DIR_SEPARATOR "/"
 
@@ -119,7 +128,7 @@ FlVector build_target_compile(SbsExecutor executor, const struct SbsFile *file, 
     char *includes = fl_cstring_dup("");
     for (size_t i = 0; i < fl_array_length(compile->includes); i++)
     {
-        fl_cstring_append(&includes, compile->include_flag);
+        fl_cstring_append(&includes, config->compile.include_dir_flag);
         fl_cstring_append(&includes, compile->includes[i]);
         fl_cstring_append(&includes, " ");
     }
@@ -444,6 +453,9 @@ bool resolve_config_inheritance(const struct SbsFile *file, const char *config_n
         
         if (ancestor->compile.flags)
             extend_fl_array(&(extended_config->compile.flags), ancestor->compile.flags);
+
+        if (ancestor->compile.include_dir_flag)
+            extended_config->compile.include_dir_flag = ancestor->compile.include_dir_flag;
 
         if (ancestor->compile.defines)
             extend_fl_array(&(extended_config->compile.defines), ancestor->compile.defines);

@@ -1,7 +1,7 @@
 preset win-cygwin-clang-x64-debug {
     env: win-cygwin-x64,
     toolchain: clang,
-    config: win-clang-debug,
+    config: clang-win-debug,
     target: sbs-objects,
     actions: {
         before: [
@@ -17,7 +17,7 @@ preset win-cygwin-clang-x64-debug {
 preset win-cygwin-clang-x64-release {
     env: win-cygwin-x64,
     toolchain: clang,
-    config: win-clang-release,
+    config: clang-win-release,
     target: sbs-objects,
     actions: {
         before: [

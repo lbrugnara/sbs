@@ -5,7 +5,7 @@ set CFLAGS= -std=c99 ^
             -Werror ^
             -Wextra ^
             -pedantic ^
-            -O3 ^
+            -O0 ^
             -Wmissing-field-initializers ^
             -Wno-unused-parameter ^
             -Wno-unused-variable ^
@@ -51,16 +51,25 @@ if "%~1%"=="clean" (
 
 rd /s /q "obj\"
 rd /s /q "build\"
-md .\obj\debug
+md .\obj\debug\objects
 
-clang.exe %CFLAGS% -c .\src\file.c  -o .\obj\debug\file.o
-clang.exe %CFLAGS% -c .\src\result.c  -o .\obj\debug\result.o
-clang.exe %CFLAGS% -c .\src\lexer.c  -o .\obj\debug\lexer.o
-clang.exe %CFLAGS% -c .\src\parser.c  -o .\obj\debug\parser.o
-clang.exe %CFLAGS% -c .\src\executor.c  -o .\obj\debug\executor.o
+
+clang.exe %CFLAGS% -c .\src\objects\action.c  -o .\obj\debug\objects\action.o
+clang.exe %CFLAGS% -c .\src\objects\common.c  -o .\obj\debug\objects\common.o
+clang.exe %CFLAGS% -c .\src\objects\configuration.c  -o .\obj\debug\objects\configuration.o
+clang.exe %CFLAGS% -c .\src\objects\environment.c  -o .\obj\debug\objects\environment.o
+clang.exe %CFLAGS% -c .\src\objects\lexer.c  -o .\obj\debug\objects\lexer.o
+clang.exe %CFLAGS% -c .\src\objects\parser.c  -o .\obj\debug\objects\parser.o
+clang.exe %CFLAGS% -c .\src\objects\preset.c  -o .\obj\debug\objects\preset.o
+clang.exe %CFLAGS% -c .\src\objects\target.c  -o .\obj\debug\objects\target.o
+clang.exe %CFLAGS% -c .\src\objects\toolchain.c  -o .\obj\debug\objects\toolchain.o
+clang.exe %CFLAGS% -c .\src\objects\file.c  -o .\obj\debug\objects\file.o
+
 clang.exe %CFLAGS% -c .\src\build.c  -o .\obj\debug\build.o
 clang.exe %CFLAGS% -c .\src\commands.c  -o .\obj\debug\commands.o
+clang.exe %CFLAGS% -c .\src\executor.c  -o .\obj\debug\executor.o
 clang.exe %CFLAGS% -c .\src\main.c  -o .\obj\debug\main.o
+clang.exe %CFLAGS% -c .\src\result.c  -o .\obj\debug\result.o
 
 :: Link
 :LINK
@@ -76,14 +85,21 @@ lld-link.exe ^
     -DEBUG:FULL ^
     %LIBSPATH% ^
     %LIBS% ^
-    obj\debug\file.o ^
-    obj\debug\result.o ^
-    obj\debug\lexer.o ^
-    obj\debug\parser.o ^
-    obj\debug\executor.o ^
+    obj\debug\objects\action.o ^
+    obj\debug\objects\common.o ^
+    obj\debug\objects\configuration.o ^
+    obj\debug\objects\environment.o ^
+    obj\debug\objects\lexer.o ^
+    obj\debug\objects\parser.o ^
+    obj\debug\objects\preset.o ^
+    obj\debug\objects\target.o ^
+    obj\debug\objects\toolchain.o ^
+    obj\debug\objects\file.o ^
     obj\debug\build.o ^
     obj\debug\commands.o ^
-    obj\debug\main.o
+    obj\debug\executor.o ^
+    obj\debug\main.o ^
+    obj\debug\result.o
 
 GOTO :EXIT
 

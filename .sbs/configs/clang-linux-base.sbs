@@ -1,0 +1,17 @@
+config clang-linux-base extends clang-base {
+
+    # Specific attributes for the archive utility
+    archive: {
+        extension: "",
+        flags: [
+        ]
+    },
+
+    # Specific attributes for the shared stage
+    executable: {
+        extension: "",
+        flags: [
+            "-o ${executable}"
+        ]
+    }
+}

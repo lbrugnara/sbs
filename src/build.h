@@ -2,7 +2,7 @@
 #define SBS_BUILD_H
 
 #include <fllib.h>
-#include "file.h"
+#include "objects/file.h"
 #include "result.h"
 
 struct SbsBuildArguments {

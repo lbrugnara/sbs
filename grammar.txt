@@ -14,7 +14,10 @@ include_statement -> 'include' string_array
 env_declaration -> 'env' IDENTIFIER '{' env_body '}'
                ;
 
-env_body -> 'arch' ':' STRING
+env_body -> 'args' ':' string_array
+          | 'type' ':' IDENTIFIER
+          | 'terminal' ':' STRING
+          | 'variables' ':? string_array
           | actions_object
 
 
@@ -22,9 +25,9 @@ env_body -> 'arch' ':' STRING
 toolchain_declaration -> 'toolchain' IDENTIFIER extends_declaration? for_declaration? '{' toolchain_body? '}'
                 ;
 
-toolchain_body -> 'compiler' ':' STRING ','?
-                | 'archiver' ':' STRING ','?
-                | 'linker' ':' STRING ','?
+toolchain_body -> 'compiler' ':' STRING
+                | 'archiver' ':' STRING
+                | 'linker' ':' STRING
                 ;
 
 
@@ -75,7 +78,7 @@ target_link_executable -> 'executable' IDENTIFIER '{' target_link_executable_bod
                 ;
 
 target_compile_body -> actions_object
-                     | 'include_flag' ':' STRING
+                     | 'include_dir_flag' ':' STRING
                      | 'includes' ':' string_array
                      | 'sources' ':' string_array
                      | 'output_dir' ':' STRING

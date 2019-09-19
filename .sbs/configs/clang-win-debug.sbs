@@ -1,4 +1,4 @@
-config win-clang-debug extends win-clang-base {
+config clang-win-debug extends clang-win-base {
     compile: {
         flags : [ 
             "-ggdb", 

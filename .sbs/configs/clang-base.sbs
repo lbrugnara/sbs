@@ -1,10 +1,11 @@
-config win-clang-base {
+config clang-base {
     
     # Specific attributes for the compile stage.
     # ${source} and ${object} represents the input source file and the output
     # object file respectively
     compile: {
         extension: ".o",
+        include_dir_flag: "-I",
         flags: [
             "-std=c99",
             "-Wall",
@@ -21,25 +22,6 @@ config win-clang-base {
             "-o ${object}"
         ],
         defines: [
-        ]
-    },
-
-    # Specific attributes for the archive utility
-    archive: {
-        extension: ".lib",
-        flags: [
-            "-NOLOGO",
-            "-OUT:${archive}"
-        ]
-    },
-
-    # Specific attributes for the shared stage
-    executable: {
-        extension: ".exe",
-        flags: [
-            "-DEFAULTLIB:libcmt",
-            "-NOLOGO",
-            "-OUT:${executable}"
         ]
     }
 }

@@ -1,4 +1,4 @@
-config linux-clang-debug extends linux-clang-base {
+config clang-linux-debug extends clang-linux-base {
     compile: {
         flags : [ 
             "-ggdb", 

@@ -3,19 +3,25 @@ compile sbs-objects {
         before: [],
         after: []
     },
-    include_flag: "-I",
     includes: [
         "../fllib/include"
     ],
     sources: [ 
-        "src/lexer.c",
-        "src/parser.c",
-        "src/file.c",
-        "src/result.c",
-        "src/executor.c",
+        "src/objects/action.c",
+        "src/objects/common.c",
+        "src/objects/configuration.c",
+        "src/objects/environment.c",
+        "src/objects/file.c",
+        "src/objects/lexer.c",
+        "src/objects/parser.c",
+        "src/objects/preset.c",
+        "src/objects/target.c",
+        "src/objects/toolchain.c",
         "src/build.c",
         "src/commands.c",
+        "src/executor.c",
         "src/main.c",
+        "src/result.c",
     ],
     output_dir: "obj/",
 }

@@ -16,12 +16,13 @@ include [
     "actions/rm.sbs",    
 
     # configurations
-    "configs/linux-clang-base.sbs",
-    "configs/linux-clang-debug.sbs",
-    "configs/linux-clang-release.sbs",
-    "configs/win-clang-base.sbs",
-    "configs/win-clang-debug.sbs",
-    "configs/win-clang-release.sbs",
+    "configs/clang-base.sbs",
+    "configs/clang-linux-base.sbs",
+    "configs/clang-linux-debug.sbs",
+    "configs/clang-linux-release.sbs",
+    "configs/clang-win-base.sbs",
+    "configs/clang-win-debug.sbs",
+    "configs/clang-win-release.sbs",
 
     # targets
     "targets/sbs-lib.sbs",
