@@ -35,29 +35,44 @@ fi
 function target_sbs() {
     rm -rf obj/
     rm -rf build/
-    mkdir -p ./obj/debug
+    mkdir -p ./obj/debug/objects
+    
+    gcc $CFLAGS -c ./src/objects/action.c  -o ./obj/debug/objects/action.o
+    gcc $CFLAGS -c ./src/objects/common.c  -o ./obj/debug/objects/common.o
+    gcc $CFLAGS -c ./src/objects/configuration.c  -o ./obj/debug/objects/configuration.o
+    gcc $CFLAGS -c ./src/objects/environment.c  -o ./obj/debug/objects/environment.o
+    gcc $CFLAGS -c ./src/objects/lexer.c  -o ./obj/debug/objects/lexer.o
+    gcc $CFLAGS -c ./src/objects/parser.c  -o ./obj/debug/objects/parser.o
+    gcc $CFLAGS -c ./src/objects/preset.c  -o ./obj/debug/objects/preset.o
+    gcc $CFLAGS -c ./src/objects/target.c  -o ./obj/debug/objects/target.o
+    gcc $CFLAGS -c ./src/objects/toolchain.c  -o ./obj/debug/objects/toolchain.o
+    gcc $CFLAGS -c ./src/objects/file.c  -o ./obj/debug/objects/file.o
 
-    gcc $CFLAGS -c ./src/file.c  -o ./obj/debug/file.o
-    gcc $CFLAGS -c ./src/result.c  -o ./obj/debug/result.o
-    gcc $CFLAGS -c ./src/lexer.c  -o ./obj/debug/lexer.o
-    gcc $CFLAGS -c ./src/parser.c  -o ./obj/debug/parser.o
-    gcc $CFLAGS -c ./src/executor.c  -o ./obj/debug/executor.o
     gcc $CFLAGS -c ./src/build.c  -o ./obj/debug/build.o
     gcc $CFLAGS -c ./src/commands.c  -o ./obj/debug/commands.o
+    gcc $CFLAGS -c ./src/executor.c  -o ./obj/debug/executor.o
     gcc $CFLAGS -c ./src/main.c  -o ./obj/debug/main.o
+    gcc $CFLAGS -c ./src/result.c  -o ./obj/debug/result.o
 }
 
 function target_link() {
     mkdir -p ./build/debug
 
-    gcc obj/debug/file.o \
-        obj/debug/result.o \
-        obj/debug/lexer.o \
-        obj/debug/parser.o \
-        obj/debug/executor.o \
+    gcc obj/debug/objects/action.o \
+        obj/debug/objects/common.o \
+        obj/debug/objects/configuration.o \
+        obj/debug/objects/environment.o \
+        obj/debug/objects/lexer.o \
+        obj/debug/objects/parser.o \
+        obj/debug/objects/preset.o \
+        obj/debug/objects/target.o \
+        obj/debug/objects/toolchain.o \
+        obj/debug/objects/file.o \
         obj/debug/build.o \
         obj/debug/commands.o \
+        obj/debug/executor.o \
         obj/debug/main.o \
+        obj/debug/result.o \
         -L../fllib/build/debug -lfl \
         -L/lib/x86_64-linux-gnu \
         -lpthread \
