@@ -1,4 +1,4 @@
-config linux-release extends linux-base {
+config linux-clang-release extends linux-clang-base {
     compile: {
         flags: [
             "-O3",

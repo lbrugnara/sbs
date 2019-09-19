@@ -1,4 +1,4 @@
-config win-release extends win-base {
+config win-clang-release extends win-clang-base {
     compile: {
         flags: [
             "-O3",

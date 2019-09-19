@@ -1,7 +1,23 @@
-preset win-wsl-clang-x64 {
+preset win-wsl-clang-x64-debug {
     env: win-wsl-x64,
     toolchain: clang,
-    config: win-debug,
+    config: win-clang-debug,
+    target: sbs-objects,
+    actions: {
+        before: [
+            `echo 'Running preset win-wsl-x64'`,
+            rm-objects
+        ],
+        after: [
+            `echo 'Finished running preset win-wsl-x64'`
+        ]
+    },
+}
+
+preset win-wsl-clang-x64-release {
+    env: win-wsl-x64,
+    toolchain: clang,
+    config: win-clang-release,
     target: sbs-objects,
     actions: {
         before: [

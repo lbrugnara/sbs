@@ -1,7 +1,23 @@
-preset linux-bash-gcc-x64 {
+preset linux-bash-gcc-x64-debug {
     env: linux-bash-x64,
     toolchain: gcc,
-    config: linux-debug,
+    config: linux-clang-debug,
+    target: sbs-objects,
+    actions: {
+        before: [
+            `echo 'Running preset linux-wsl-gcc-x64'`,
+            rm-objects
+        ],
+        after: [
+            `echo 'Finished running preset linux-wsl-gcc-x64'`
+        ]
+    },
+}
+
+preset linux-bash-gcc-x64-release {
+    env: linux-bash-x64,
+    toolchain: gcc,
+    config: linux-clang-release,
     target: sbs-objects,
     actions: {
         before: [

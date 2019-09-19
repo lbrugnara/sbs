@@ -1,4 +1,4 @@
-config win-debug extends win-base {
+config linux-clang-debug extends linux-clang-base {
     compile: {
         flags : [ 
             "-ggdb", 
@@ -11,7 +11,6 @@ config win-debug extends win-base {
     },
     shared: {
         flags: [
-            "-DEBUG:FULL"
         ]
     }
 }

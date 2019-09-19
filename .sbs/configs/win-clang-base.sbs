@@ -1,4 +1,4 @@
-config win-base {
+config win-clang-base {
     
     # Specific attributes for the compile stage.
     # ${source} and ${object} represents the input source file and the output

@@ -1,7 +1,23 @@
-preset win-ps-clang-x86 {
+preset win-ps-clang-x86-debug {
     env: win-ps-x86,
     toolchain: clang,
-    config: win-debug,
+    config: win-clang-debug,
+    target: sbs-objects,
+    actions: {
+        before: [
+            `echo 'Running preset win-ps-x86'`,
+            rm-objects
+        ],
+        after: [
+            `echo 'Finished running preset win-ps-x86'`
+        ]
+    },
+}
+
+preset win-ps-clang-x86-release {
+    env: win-ps-x86,
+    toolchain: clang,
+    config: win-clang-release,
     target: sbs-objects,
     actions: {
         before: [
