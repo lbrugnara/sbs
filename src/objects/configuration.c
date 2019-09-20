@@ -56,7 +56,7 @@ static void free_map_entry(void *value)
     sbs_config_free((struct SbsConfiguration*)value);
 }
 
-void sbs_config_map_init(FlHashtable *configs)
+void sbs_config_map_init(FlHashtable *config_map)
 {
     struct FlHashtableArgs new_args = {
         .hash_function = fl_hashtable_hash_string, 
@@ -66,7 +66,7 @@ void sbs_config_map_init(FlHashtable *configs)
         .value_cleaner = free_map_entry
     };
     
-    *configs = fl_hashtable_new_args(new_args);
+    *config_map = fl_hashtable_new_args(new_args);
 }
 
 /*
@@ -245,4 +245,107 @@ struct SbsConfiguration* sbs_config_parse(struct SbsParser *parser)
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
     return configuration;
+}
+
+
+static void find_ancestors(const struct SbsConfiguration *config, FlList ancestors, FlHashtable config_map)
+{
+    if (!config->extends)
+        return;
+
+    size_t length = fl_array_length(config->extends);
+    for (size_t i=0; i < length; i++)
+        fl_list_prepend(ancestors, fl_hashtable_get(config_map, config->extends[i]));
+    
+    for (size_t i=0; i < length; i++)
+        find_ancestors(fl_hashtable_get(config_map, config->extends[i]), ancestors, config_map);
+}
+
+bool sbs_config_inheritance_resolve(struct SbsConfiguration *extended_config, const char *config_name, const FlHashtable config_map)
+{
+    const struct SbsConfiguration *config = fl_hashtable_get(config_map, config_name);
+
+    if (!config)
+        return false;
+
+    // Name will be always the targeted config
+    extended_config->name = config->name;
+
+    FlList ancestors = fl_list_new();
+
+    // Using prepend we will keep the list ordered
+    fl_list_prepend(ancestors, config);
+    find_ancestors(config, ancestors, config_map);
+
+    struct FlListNode *node = fl_list_head(ancestors);
+    while (node)
+    {
+        const struct SbsConfiguration *ancestor = (const struct SbsConfiguration*)node->value;
+
+        // char **for_toolchains;
+        if (ancestor->for_toolchains)
+            sbs_common_extend_fl_array(&(extended_config->for_toolchains), ancestor->for_toolchains);
+
+        // struct SbsConfigCompile compile;
+        if (ancestor->compile.extension)
+            extended_config->compile.extension = ancestor->compile.extension;
+        
+        if (ancestor->compile.flags)
+            sbs_common_extend_fl_array(&(extended_config->compile.flags), ancestor->compile.flags);
+
+        if (ancestor->compile.include_dir_flag)
+            extended_config->compile.include_dir_flag = ancestor->compile.include_dir_flag;
+
+        if (ancestor->compile.defines)
+            sbs_common_extend_fl_array(&(extended_config->compile.defines), ancestor->compile.defines);
+
+        // struct SbsConfigArchive archive;
+        if (ancestor->archive.extension)
+            extended_config->archive.extension = ancestor->archive.extension;
+
+        if (ancestor->archive.flags)
+            sbs_common_extend_fl_array(&(extended_config->archive.flags), ancestor->archive.flags);
+
+        // struct SbsConfigShared shared;
+        if (ancestor->shared.extension)
+            extended_config->shared.extension = ancestor->shared.extension;
+
+        if (ancestor->shared.flags)
+            sbs_common_extend_fl_array(&(extended_config->shared.flags), ancestor->shared.flags);
+
+        // struct SbsConfigExecutable executable;
+        if (ancestor->executable.extension)
+            extended_config->executable.extension = ancestor->executable.extension;
+
+        if (ancestor->executable.flags)
+            sbs_common_extend_fl_array(&(extended_config->executable.flags), ancestor->executable.flags);
+
+        node = node->next;
+    }
+
+    fl_list_delete(ancestors);
+
+    return true;
+}
+
+void sbs_config_inheritance_clean(struct SbsConfiguration *extended_config)
+{
+    // char **for_toolchains;
+    if (extended_config->for_toolchains)
+        fl_array_delete(extended_config->for_toolchains);
+
+    if (extended_config->compile.flags)
+        fl_array_delete(extended_config->compile.flags);
+
+    if (extended_config->compile.defines)
+        fl_array_delete(extended_config->compile.defines);
+
+    if (extended_config->archive.flags)
+        fl_array_delete(extended_config->archive.flags);
+
+    if (extended_config->shared.flags)
+        fl_array_delete(extended_config->shared.flags);
+
+    if (extended_config->executable.flags)
+        fl_array_delete(extended_config->executable.flags);
 }

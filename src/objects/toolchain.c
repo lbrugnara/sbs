@@ -114,3 +114,69 @@ struct SbsToolchain* sbs_toolchain_parse(struct SbsParser *parser)
 
     return toolchain;
 }
+
+
+void find_ancestors(const struct SbsToolchain *toolchain, FlList ancestors, FlHashtable toolchain_map)
+{
+    if (!toolchain->extends)
+        return;
+
+    size_t length = fl_array_length(toolchain->extends);
+    for (size_t i=0; i < length; i++)
+        fl_list_prepend(ancestors, fl_hashtable_get(toolchain_map, toolchain->extends[i]));
+    
+    for (size_t i=0; i < length; i++)
+        find_ancestors(fl_hashtable_get(toolchain_map, toolchain->extends[i]), ancestors, toolchain_map);
+}
+
+void sbs_toolchain_inheritance_clean(struct SbsToolchain *extended_toolchain)
+{
+    // char **for_envs;
+    if (extended_toolchain->for_envs)
+        fl_array_delete(extended_toolchain->for_envs);
+}
+
+bool sbs_toolchain_inheritance_resolve(struct SbsToolchain *extended_toolchain, const char *toolchain_name, FlHashtable toolchain_map)
+{
+    const struct SbsToolchain *toolchain = fl_hashtable_get(toolchain_map, toolchain_name);
+
+    if (!toolchain)
+        return false;
+
+    // Name will be always the targeted toolchain
+    extended_toolchain->name = toolchain->name;
+
+    FlList ancestors = fl_list_new();
+
+    // Using prepend we will keep the list ordered
+    fl_list_prepend(ancestors, toolchain);
+    find_ancestors(toolchain, ancestors, toolchain_map);
+
+    struct FlListNode *node = fl_list_head(ancestors);
+    while (node)
+    {
+        const struct SbsToolchain *ancestor = (const struct SbsToolchain*)node->value;
+
+        // char **for_toolchains;
+        if (ancestor->for_envs)
+            sbs_common_extend_fl_array(&(extended_toolchain->for_envs), ancestor->for_envs);
+
+        //const char *compiler;
+        if (ancestor->compiler)
+            extended_toolchain->compiler = ancestor->compiler;
+
+        //const char *linker;
+        if (ancestor->linker)
+            extended_toolchain->linker = ancestor->linker;
+
+        //const char *archiver;
+        if (ancestor->archiver)
+            extended_toolchain->archiver = ancestor->archiver;        
+
+        node = node->next;
+    }
+
+    fl_list_delete(ancestors);
+
+    return true;
+}

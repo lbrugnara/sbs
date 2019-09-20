@@ -154,7 +154,7 @@ static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *fi
  *  file - Build file object to keep track of the parsed resources
  *
  * Returns:
- *  *bool* - If the parsing process succeeds, this function returns *true*. Otherwise returns *false*.
+ *  *bool* - If the parsing process is successful, this function returns *true*. Otherwise returns *false*.
  *
  */
 static bool parse_file(struct SbsParser *parser, struct SbsFile *file)

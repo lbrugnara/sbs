@@ -22,12 +22,12 @@ static char *reason[] = {
     [SBS_RES_MISSING_CONFIG_ARG] =      "A configuration name is required for this command to run\n",
     [SBS_RES_MISSING_TARGET_ARG] =      "A target name is required for this command to run\n",
 
-    [SBS_RES_ACTION_FAILED] =           "The action has failed\n"
+    [SBS_RES_ACTION_FAILED] =           "An action has failed\n"
 };
 
-const char* sbs_explain_result(enum SbsResult result, ...)
+const char* sbs_result_get_reason(enum SbsResult result, ...)
 {
-    if (result < SBS_RES_OK || result > SBS_RES_END)
+if (result < SBS_RES_OK || result > SBS_RES_END)
         return NULL;
 
     va_list args;
@@ -35,4 +35,21 @@ const char* sbs_explain_result(enum SbsResult result, ...)
     char *str = fl_cstring_vadup(reason[result], args);
     va_end(args);
     return str;
+}
+
+enum SbsResult sbs_result_print_reason(enum SbsResult result, ...)
+{
+    if (result < SBS_RES_OK || result > SBS_RES_END)
+        return result;
+
+    va_list args;
+    va_start(args, result);
+    char *str = fl_cstring_vadup(reason[result], args);
+    va_end(args);
+
+    fputs(str, stderr);
+
+    fl_cstring_delete(str);
+
+    return result;
 }

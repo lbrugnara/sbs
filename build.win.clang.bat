@@ -52,6 +52,7 @@ if "%~1%"=="clean" (
 rd /s /q "obj\"
 rd /s /q "build\"
 md .\obj\debug\objects
+md .\obj\debug\build
 
 
 clang.exe %CFLAGS% -c .\src\objects\action.c  -o .\obj\debug\objects\action.o
@@ -65,7 +66,9 @@ clang.exe %CFLAGS% -c .\src\objects\target.c  -o .\obj\debug\objects\target.o
 clang.exe %CFLAGS% -c .\src\objects\toolchain.c  -o .\obj\debug\objects\toolchain.o
 clang.exe %CFLAGS% -c .\src\objects\file.c  -o .\obj\debug\objects\file.o
 
-clang.exe %CFLAGS% -c .\src\build.c  -o .\obj\debug\build.o
+clang.exe %CFLAGS% -c .\src\build\build.c  -o .\obj\debug\build\build.o
+clang.exe %CFLAGS% -c .\src\build\archive.c  -o .\obj\debug\build\archive.o
+clang.exe %CFLAGS% -c .\src\build\compile.c  -o .\obj\debug\build\compile.o
 clang.exe %CFLAGS% -c .\src\commands.c  -o .\obj\debug\commands.o
 clang.exe %CFLAGS% -c .\src\executor.c  -o .\obj\debug\executor.o
 clang.exe %CFLAGS% -c .\src\main.c  -o .\obj\debug\main.o
@@ -95,7 +98,9 @@ lld-link.exe ^
     obj\debug\objects\target.o ^
     obj\debug\objects\toolchain.o ^
     obj\debug\objects\file.o ^
-    obj\debug\build.o ^
+    obj\debug\build\build.o ^
+    obj\debug\build\archive.o ^
+    obj\debug\build\compile.o ^
     obj\debug\commands.o ^
     obj\debug\executor.o ^
     obj\debug\main.o ^

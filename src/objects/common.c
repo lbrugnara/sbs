@@ -362,3 +362,17 @@ char** sbs_common_parse_for_declaration(struct SbsParser *parser)
     return identifiers;
 }
 
+
+void sbs_common_extend_fl_array(char ***dest, char** src)
+{
+    size_t config_flags_length = fl_array_length(src);
+    size_t extended_flags_length = *dest ? fl_array_length(*dest) : 0;
+    size_t flags_length = config_flags_length + extended_flags_length;
+
+    *dest = *dest 
+        ? fl_array_resize(*dest, flags_length)
+        : fl_array_new(sizeof(char*), flags_length);
+
+    for (size_t i = extended_flags_length; i < flags_length; i++)
+        (*dest)[i] = src[i - extended_flags_length];
+}

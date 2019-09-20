@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "commands.h"
 #include "result.h"
-#include "build.h"
+#include "build/build.h"
 #include "objects/file.h"
 
 #define SBS_VERSION_MAJOR 0
@@ -153,7 +153,7 @@ static inline bool is_valid_flag(const char *arg, const char *flags[])
     {
         const char *flag = *flags;
         flags++;
-        if (flag && flm_cstring_equals(arg, flag))
+        if (flag && flm_cstring_equals_n(arg, flag, strlen(flag)))
             return true;
     }
     return false;
@@ -376,7 +376,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
     if (args.file && !fl_io_file_exists(args.file))
     {
         print_cli_header();
-        const char *error = sbs_explain_result(SBS_RES_INVALID_FILE, args.file);
+        const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, args.file);
         print_error("%s", error);
         fl_cstring_delete(error);
         return SBS_RES_INVALID_FILE;
@@ -446,6 +446,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
     for (size_t i=0; i < fl_array_length(keys); i++)
         fprintf(stdout, "%s\n", keys[i]);
     
+    fl_array_delete(keys);
     sbs_file_delete(file);
 
     return SBS_RES_OK;
@@ -461,7 +462,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
  *  env - Environment array
  *
  * Returns:
- *  enum SbsResult - Ok if the build process succeed. Error otherwise
+ *  enum SbsResult - Ok if the build process has been successful. Error otherwise
  *
  */
 enum SbsResult sbs_command_build(int argc, char **argv, char **env)
@@ -532,7 +533,7 @@ enum SbsResult sbs_command_build(int argc, char **argv, char **env)
     // If the help flag is present, show the help message and leave
     if (args.file && !fl_io_file_exists(args.file))
     {
-        const char *error = sbs_explain_result(SBS_RES_INVALID_FILE, args.file);
+        const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, args.file);
         print_error("%s", error);
         fl_cstring_delete(error);
         return SBS_RES_INVALID_FILE;

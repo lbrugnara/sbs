@@ -1,5 +1,4 @@
 env linux-bash-x64 {
-    type: bash,
     terminal: "/bin/bash"
     args: [ ],
     variables: [

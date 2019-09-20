@@ -27,6 +27,7 @@ enum SbsResult {
     SBS_RES_END
 };
 
-const char* sbs_explain_result(enum SbsResult result, ...);
+enum SbsResult sbs_result_print_reason(enum SbsResult result, ...);
+const char* sbs_result_get_reason(enum SbsResult result, ...);
 
 #endif /* SBS_RESULT_H */

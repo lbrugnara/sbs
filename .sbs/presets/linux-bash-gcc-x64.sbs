@@ -5,11 +5,11 @@ preset linux-bash-gcc-x64-debug {
     target: sbs-objects,
     actions: {
         before: [
-            `echo 'Running preset linux-wsl-gcc-x64'`,
+            `echo 'Running preset linux-bash-gcc-x64-debug'`,
             rm-objects
         ],
         after: [
-            `echo 'Finished running preset linux-wsl-gcc-x64'`
+            `echo 'Finished running preset linux-bash-gcc-x64-debug'`
         ]
     },
 }
@@ -21,11 +21,11 @@ preset linux-bash-gcc-x64-release {
     target: sbs-objects,
     actions: {
         before: [
-            `echo 'Running preset linux-wsl-gcc-x64'`,
+            `echo 'Running preset linux-bash-gcc-x64-release'`,
             rm-objects
         ],
         after: [
-            `echo 'Finished running preset linux-wsl-gcc-x64'`
+            `echo 'Finished running preset linux-bash-gcc-x64-release'`
         ]
     },
 }

@@ -13,8 +13,10 @@ struct SbsToolchain {
     const char *archiver;
 };
 
-void sbs_toolchain_map_init(FlHashtable *toolchains);
-void sbs_toolchain_free(struct SbsToolchain *toolchain);
 struct SbsToolchain* sbs_toolchain_parse(struct SbsParser *parser);
+void sbs_toolchain_free(struct SbsToolchain *toolchain);
+void sbs_toolchain_map_init(FlHashtable *toolchains);
+bool sbs_toolchain_inheritance_resolve(struct SbsToolchain *extended_toolchain, const char *toolchain_name, const FlHashtable toolchain_map);
+void sbs_toolchain_inheritance_clean(struct SbsToolchain *extended_toolchain);
 
 #endif /* SBS_TOOLCHAIN_H */

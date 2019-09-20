@@ -2,7 +2,7 @@ config clang-linux-base extends clang-base {
 
     # Specific attributes for the archive utility
     archive: {
-        extension: "",
+        extension: ".a",
         flags: [
         ]
     },

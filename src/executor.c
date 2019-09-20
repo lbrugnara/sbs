@@ -1,6 +1,4 @@
-#ifdef _WIN32
-    #define _XOPEN_SOURCE
-#endif
+#define _XOPEN_SOURCE
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -62,7 +60,7 @@ SbsExecutor sbs_executor_create(struct SbsEnv *env)
 {
     flm_assert(env, "Environment cannot be null");
 
-    enum SbsExecutorType type = env->type ? SBS_EXEC_CUSTOM : SBS_EXEC_SYSTEM;
+    enum SbsExecutorType type = env->type && !flm_cstring_equals("system", env->type) ? SBS_EXEC_CUSTOM : SBS_EXEC_SYSTEM;
 
     struct SbsExecutor *executor = NULL;
 

@@ -36,8 +36,10 @@ struct SbsConfiguration {
     struct SbsConfigExecutable executable;
 };
 
-void sbs_config_map_init(FlHashtable *config);
-void sbs_config_free(struct SbsConfiguration *config);
 struct SbsConfiguration* sbs_config_parse(struct SbsParser *parser);
+void sbs_config_free(struct SbsConfiguration *config);
+void sbs_config_map_init(FlHashtable *config_map);
+bool sbs_config_inheritance_resolve(struct SbsConfiguration *extended_config, const char *config_name, const FlHashtable config_map);
+void sbs_config_inheritance_clean(struct SbsConfiguration *extended_config);
 
 #endif /* SBS_CONFIGURATION_H */
