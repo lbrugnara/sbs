@@ -3,14 +3,15 @@
 #include "lexer.h"
 #include "parser.h"
 
-void sbs_parser_error(const struct SbsToken *token)
+void sbs_parser_error(const struct SbsToken *token, const char *message)
 {
-    flm_vexit(ERR_FATAL, "Unexpected token %s %.*s in line %ld, column %ld",
+    flm_vexit(ERR_FATAL, "Unexpected token %s %.*s in line %ld, column %ld %s",
         token_type_string[token->type],
         token->value.length,
         token->value.sequence,
         token->line, 
-        token->col);
+        token->col,
+        message);
 }
 
 bool sbs_parser_has_input(struct SbsParser *parser)

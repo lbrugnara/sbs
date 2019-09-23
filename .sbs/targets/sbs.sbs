@@ -8,5 +8,5 @@ executable sbs {
     objects: [
         "../fllib/build/debug/libfl.a",
         sbs-lib
-    ],
+    ]
 }

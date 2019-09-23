@@ -1,0 +1,31 @@
+preset win-cmd-cl-x64-debug {
+    env: win-cmd-x64,
+    toolchain: cl,
+    config: cl-debug,
+    target: sbs-objects,
+    actions: {
+        before: [
+            `echo 'Running preset win-cmd-cl-x64-debug'`,
+            rm-objects
+        ],
+        after: [
+            `echo 'Finished running preset win-cmd-cl-x64-debug'`
+        ]
+    },
+}
+
+preset win-cmd-cl-x64-release {
+    env: win-cmd-x64,
+    toolchain: cl,
+    config: cl-release,
+    target: sbs-objects,
+    actions: {
+        before: [
+            `echo 'Running preset win-cmd-cl-x64-release'`,
+            rm-objects
+        ],
+        after: [
+            `echo 'Finished running preset win-cmd-cl-x64-release'`
+        ]
+    },
+}

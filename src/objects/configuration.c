@@ -20,8 +20,8 @@ void sbs_config_free(struct SbsConfiguration *config)
     if (config->compile.include_dir_flag)
         fl_cstring_delete(config->compile.include_dir_flag);
 
-    if (config->compile.defines)
-        fl_array_delete_each(config->compile.defines, sbs_common_free_string);
+    if (config->compile.define_flag)
+        fl_cstring_delete(config->compile.define_flag);
 
     if (config->compile.extension)
         fl_cstring_delete(config->compile.extension);
@@ -116,8 +116,6 @@ struct SbsConfiguration* sbs_config_parse(struct SbsParser *parser)
 
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
-
         const struct SbsToken *token = sbs_parser_peek(parser);
 
         if (fl_slice_equals_sequence(&token->value, (FlByte*)"compile", 7))
@@ -140,21 +138,21 @@ struct SbsConfiguration* sbs_config_parse(struct SbsParser *parser)
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
                     configuration->compile.include_dir_flag = sbs_common_parse_string(parser);
                 }
+                else if (fl_slice_equals_sequence(&token->value, (FlByte*)"define_flag", 11))
+                {
+                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                    configuration->compile.define_flag = sbs_common_parse_string(parser);
+                }
                 else if (fl_slice_equals_sequence(&token->value, (FlByte*)"extension", 9))
                 {
                     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
                     configuration->compile.extension = sbs_common_parse_string(parser);
                 }
-                else if (fl_slice_equals_sequence(&token->value, (FlByte*)"defines", 7))
-                {
-                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                    configuration->compile.defines = sbs_common_parse_string_array(parser);
-                }
                 else
                 {
-                    sbs_parser_error(token);
+                    sbs_parser_error(token, "while parsing a configuration's compile block");
                 }
 
                 sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -240,6 +238,8 @@ struct SbsConfiguration* sbs_config_parse(struct SbsParser *parser)
 
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
+
+        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
 
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
@@ -296,8 +296,8 @@ bool sbs_config_inheritance_resolve(struct SbsConfiguration *extended_config, co
         if (ancestor->compile.include_dir_flag)
             extended_config->compile.include_dir_flag = ancestor->compile.include_dir_flag;
 
-        if (ancestor->compile.defines)
-            sbs_common_extend_fl_array(&(extended_config->compile.defines), ancestor->compile.defines);
+        if (ancestor->compile.define_flag)
+            extended_config->compile.define_flag = ancestor->compile.define_flag;
 
         // struct SbsConfigArchive archive;
         if (ancestor->archive.extension)
@@ -337,8 +337,8 @@ void sbs_config_inheritance_clean(struct SbsConfiguration *extended_config)
     if (extended_config->compile.flags)
         fl_array_delete(extended_config->compile.flags);
 
-    if (extended_config->compile.defines)
-        fl_array_delete(extended_config->compile.defines);
+    if (extended_config->compile.define_flag)
+        fl_cstring_delete(extended_config->compile.define_flag);
 
     if (extended_config->archive.flags)
         fl_array_delete(extended_config->archive.flags);

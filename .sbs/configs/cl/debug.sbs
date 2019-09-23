@@ -1,0 +1,8 @@
+config cl-debug extends cl-base {
+    compile: {
+        flags : [ 
+            "/DEBUG:FULL",
+            "/DFL_DEBUG"
+        ]
+    }
+}

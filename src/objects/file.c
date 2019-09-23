@@ -246,7 +246,7 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else
         {
-            sbs_parser_error(token);
+            sbs_parser_error(token, "while parsing the file");
         }
     }
 

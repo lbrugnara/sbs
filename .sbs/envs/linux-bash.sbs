@@ -2,13 +2,10 @@ env linux-bash-x64 {
     terminal: "/bin/bash"
     args: [ ],
     variables: [
-        "MY_ENV_VAR=myenvvar"
     ],
     # Scripts to run before doing anything
     actions: {
         before: [
-            `echo $MY_ENV_VAR`,
-            `gcc -v`
         ]
     }
 }

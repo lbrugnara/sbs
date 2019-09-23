@@ -3,6 +3,7 @@ include [
     "toolchains/clang.sbs",
     "toolchains/gcc.sbs",
     "toolchains/tcc.sbs",
+    "toolchains/cl.sbs",
 
     # environments
     "envs/linux-bash.sbs",
@@ -16,13 +17,16 @@ include [
     "actions/rm.sbs",    
 
     # configurations
-    "configs/clang-base.sbs",
-    "configs/clang-linux-base.sbs",
-    "configs/clang-linux-debug.sbs",
-    "configs/clang-linux-release.sbs",
-    "configs/clang-win-base.sbs",
-    "configs/clang-win-debug.sbs",
-    "configs/clang-win-release.sbs",
+    "configs/clang/base.sbs",
+    "configs/clang/linux-base.sbs",
+    "configs/clang/linux-debug.sbs",
+    "configs/clang/linux-release.sbs",
+    "configs/clang/win-base.sbs",
+    "configs/clang/win-debug.sbs",
+    "configs/clang/win-release.sbs",
+    "configs/cl/base.sbs",
+    "configs/cl/debug.sbs",
+    "configs/cl/release.sbs",
 
     # targets
     "targets/sbs-lib.sbs",
@@ -31,6 +35,8 @@ include [
 
     # presets
     "presets/linux-bash-gcc-x64.sbs",
+    "presets/win-cmd-cl-x64.sbs",
+    "presets/win-cmd-cl-x86.sbs",
     "presets/win-cmd-clang-x64.sbs",
     "presets/win-cmd-clang-x86.sbs",
     "presets/win-cmd-tcc-x64.sbs",

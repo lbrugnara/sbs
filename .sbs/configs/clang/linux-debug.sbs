@@ -1,8 +1,7 @@
 config clang-linux-debug extends clang-linux-base {
     compile: {
         flags : [ 
-            "-ggdb", 
-            "-DFL_DEBUG" 
+            "-ggdb"
         ]
     },
     archive: {

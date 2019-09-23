@@ -29,6 +29,9 @@ void sbs_target_free(struct SbsTarget *target)
             if (compile->includes)
                 fl_array_delete_each(compile->includes, sbs_common_free_string);
 
+            if (compile->defines)
+                fl_array_delete_each(compile->defines, sbs_common_free_string);
+
             break;
         }
         case SBS_TARGET_ARCHIVE:
@@ -97,6 +100,7 @@ void sbs_target_map_init(FlHashtable *targets)
  *      - sources: List of source files to compile
  *      - output_dir: Target's output dir
  *      - actions: Actions to run before and after the link process
+ *      - defines: List of C defines to include in the compile process
  *
  * Parameters:
  *  parser - Parser object
@@ -146,6 +150,16 @@ struct SbsTarget* sbs_target_parse_compile(struct SbsParser *parser)
         {
             target->base.actions = sbs_actions_parse(parser);
         }
+        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"defines", 7))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            target->defines = sbs_common_parse_string_array(parser);
+        }
+        else
+        {
+            sbs_parser_error(token, "while parsing a target compile block");
+        }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
@@ -187,8 +201,6 @@ struct SbsTarget* sbs_target_parse_archive(struct SbsParser *parser)
 
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
-
         const struct SbsToken *token = sbs_parser_peek(parser);
         //const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
@@ -214,6 +226,12 @@ struct SbsTarget* sbs_target_parse_archive(struct SbsParser *parser)
         {
             target->base.actions = sbs_actions_parse(parser);
         }
+        else
+        {
+            sbs_parser_error(token, "while parsing a target archive block");
+        }
+
+        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
 
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
@@ -253,8 +271,6 @@ struct SbsTarget* sbs_target_parse_shared(struct SbsParser *parser)
 
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
-
         const struct SbsToken *token = sbs_parser_peek(parser);
         //const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
@@ -280,6 +296,12 @@ struct SbsTarget* sbs_target_parse_shared(struct SbsParser *parser)
         {
             target->base.actions = sbs_actions_parse(parser);
         }
+        else
+        {
+            sbs_parser_error(token, "while parsing a target shared block");
+        }
+
+        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
 
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
@@ -319,8 +341,6 @@ struct SbsTarget* sbs_target_parse_executable(struct SbsParser *parser)
 
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
-
         const struct SbsToken *token = sbs_parser_peek(parser);
         //const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
@@ -346,6 +366,12 @@ struct SbsTarget* sbs_target_parse_executable(struct SbsParser *parser)
         {
             target->base.actions = sbs_actions_parse(parser);
         }
+        else
+        {
+            sbs_parser_error(token, "while parsing a target executable block");
+        }
+
+        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
 
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
@@ -384,7 +410,7 @@ struct SbsTarget* sbs_target_parse(struct SbsParser *parser)
         case SBS_TOKEN_EXECUTABLE:
             return sbs_target_parse_executable(parser);
         default:
-            sbs_parser_error(token);
+            sbs_parser_error(token, "while parsing a target block");
     }
 
     return NULL;

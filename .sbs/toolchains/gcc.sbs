@@ -1,12 +1,14 @@
-# A toolchain can contain a 'for' clause to restrict the environments where it can be used.
 toolchain gcc {
 
-    # Compiler specific attributes
-    compiler: "gcc",
-    
-    # Archiver specific attributes
-    archiver: "ar",
+    for linux-bash-x64, win-wsl-x64 {
+        compiler: "gcc",
+        archiver: "ar",
+        linker: "gcc"
+    },
 
-    # Linker specific attributes
-    linker: "gcc"
+    for win-cygwin-x64 {
+        compiler: "gcc.exe",
+        archiver: "ar.exe",
+        linker: "gcc.exe"
+    }
 }

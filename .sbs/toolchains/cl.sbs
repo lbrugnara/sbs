@@ -1,0 +1,7 @@
+toolchain cl {
+    for win-cmd-x64, win-cmd-x86, win-ps-x64, win-ps-x86 {
+        compiler: "cl",
+        archiver: "lib",
+        linker: "link"
+    }
+}

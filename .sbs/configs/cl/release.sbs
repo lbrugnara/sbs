@@ -1,0 +1,6 @@
+config cl-release extends cl-base {
+    compile: {
+        flags: [
+        ]
+    }
+}

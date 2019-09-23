@@ -22,6 +22,7 @@ struct SbsTargetCompile {
     struct SbsTarget base;
     char **includes;
     char **sources;
+    char **defines;
 };
 
 struct SbsTargetArchive {

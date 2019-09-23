@@ -7,8 +7,8 @@
 struct SbsConfigCompile {
     const char *extension;
     const char *include_dir_flag;
+    const char *define_flag;
     char **flags;
-    char **defines;
 };
 
 struct SbsConfigArchive {

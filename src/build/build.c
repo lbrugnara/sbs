@@ -160,6 +160,10 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     struct SbsTarget *target = fl_hashtable_get(file->targets, target_name);
     if (!target) 
         return sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
+
+    struct SbsToolchain *toolchain = fl_hashtable_get(file->toolchains, toolchain_name);
+    if (!toolchain) 
+        return sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchain_name);
     
 
     defer_scope 
@@ -171,14 +175,6 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
             defer_return sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
 
         defer_expression(sbs_config_inheritance_clean(&extended_config));
-
-        // Resolve the toolchain inheritance
-        struct SbsToolchain extended_toolchain = { 0 };
-
-        if (!sbs_toolchain_inheritance_resolve(&extended_toolchain, toolchain_name, file->toolchains))
-            defer_return sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchain_name);
-
-        defer_expression(sbs_toolchain_inheritance_clean(&extended_toolchain));
 
         // Create the executor
         SbsExecutor executor = sbs_executor_create(env);
@@ -202,7 +198,7 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
             .executor = executor, 
             .file = file, 
             .env = env, 
-            .toolchain = &extended_toolchain, 
+            .toolchain = toolchain,
             .target = target, 
             .config = &extended_config
         });

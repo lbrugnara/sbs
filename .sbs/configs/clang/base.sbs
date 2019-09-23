@@ -20,8 +20,6 @@ config clang-base {
             "-fstrict-aliasing",
             "-c ${source}",
             "-o ${object}"
-        ],
-        defines: [
         ]
     }
 }

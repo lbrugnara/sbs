@@ -4,6 +4,7 @@ config clang-linux-base extends clang-base {
     archive: {
         extension: ".a",
         flags: [
+            "rcs"
         ]
     },
 

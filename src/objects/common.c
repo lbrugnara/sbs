@@ -152,7 +152,7 @@ struct SbsStringOrId* sbs_common_parse_command_string_or_id_array(struct SbsPars
             }
             else
             {
-                sbs_parser_error(element);
+                sbs_parser_error(element, "while parsing an array of commands or IDs");
             }
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -220,7 +220,7 @@ struct SbsStringOrId* sbs_common_parse_string_or_id_array(struct SbsParser *pars
             }
             else
             {
-                sbs_parser_error(element);
+                sbs_parser_error(element, "while parsing an array of strings or IDs");
             }
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

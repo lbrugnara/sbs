@@ -10,7 +10,7 @@ struct SbsParser {
     size_t length;
 };
 
-void sbs_parser_error(const struct SbsToken *token);
+void sbs_parser_error(const struct SbsToken *token, const char *message);
 const struct SbsToken* sbs_parser_peek(struct SbsParser *parser);
 const struct SbsToken* sbs_parser_peek_at(struct SbsParser *parser, size_t offset);
 struct FlSlice sbs_parser_peek_many(struct SbsParser *parser, size_t n);

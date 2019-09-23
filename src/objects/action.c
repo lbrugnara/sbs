@@ -193,7 +193,7 @@ struct SbsActions sbs_actions_parse(struct SbsParser *parser)
         }
         else
         {
-            sbs_parser_error(token);
+            sbs_parser_error(token, "while parsing an action block");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

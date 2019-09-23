@@ -67,7 +67,7 @@ FlVector sbs_build_compile(struct SbsBuild *build)
     struct SbsTargetCompile *compile = (struct SbsTargetCompile*)build->target;
 
     // Collect all the compile flags in the configuration hierarchy
-    char *flags = fl_cstring_dup("");
+    char *flags = fl_cstring_new(0);
     if (build->config->compile.flags)
     {
         for (size_t i = 0; i < fl_array_length(build->config->compile.flags); i++)
@@ -78,7 +78,7 @@ FlVector sbs_build_compile(struct SbsBuild *build)
     }
 
     // Glue all the includes together
-    char *includes = fl_cstring_dup("");
+    char *includes = fl_cstring_new(0);
     for (size_t i = 0; i < fl_array_length(compile->includes); i++)
     {
         fl_cstring_append(&includes, build->config->compile.include_dir_flag);
@@ -121,19 +121,29 @@ FlVector sbs_build_compile(struct SbsBuild *build)
 
         if (needs_compile)
         {
-            // Replace the special ${source} and ${object} variables in the falgs
-            char *compilation_unit_flags = fl_cstring_replace(flags, "${source}", source_file);
-            compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${object}", object_file);
+            const char *compiler = sbs_toolchain_get_compiler(build->toolchain, build->env);
 
-            // Build the compile command
-            char *command = fl_cstring_vdup("%s %s %s", build->toolchain->compiler, includes, compilation_unit_flags);
+            if (compiler)
+            {
+                // Replace the special ${source} and ${object} variables in the falgs
+                char *compilation_unit_flags = fl_cstring_replace(flags, "${source}", source_file);
+                compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${object}", object_file);
 
-            // Exec
-            success = sbs_executor_run_command(build->executor, command) && success;
-            
-            // clean
-            fl_cstring_delete(command);
-            fl_cstring_delete(compilation_unit_flags);
+                // Build the compile command
+                char *command = fl_cstring_vdup("%s %s %s", compiler, includes, compilation_unit_flags);
+
+                // Exec
+                success = sbs_executor_run_command(build->executor, command) && success;
+                
+                // clean
+                fl_cstring_delete(command);
+                fl_cstring_delete(compilation_unit_flags);
+            }
+            else
+            {
+                success = false;
+                fprintf(stdout, "Toolchain '%s' does not have a compiler executable defined for environment '%s'", build->toolchain->name, build->env->name);
+            }
         }
 
         fl_cstring_delete(source_file);

@@ -1,12 +1,13 @@
-# A toolchain can contain a 'for' clause to restrict the environments where it can be used.
 toolchain clang {
 
-    # Compiler specific attributes
     compiler: "clang",
-    
-    # Archiver specific attributes
-    archiver: "llvm-lib",
-
-    # Linker specific attributes
     linker: "lld-link"
+
+    for win-cmd-x64, win-cmd-x86, win-ps-x64, win-ps-x86, win-cygwin-x64 {
+        archiver: "llvm-lib.exe"
+    },
+
+    for win-wsl-x64, linux-bash-x64 {
+        archiver: "ar"
+    }
 }
