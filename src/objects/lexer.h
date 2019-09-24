@@ -1,5 +1,5 @@
-#ifndef SBS_LEXER_H
-#define SBS_LEXER_H
+#ifndef SBS_OBJECT_LEXER_H
+#define SBS_OBJECT_LEXER_H
 
 #include <fllib.h>
 
@@ -59,4 +59,4 @@ struct SbsToken sbs_lexer_next(struct SbsLexer *lexer);
 
 struct SbsToken* sbs_lexer_tokenize(struct SbsLexer *lexer);
 
-#endif /* SBS_LEXER_H */
+#endif /* SBS_OBJECT_LEXER_H */

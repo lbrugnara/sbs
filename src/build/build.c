@@ -5,6 +5,7 @@
 #include "archive.h"
 #include "compile.h"
 #include "../executor.h"
+#include "../actions/actions.h"
 #include "../objects/file.h"
 #include "../objects/action.h"
 #include "../objects/common.h"
@@ -17,81 +18,36 @@
 #include "../objects/parser.h"
 #include "../objects/file.h"
 
-enum ActionType {
-    ACTION_BEFORE,
-    ACTION_AFTER
-};
 
-static bool run_actions(SbsExecutor executor, const struct SbsFile *file, const struct SbsEnv *env, struct SbsStringOrId *actions)
+static enum SbsResult run_build_actions(enum ActionType type, SbsExecutor executor, const struct SbsFile *file, struct SbsEnv *env, struct SbsTarget *target, struct SbsPreset *preset)
 {
-    if (!actions)
-        return true;
-
-    size_t nactions = fl_array_length(actions);
-    for (size_t j=0; j < nactions; j++)
+    if (type == ACTION_BEFORE)
     {
-        if (actions[j].type == SBS_IDENTIFIER)
-        {
-            struct SbsAction *action = fl_hashtable_get(file->actions, actions[j].value);
+        if (!sbs_actions_preset_run(ACTION_BEFORE, executor, file, env, preset))
+            return SBS_RES_ACTION_FAILED;
 
-            if (!action || !action->commands)
-                continue;
+        if (!sbs_actions_env_run(ACTION_BEFORE, executor, file, env))
+            return SBS_RES_ACTION_FAILED;
 
-            size_t countOfCommands = fl_array_length(action->commands);
-            for (size_t k=0; k < countOfCommands; k++)
-            {
-                struct SbsActionCommand command = action->commands[k];
-
-                if (command.for_envs)
-                {
-                    bool should_run = false;
-                    for (size_t i=0; i < fl_array_length(command.for_envs); i++)
-                    {
-                        if (flm_cstring_equals(command.for_envs[i], env->name))
-                        {
-                            should_run = true;
-                            break;
-                        }
-                    }
-
-                    if (!should_run)
-                        continue;
-                }
-
-                if (command.commands)
-                {
-                    for (size_t i=0; i < fl_array_length(command.commands); i++)
-                    {
-                        if (!sbs_executor_run_command(executor, command.commands[i]))
-                            return false;
-                    }
-                }
-            }
-        }
-        else
-        {
-            if (!sbs_executor_run_command(executor, actions[j].value))
-                return false;
-        }
+        if (!sbs_actions_target_run(ACTION_BEFORE, executor, file, env, target))
+            return SBS_RES_ACTION_FAILED;
     }
+    else
+    {
+        if (!sbs_actions_target_run(ACTION_AFTER, executor, file, env, target))
+            return SBS_RES_ACTION_FAILED;
 
-    return true;
+        if (!sbs_actions_env_run(ACTION_AFTER, executor, file, env))
+            return SBS_RES_ACTION_FAILED;
+        
+        if (!sbs_actions_preset_run(ACTION_AFTER, executor, file, env, preset))
+            return SBS_RES_ACTION_FAILED;
+    }
+    
+    return SBS_RES_OK;
 }
 
-bool run_env_actions(SbsExecutor executor, const struct SbsFile *file, const struct SbsEnv *env, enum ActionType type)
-{
-    struct SbsStringOrId *actions = type == ACTION_BEFORE ? env->actions.before : env->actions.after;
-    return run_actions(executor, file, env, actions);
-}
-
-bool run_target_actions(SbsExecutor executor, const struct SbsFile *file, struct SbsEnv *env, struct SbsTarget *target, enum ActionType type)
-{
-    struct SbsStringOrId *actions = type == ACTION_BEFORE ? target->actions.before : target->actions.after;
-    return run_actions(executor, file, env, actions);
-}
-
-
-FlVector sbs_build_target(struct SbsBuild *build)
+char** sbs_build_target(struct SbsBuild *build)
 {
     if (build->target->output_dir && !fl_io_file_exists(build->target->output_dir))
     {
@@ -109,7 +65,7 @@ FlVector sbs_build_target(struct SbsBuild *build)
     }
     else if (build->target->type == SBS_TARGET_EXECUTABLE)
     {
-        struct SbsTargetExecutable *exe = (struct SbsTargetExecutable*)build->target;
+        struct SbsTargetExecutableNode *exe = (struct SbsTargetExecutableNode*)build->target;
     }
 
     return NULL;
@@ -157,42 +113,36 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     if (!env) 
         return sbs_result_print_reason(SBS_RES_INVALID_ENV, env_name);
 
-    struct SbsTarget *target = fl_hashtable_get(file->targets, target_name);
-    if (!target) 
-        return sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
-
     struct SbsToolchainSection *toolchain = fl_hashtable_get(file->toolchains, toolchain_name);
     if (!toolchain) 
         return sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchain_name);
     
-    // The config needs to be processed and deleted after its usage
-    struct SbsConfigSection *config = sbs_config_resolve(file->configurations, configuration_name, env_name);
-    if (!config)
-        return sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
+    defer_scope {
 
-    defer_scope 
-    {
-        defer_expression(sbs_config_delete(config));
+        struct SbsTarget *target = sbs_target_resolve(target_name, file->targets, env_name);
+        if (!target) 
+            return sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
+
+        defer_expression(sbs_target_release(target));
+
+        struct SbsConfiguration *config = sbs_config_resolve(configuration_name, file->configurations, env_name);
+        if (!config)
+            defer_return sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
+
+        defer_expression(sbs_config_release(config));
 
         // Create the executor
         SbsExecutor executor = sbs_executor_create(env);
         defer_expression(sbs_executor_delete(executor));
 
-        // If we are using a preset, check if there are "before" actions to run
-        if (preset && preset->actions.before)
-            if (!run_actions(executor, file, env, preset->actions.before))
-                defer_return SBS_RES_ACTION_FAILED;
+        enum SbsResult actions_result = SBS_RES_OK;
 
-        // Run environment's "before" actions if present
-        if (!run_env_actions(executor, file, env, ACTION_BEFORE))
-            defer_return SBS_RES_ACTION_FAILED;
-
-        // Run target's "before" actions
-        if (!run_target_actions(executor, file, env, target, ACTION_BEFORE))
-            defer_return SBS_RES_ACTION_FAILED;
+        actions_result = run_build_actions(ACTION_BEFORE, executor, file, env, target, preset);
+        if (actions_result != SBS_RES_OK)
+            defer_return actions_result;
 
         // Run the build
-        FlVector vector = sbs_build_target(&(struct SbsBuild) {
+        char **target_output = sbs_build_target(&(struct SbsBuild) {
             .executor = executor, 
             .file = file, 
             .env = env, 
@@ -200,21 +150,13 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
             .target = target, 
             .config = config
         });
-        if (vector != NULL)
-            defer_expression(fl_vector_delete(vector));
+        if (target_output != NULL)
+            defer_expression(fl_array_delete_each(target_output, sbs_common_free_string));
 
-        // Run target's "after" actions if the target has been successful
-        if (vector != NULL && !run_target_actions(executor, file, env, target, ACTION_AFTER))
-            defer_return SBS_RES_ACTION_FAILED;
-
-        // Run environment's "after" actions if present
-        if (!run_env_actions(executor, file, env, ACTION_AFTER))
-            defer_return SBS_RES_ACTION_FAILED;        
-
-        // If we are using a preset, check if there are "after" actions to run
-        if (preset && preset->actions.after)
-            if (!run_actions(executor, file, env, preset->actions.after))
-                defer_return SBS_RES_ACTION_FAILED;
+        // We run the target actions only if the build has been successful
+        actions_result = run_build_actions(ACTION_AFTER, executor, file, env, target_output != NULL ? target : NULL, preset);
+        if (actions_result != SBS_RES_OK)
+            defer_return actions_result;
     }
 
     return SBS_RES_OK;

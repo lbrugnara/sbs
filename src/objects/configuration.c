@@ -5,7 +5,7 @@
 
 #define BASE_CONFIG_KEY "#base"
 
-void sbs_config_info_free(struct SbsConfigEntry *config)
+void sbs_config_entry_free(struct SbsConfigEntry *config)
 {
     if (config->compile.flags)
         fl_array_delete_each(config->compile.flags, sbs_common_free_string);
@@ -77,7 +77,7 @@ void sbs_config_free(struct SbsConfigSection *configuration)
             if (configurations[i] == NULL)
                 continue;
 
-            sbs_config_info_free(configurations[i]);
+            sbs_config_entry_free(configurations[i]);
         }
 
         fl_array_delete(configurations);
@@ -306,10 +306,10 @@ struct SbsConfigSection* sbs_config_parse(struct SbsParser *parser)
         .key_cleaner = fl_container_cleaner_pointer
     });
 
-    struct SbsConfigEntry *base_config_info = fl_malloc(sizeof(struct SbsConfigEntry));
+    struct SbsConfigEntry *base_config_entry = fl_malloc(sizeof(struct SbsConfigEntry));
 
     // Use the special key #base for the default config
-    fl_hashtable_add(configuration->entries, BASE_CONFIG_KEY, base_config_info);
+    fl_hashtable_add(configuration->entries, BASE_CONFIG_KEY, base_config_entry);
 
     // Consume 'configuration'
     sbs_parser_consume(parser, SBS_TOKEN_CONFIG);
@@ -353,7 +353,7 @@ struct SbsConfigSection* sbs_config_parse(struct SbsParser *parser)
         }
         else
         {
-            parse_config_body(parser, base_config_info);
+            parse_config_body(parser, base_config_entry);
         }        
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -362,115 +362,6 @@ struct SbsConfigSection* sbs_config_parse(struct SbsParser *parser)
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
     return configuration;
-}
-
-
-struct SbsConfigCompile* sbs_config_compile_get(const struct SbsConfigSection *config, const char *env_name)
-{
-    struct SbsConfigEntry *base_config_info = fl_hashtable_get(config->entries, BASE_CONFIG_KEY);
-
-    struct SbsConfigCompile *compile = fl_malloc(sizeof(struct SbsConfigCompile));
-
-    compile->extension = base_config_info->compile.extension ? fl_cstring_dup(base_config_info->compile.extension) : NULL;
-    compile->define_flag = base_config_info->compile.define_flag ? fl_cstring_dup(base_config_info->compile.define_flag) : NULL;
-    compile->include_dir_flag = base_config_info->compile.include_dir_flag ? fl_cstring_dup(base_config_info->compile.include_dir_flag) : NULL;
-    compile->flags = NULL;
-
-    if (base_config_info->compile.flags)
-        sbs_common_extend_fl_array(&(compile->flags), base_config_info->compile.flags);
-
-    if (!fl_hashtable_has_key(config->entries, env_name))
-        return compile;
-
-    struct SbsConfigEntry *env_config_info = fl_hashtable_get(config->entries, BASE_CONFIG_KEY);
-
-    if (env_config_info->compile.extension)
-    {
-        if (compile->extension != NULL)
-            fl_cstring_delete(compile->extension);
-
-        compile->extension = fl_cstring_dup(env_config_info->compile.extension);
-    }
-
-    if (env_config_info->compile.define_flag)
-    {
-        if (compile->define_flag != NULL)
-            fl_cstring_delete(compile->define_flag);
-
-        compile->define_flag = fl_cstring_dup(env_config_info->compile.define_flag);
-    }
-
-    if (env_config_info->compile.include_dir_flag)
-    {
-        if (compile->include_dir_flag != NULL)
-            fl_cstring_delete(compile->include_dir_flag);
-
-        compile->include_dir_flag = fl_cstring_dup(env_config_info->compile.include_dir_flag);
-    }
-
-    if (env_config_info->compile.flags)
-        sbs_common_extend_fl_array(&(compile->flags), env_config_info->compile.flags);
-
-    return compile;
-}
-
-void sbs_config_compile_free(struct SbsConfigCompile *compile)
-{
-    if (compile->extension)
-        fl_cstring_delete(compile->extension);
-
-    if (compile->define_flag)
-        fl_cstring_delete(compile->define_flag);
-
-    if (compile->include_dir_flag)
-        fl_cstring_delete(compile->include_dir_flag);
-
-    if (compile->flags)
-        fl_array_delete(compile->flags);
-
-    fl_free(compile);
-}
-
-struct SbsConfigArchive* sbs_config_archive_get(const struct SbsConfigSection *config, const char *env_name)
-{
-    struct SbsConfigEntry *base_config_info = fl_hashtable_get(config->entries, BASE_CONFIG_KEY);
-
-    struct SbsConfigArchive *archive = fl_malloc(sizeof(struct SbsConfigArchive));
-
-    archive->extension = base_config_info->archive.extension ? fl_cstring_dup(base_config_info->archive.extension) : NULL;
-    archive->flags = NULL;
-
-    if (base_config_info->archive.flags)
-        sbs_common_extend_fl_array(&(archive->flags), base_config_info->archive.flags);
-
-    if (!fl_hashtable_has_key(config->entries, env_name))
-        return archive;
-
-    struct SbsConfigEntry *env_config_info = fl_hashtable_get(config->entries, BASE_CONFIG_KEY);
-
-    if (env_config_info->archive.extension)
-    {
-        if (archive->extension != NULL)
-            fl_cstring_delete(archive->extension);
-
-        archive->extension = fl_cstring_dup(env_config_info->archive.extension);
-    }
-
-    if (env_config_info->archive.flags)
-        sbs_common_extend_fl_array(&(archive->flags), env_config_info->archive.flags);
-
-    return archive;
-}
-
-void sbs_config_archive_free(struct SbsConfigArchive *archive)
-{
-    if (archive->extension)
-        fl_cstring_delete(archive->extension);
-
-    if (archive->flags)
-        fl_array_delete(archive->flags);
-
-    fl_free(archive);
 }
 
 static void find_ancestors(const struct SbsConfigSection *config, FlList ancestors, FlHashtable config_map, const char *env_name)
@@ -494,102 +385,98 @@ static void find_ancestors(const struct SbsConfigSection *config, FlList ancesto
         find_ancestors(fl_hashtable_get(config_map, config->extends[i]), ancestors, config_map, env_name);
 }
 
-struct SbsConfigSection* sbs_config_resolve(FlHashtable config_map, const char *config_name, const char *env_name)
+static void merge_compile_config(struct SbsConfigCompile *extend, const struct SbsConfigCompile *source)
 {
+    if (source->extension)
+        extend->extension = source->extension;
+    
+    if (source->flags)
+        sbs_common_extend_fl_array(&extend->flags, source->flags);
+
+    if (source->include_dir_flag)
+        extend->include_dir_flag = source->include_dir_flag;
+
+    if (source->define_flag)
+        extend->define_flag = source->define_flag;
+}
+
+static void merge_archive_config(struct SbsConfigArchive *extend, const struct SbsConfigArchive *source)
+{
+    if (source->extension)
+        extend->extension = source->extension;
+
+    if (source->flags)
+        sbs_common_extend_fl_array(&extend->flags, source->flags);   
+}
+
+static void merge_shared_config(struct SbsConfigShared *extend, const struct SbsConfigShared *source)
+{
+    if (source->extension)
+        extend->extension = source->extension;
+
+    if (source->flags)
+        sbs_common_extend_fl_array(&extend->flags, source->flags);   
+}
+
+static void merge_executable_config(struct SbsConfigExecutable *extend, const struct SbsConfigExecutable *source)
+{
+    if (source->extension)
+        extend->extension = source->extension;
+
+    if (source->flags)
+        sbs_common_extend_fl_array(&extend->flags, source->flags);   
+}
+
+struct SbsConfiguration* sbs_config_resolve(const char *config_name, FlHashtable config_map, const char *env_name)
+{    
     const struct SbsConfigSection *config = fl_hashtable_get(config_map, config_name);
 
     if (!config)
         return NULL;
 
-    struct SbsConfigSection *extended_config = fl_malloc(sizeof(struct SbsConfigSection));
-
-    extended_config->entries = fl_hashtable_new_args((struct FlHashtableArgs) {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer
-    });
-
-    struct SbsConfigEntry *base_config_info = fl_malloc(sizeof(struct SbsConfigEntry));
-    fl_hashtable_add(extended_config->entries, BASE_CONFIG_KEY, base_config_info);
-
-    // Name will be always the targeted config
+    struct SbsConfiguration *extended_config = fl_malloc(sizeof(struct SbsConfiguration));
     extended_config->name = config->name;
 
-    FlList ancestors = fl_list_new();
+    FlList hierarchy = fl_list_new();
 
     // Using prepend we will keep the list ordered
     if (fl_hashtable_has_key(config->entries, env_name))
-        fl_list_prepend(ancestors, fl_hashtable_get(config->entries, env_name));
-    fl_list_prepend(ancestors, fl_hashtable_get(config->entries, BASE_CONFIG_KEY));
-    find_ancestors(config, ancestors, config_map, env_name);
+        fl_list_prepend(hierarchy, fl_hashtable_get(config->entries, env_name));
+    fl_list_prepend(hierarchy, fl_hashtable_get(config->entries, BASE_CONFIG_KEY));
+    find_ancestors(config, hierarchy, config_map, env_name);
 
-    struct FlListNode *node = fl_list_head(ancestors);
+    struct FlListNode *node = fl_list_head(hierarchy);
     while (node)
     {
         const struct SbsConfigEntry *ancestor = (const struct SbsConfigEntry*)node->value;
 
         // struct SbsConfigCompile compile;
-        if (ancestor->compile.extension)
-            base_config_info->compile.extension = ancestor->compile.extension;
-        
-        if (ancestor->compile.flags)
-            sbs_common_extend_fl_array(&(base_config_info->compile.flags), ancestor->compile.flags);
-
-        if (ancestor->compile.include_dir_flag)
-            base_config_info->compile.include_dir_flag = ancestor->compile.include_dir_flag;
-
-        if (ancestor->compile.define_flag)
-            base_config_info->compile.define_flag = ancestor->compile.define_flag;
-
-        // struct SbsConfigArchive archive;
-        if (ancestor->archive.extension)
-            base_config_info->archive.extension = ancestor->archive.extension;
-
-        if (ancestor->archive.flags)
-            sbs_common_extend_fl_array(&(base_config_info->archive.flags), ancestor->archive.flags);
-
-        // struct SbsConfigShared shared;
-        if (ancestor->shared.extension)
-            base_config_info->shared.extension = ancestor->shared.extension;
-
-        if (ancestor->shared.flags)
-            sbs_common_extend_fl_array(&(base_config_info->shared.flags), ancestor->shared.flags);
-
-        // struct SbsConfigExecutable executable;
-        if (ancestor->executable.extension)
-            base_config_info->executable.extension = ancestor->executable.extension;
-
-        if (ancestor->executable.flags)
-            sbs_common_extend_fl_array(&(base_config_info->executable.flags), ancestor->executable.flags);
+        merge_compile_config(&extended_config->compile, &ancestor->compile);
+        merge_archive_config(&extended_config->archive, &ancestor->archive);
+        merge_shared_config(&extended_config->shared, &ancestor->shared);
+        merge_executable_config(&extended_config->executable, &ancestor->executable);
 
         node = node->next;
     }
 
-    fl_list_delete(ancestors);
+    fl_list_delete(hierarchy);
 
     return extended_config;
 }
 
-void sbs_config_delete(struct SbsConfigSection *extended_config)
+void sbs_config_release(struct SbsConfiguration *extended_config)
 {
-    struct SbsConfigEntry *config_info = fl_hashtable_get(extended_config->entries, BASE_CONFIG_KEY);
+    if (extended_config->compile.flags)
+        fl_array_delete(extended_config->compile.flags);
 
-    if (config_info->compile.flags)
-        fl_array_delete(config_info->compile.flags);
+    if (extended_config->archive.flags)
+        fl_array_delete(extended_config->archive.flags);
 
-    if (config_info->archive.flags)
-        fl_array_delete(config_info->archive.flags);
+    if (extended_config->shared.flags)
+        fl_array_delete(extended_config->shared.flags);
 
-    if (config_info->shared.flags)
-        fl_array_delete(config_info->shared.flags);
-
-    if (config_info->executable.flags)
-        fl_array_delete(config_info->executable.flags);
-
-    fl_free(config_info);
-
-    fl_hashtable_delete(extended_config->entries);
+    if (extended_config->executable.flags)
+        fl_array_delete(extended_config->executable.flags);
 
     fl_free(extended_config);
 }

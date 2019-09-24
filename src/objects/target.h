@@ -1,6 +1,7 @@
-#ifndef SBS_TARGET_H
-#define SBS_TARGET_H
+#ifndef SBS_OBJECT_TARGET_H
+#define SBS_OBJECT_TARGET_H
 
+#include <fllib.h>
 #include "common.h"
 #include "action.h"
 
@@ -11,6 +12,42 @@ enum SbsTargetType {
     SBS_TARGET_EXECUTABLE,
 };
 
+struct SbsTargetSection {
+    enum SbsTargetType type;
+    const char *name;
+    FlHashtable entries;
+};
+
+struct SbsTargetNode {
+    struct SbsActions actions;
+    const char *output_dir;
+};
+
+struct SbsTargetCompileNode {
+    struct SbsTargetNode base;
+    char **includes;
+    char **sources;
+    char **defines;
+};
+
+struct SbsTargetArchiveNode {
+    struct SbsTargetNode base;
+    const char *output_name;
+    struct SbsStringOrId *objects;
+};
+
+struct SbsTargetSharedNode {
+    struct SbsTargetNode base;
+    const char *output_name;
+    struct SbsStringOrId *objects;
+};
+
+struct SbsTargetExecutableNode {
+    struct SbsTargetNode base;
+    const char *output_name;
+    struct SbsStringOrId *objects;
+};
+
 struct SbsTarget {
     enum SbsTargetType type;
     const char *name;
@@ -19,32 +56,47 @@ struct SbsTarget {
 };
 
 struct SbsTargetCompile {
-    struct SbsTarget base;
+    enum SbsTargetType type;
+    const char *name;
+    struct SbsActions actions;
+    const char *output_dir;
     char **includes;
     char **sources;
     char **defines;
 };
 
 struct SbsTargetArchive {
-    struct SbsTarget base;
+    enum SbsTargetType type;
+    const char *name;
+    struct SbsActions actions;
+    const char *output_dir;
     const char *output_name;
     struct SbsStringOrId *objects;
 };
 
 struct SbsTargetShared {
-    struct SbsTarget base;
+    enum SbsTargetType type;
+    const char *name;
+    struct SbsActions actions;
+    const char *output_dir;
     const char *output_name;
     struct SbsStringOrId *objects;
 };
 
 struct SbsTargetExecutable {
-    struct SbsTarget base;
+    enum SbsTargetType type;
+    const char *name;
+    struct SbsActions actions;
+    const char *output_dir;
     const char *output_name;
     struct SbsStringOrId *objects;
 };
 
 void sbs_target_map_init(FlHashtable *targets);
-void sbs_target_free(struct SbsTarget *target);
-struct SbsTarget* sbs_target_parse(struct SbsParser *parser);
+void sbs_target_free(struct SbsTargetSection *target);
+struct SbsTargetSection* sbs_target_parse(struct SbsParser *parser);
 
-#endif /* SBS_TARGET_H */
+struct SbsTarget* sbs_target_resolve(const char *target_name, FlHashtable target_map, const char *env_name);
+void sbs_target_release(struct SbsTarget *target);
+
+#endif /* SBS_OBJECT_TARGET_H */

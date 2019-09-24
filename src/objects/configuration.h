@@ -1,5 +1,5 @@
-#ifndef SBS_CONFIGURATION_H
-#define SBS_CONFIGURATION_H
+#ifndef SBS_OBJECT_CONFIGURATION_H
+#define SBS_OBJECT_CONFIGURATION_H
 
 #include <fllib.h>
 #include "action.h"
@@ -40,16 +40,19 @@ struct SbsConfigSection {
     FlHashtable entries;
 };
 
+struct SbsConfiguration {
+    const char *name;
+    struct SbsConfigCompile compile;
+    struct SbsConfigArchive archive;
+    struct SbsConfigShared shared;
+    struct SbsConfigExecutable executable;
+};
+
 struct SbsConfigSection* sbs_config_parse(struct SbsParser *parser);
 void sbs_config_free(struct SbsConfigSection *config);
 void sbs_config_map_init(FlHashtable *config_map);
 
-struct SbsConfigSection* sbs_config_resolve(FlHashtable config_map, const char *config_name, const char *env_name);
-void sbs_config_delete(struct SbsConfigSection *config);
+struct SbsConfiguration* sbs_config_resolve(const char *config_name, FlHashtable config_map, const char *env_name);
+void sbs_config_release(struct SbsConfiguration *config);
 
-struct SbsConfigArchive* sbs_config_archive_get(const struct SbsConfigSection *config, const char *env_name);
-void sbs_config_archive_free(struct SbsConfigArchive *archive);
-struct SbsConfigCompile* sbs_config_compile_get(const struct SbsConfigSection *config, const char *env_name);
-void sbs_config_compile_free(struct SbsConfigCompile *compile);
-
-#endif /* SBS_CONFIGURATION_H */
+#endif /* SBS_OBJECT_CONFIGURATION_H */

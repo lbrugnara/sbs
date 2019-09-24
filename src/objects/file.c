@@ -126,7 +126,7 @@ static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *fi
         char *filename = fl_cstring_vdup("%s%s", current_dir, includes[i]);
 
         // Parse the included file
-        struct SbsFile *included_file = sbs_file_parse(filename);
+         struct SbsFile *included_file = sbs_file_parse(filename);
 
         // Merge the included build file into our main build file
         merge_into_file(file, included_file);
@@ -186,11 +186,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_COMPILE || token->type == SBS_TOKEN_ARCHIVE || token->type == SBS_TOKEN_SHARED || token->type == SBS_TOKEN_EXECUTABLE)
         {
-            const struct SbsTarget *target = sbs_target_parse(parser);
+            const struct SbsTargetSection *target = sbs_target_parse(parser);
             if (fl_hashtable_has_key(file->targets, target->name))
             {
                 printf("Target %s cannot be redefined\n", target->name);
-                sbs_target_free((struct SbsTarget*)target);
+                sbs_target_free((struct SbsTargetSection*)target);
                 success = false;
                 break;
             }

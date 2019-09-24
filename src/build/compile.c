@@ -2,7 +2,7 @@
 
 #define SBS_DIR_SEPARATOR "/"
 
-static char* build_object_filename(const struct SbsBuild *build, struct SbsConfigCompile *config_compile, const char *source_file, const char *output_dir)
+static char* build_object_filename(const struct SbsBuild *build, const struct SbsConfigCompile *config_compile, const char *source_file, const char *output_dir)
 {
     // We need to build the object filename using the source filename for it
     //  ex: main.c -> main.o
@@ -62,10 +62,10 @@ static char* build_object_filename(const struct SbsBuild *build, struct SbsConfi
     return object_file;
 }
 
-FlVector sbs_build_compile(struct SbsBuild *build)
+char** sbs_build_compile(struct SbsBuild *build)
 {
     struct SbsTargetCompile *target_compile = (struct SbsTargetCompile*)build->target;
-    struct SbsConfigCompile *config_compile = sbs_config_compile_get(build->config, build->env->name);
+    const struct SbsConfigCompile *config_compile = &build->config->compile;
 
     // Collect all the compile flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
@@ -87,13 +87,13 @@ FlVector sbs_build_compile(struct SbsBuild *build)
         fl_cstring_append(&includes, " ");
     }
 
+    size_t n_sources = fl_array_length(target_compile->sources);
     // Keep track of the objects
-    FlVector objects = fl_vector_new(10, fl_container_cleaner_pointer);
-
-    bool success = true;
+    char **objects = fl_array_new(sizeof(char*), n_sources);
 
     // Compile source objects
-    for (size_t i = 0; success && i < fl_array_length(target_compile->sources); i++)
+    bool success = true;
+    for (size_t i = 0; success && i < n_sources; i++)
     {
         // Unify path separators for the source file
         char *source_file = fl_cstring_replace(target_compile->sources[i], "\\", SBS_DIR_SEPARATOR);
@@ -103,10 +103,10 @@ FlVector sbs_build_compile(struct SbsBuild *build)
         fl_io_file_get_modified_timestamp(source_file, &source_timestamp);
 
         // Get the object file path
-        char *object_file = build_object_filename(build, config_compile, source_file, target_compile->base.output_dir);
+        char *object_file = build_object_filename(build, config_compile, source_file, target_compile->output_dir);
 
         // Add the object_file to the list of objects (no need to free object_file, it outlives this function)
-        fl_vector_add(objects, object_file);
+        objects[i] = object_file;
 
         // Check if the source file is older than the object file, in that case skip the compilation
         bool needs_compile = true;
@@ -152,11 +152,10 @@ FlVector sbs_build_compile(struct SbsBuild *build)
 
     fl_cstring_delete(includes);
     fl_cstring_delete(flags);
-    sbs_config_compile_free(config_compile);
 
     if (!success)
     {
-        fl_vector_delete(objects);
+        fl_array_delete_each(objects, sbs_common_free_string);
         return NULL;
     }
 

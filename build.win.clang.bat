@@ -53,6 +53,7 @@ rd /s /q "obj\"
 rd /s /q "build\"
 md .\obj\debug\objects
 md .\obj\debug\build
+md .\obj\debug\actions
 
 
 clang.exe %CFLAGS% -c .\src\objects\action.c  -o .\obj\debug\objects\action.o
@@ -65,7 +66,7 @@ clang.exe %CFLAGS% -c .\src\objects\preset.c  -o .\obj\debug\objects\preset.o
 clang.exe %CFLAGS% -c .\src\objects\target.c  -o .\obj\debug\objects\target.o
 clang.exe %CFLAGS% -c .\src\objects\toolchain.c  -o .\obj\debug\objects\toolchain.o
 clang.exe %CFLAGS% -c .\src\objects\file.c  -o .\obj\debug\objects\file.o
-
+clang.exe %CFLAGS% -c .\src\actions\actions.c  -o .\obj\debug\actions\actions.o
 clang.exe %CFLAGS% -c .\src\build\build.c  -o .\obj\debug\build\build.o
 clang.exe %CFLAGS% -c .\src\build\archive.c  -o .\obj\debug\build\archive.o
 clang.exe %CFLAGS% -c .\src\build\compile.c  -o .\obj\debug\build\compile.o
@@ -98,6 +99,7 @@ lld-link.exe ^
     obj\debug\objects\target.o ^
     obj\debug\objects\toolchain.o ^
     obj\debug\objects\file.o ^
+    obj\debug\actions\actions.o ^
     obj\debug\build\build.o ^
     obj\debug\build\archive.o ^
     obj\debug\build\compile.o ^

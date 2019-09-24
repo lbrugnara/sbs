@@ -1,5 +1,5 @@
-#ifndef SBS_PRESET_H
-#define SBS_PRESET_H
+#ifndef SBS_OBJECT_PRESET_H
+#define SBS_OBJECT_PRESET_H
 
 #include "action.h"
 
@@ -16,4 +16,4 @@ void sbs_preset_map_init(FlHashtable *presets);
 void sbs_preset_free(struct SbsPreset *preset);
 struct SbsPreset* sbs_preset_parse(struct SbsParser *parser);
 
-#endif /* SBS_PRESET_H */
+#endif /* SBS_OBJECT_PRESET_H */

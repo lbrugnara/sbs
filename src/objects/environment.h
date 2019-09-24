@@ -1,5 +1,5 @@
-#ifndef SBS_ENVIRONMENT_H
-#define SBS_ENVIRONMENT_H
+#ifndef SBS_OBJECT_ENVIRONMENT_H
+#define SBS_OBJECT_ENVIRONMENT_H
 
 #include <fllib.h>
 #include "action.h"
@@ -17,4 +17,4 @@ void sbs_env_map_init(FlHashtable *envs);
 void sbs_env_free(struct SbsEnv *env);
 struct SbsEnv* sbs_env_parse(struct SbsParser *parser);
 
-#endif /* SBS_ENVIRONMENT_H */
+#endif /* SBS_OBJECT_ENVIRONMENT_H */

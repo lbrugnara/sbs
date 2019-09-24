@@ -376,3 +376,11 @@ void sbs_common_extend_fl_array(char ***dest, char** src)
     for (size_t i = extended_flags_length; i < flags_length; i++)
         (*dest)[i] = src[i - extended_flags_length];
 }
+
+FlArray sbs_common_extend_array(FlArray dest, FlArray src)
+{
+    if (!dest)
+        dest = fl_array_new(fl_array_element_size(src), 0);
+
+    return fl_array_combine(dest, src);
+}

@@ -35,7 +35,7 @@ fi
 function target_sbs() {
     rm -rf obj/
     rm -rf build/
-    mkdir -p ./obj/debug/{objects,build}
+    mkdir -p ./obj/debug/{objects,build,actions}
     
     gcc $CFLAGS -c ./src/objects/action.c  -o ./obj/debug/objects/action.o
     gcc $CFLAGS -c ./src/objects/common.c  -o ./obj/debug/objects/common.o
@@ -47,7 +47,7 @@ function target_sbs() {
     gcc $CFLAGS -c ./src/objects/target.c  -o ./obj/debug/objects/target.o
     gcc $CFLAGS -c ./src/objects/toolchain.c  -o ./obj/debug/objects/toolchain.o
     gcc $CFLAGS -c ./src/objects/file.c  -o ./obj/debug/objects/file.o
-
+    gcc $CFLAGS -c ./src/actions/actions.c  -o ./obj/debug/actions/actions.o
     gcc $CFLAGS -c ./src/build/build.c  -o ./obj/debug/build/build.o
     gcc $CFLAGS -c ./src/build/archive.c  -o ./obj/debug/build/archive.o
     gcc $CFLAGS -c ./src/build/compile.c  -o ./obj/debug/build/compile.o
@@ -70,6 +70,7 @@ function target_link() {
         obj/debug/objects/target.o \
         obj/debug/objects/toolchain.o \
         obj/debug/objects/file.o \
+        obj/debug/actions/actions.o \
         obj/debug/build/build.o \
         obj/debug/build/archive.o \
         obj/debug/build/compile.o \

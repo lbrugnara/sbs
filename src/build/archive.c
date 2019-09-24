@@ -3,7 +3,7 @@
 
 #define SBS_DIR_SEPARATOR "/"
 
-static char* build_output_filename(struct SbsBuild *build, struct SbsConfigArchive *archive, const char *output_dir, const char *output_name)
+static char* build_output_filename(struct SbsBuild *build, const struct SbsConfigArchive *archive, const char *output_dir, const char *output_name)
 {
     // File
     const char *extension = archive->extension ? archive->extension : ".a";
@@ -27,10 +27,10 @@ static char* build_output_filename(struct SbsBuild *build, struct SbsConfigArchi
     return output_filename;
 }
 
-FlVector sbs_build_target_archive(struct SbsBuild *build)
+char** sbs_build_target_archive(struct SbsBuild *build)
 {
     struct SbsTargetArchive *target_archive = (struct SbsTargetArchive*)build->target;
-    struct SbsConfigArchive *config_archive = sbs_config_archive_get(build->config, build->env->name);
+    const struct SbsConfigArchive *config_archive = &build->config->archive;
 
     // Collect all the archive flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
@@ -44,11 +44,11 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
     }
 
     // Build the target's output filename
-    char *output_filename = build_output_filename(build, config_archive, target_archive->base.output_dir, target_archive->output_name);
+    char *output_filename = build_output_filename(build, config_archive, target_archive->output_dir, target_archive->output_name);
 
     // We add the filename to the output vector that will return the target's result
-    FlVector output = fl_vector_new(1, fl_container_cleaner_pointer);
-    fl_vector_add(output, output_filename);
+    char **output = fl_array_new(sizeof(char*), 1);
+    output[0] = output_filename;
 
     // Get the timestamp of the output file (if it exists)
     unsigned long long archive_timestamp = 0;
@@ -58,25 +58,30 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
     bool needs_archive = false;    
 
     // This vector will keep track of the objects that are needed to build the archive
-    FlVector archive_objects = fl_vector_new(10, fl_container_cleaner_pointer);    
+    size_t n_objects = fl_array_length(target_archive->objects);
+    FlVector archive_objects = fl_vector_new(n_objects, fl_container_cleaner_pointer);    
 
     // We iterate through all the archive's objects where we can find two type of resources:
     //  1- An identifier that represents another target, we need to build that target and use its output
     //  2- An string that is the path to a file that can be directly included in the archive
     bool success = true;
-    for (size_t i = 0; i < fl_array_length(target_archive->objects); i++)
+    for (size_t i = 0; i < n_objects; i++)
     {
         if (target_archive->objects[i].type == SBS_IDENTIFIER)
         {
-            // Build the target
-            FlVector target_objects = sbs_build_target(&(struct SbsBuild) {
+            // target_objects is an array of pointers to char allocated by the target
+            struct SbsTarget *target = sbs_target_resolve(target_archive->objects[i].value, build->file->targets, build->env->name);
+
+            char **target_objects = sbs_build_target(&(struct SbsBuild) {
                 .executor = build->executor,
                 .file = build->file,
                 .env = build->env,
                 .toolchain = build->toolchain,
-                .target = fl_hashtable_get(build->file->targets, target_archive->objects[i].value),
+                .target = target,
                 .config = build->config
             });
+
+            sbs_target_release(target);
 
             // Something odd happened if it is null, we need to leave with error
             if (target_objects == NULL)
@@ -88,10 +93,10 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
             // Check every object file to see if it is newer than the last archive build's
             // modification timestamp. If there is just one object newer to the archive, we need to
             // run the build.
-            while (fl_vector_length(target_objects) > 0)
+            for (size_t i=0; i < fl_array_length(target_objects); i++)
             {
-                char *obj = NULL;
-                fl_vector_shift(target_objects, &obj);
+                char *obj = target_objects[i];
+                target_objects[i] = NULL;
 
                 unsigned long long obj_timestamp = 0;
                 if (!fl_io_file_get_modified_timestamp(obj, &obj_timestamp))
@@ -102,7 +107,8 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
 
                 fl_vector_add(archive_objects, obj);
             }
-            fl_vector_delete(target_objects);
+
+            fl_array_delete(target_objects);
         }
         else
         {
@@ -153,11 +159,10 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
 
     fl_vector_delete(archive_objects);
     fl_cstring_delete(flags);
-    sbs_config_archive_free(config_archive);
 
     if (!success)
     {
-        fl_vector_delete(output);
+        fl_array_delete_each(output, sbs_common_free_string);
         return NULL;
     }
 

@@ -25,10 +25,10 @@ struct SbsBuild {
     const struct SbsEnv *env;
     const struct SbsToolchainSection *toolchain;
     const struct SbsTarget *target;
-    const struct SbsConfigSection *config;
+    const struct SbsConfiguration *config;
 };
 
 enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArguments arguments);
-FlVector sbs_build_target(struct SbsBuild *build);
+char** sbs_build_target(struct SbsBuild *build);
 
 #endif /* SBS_BUILD_H */

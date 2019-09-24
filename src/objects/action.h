@@ -1,5 +1,5 @@
-#ifndef SBS_ACTION_H
-#define SBS_ACTION_H
+#ifndef SBS_OBJECT_ACTION_H
+#define SBS_OBJECT_ACTION_H
 
 #include "parser.h"
 
@@ -23,4 +23,4 @@ void sbs_action_free(struct SbsAction *action);
 struct SbsAction* sbs_action_parse(struct SbsParser *parser);
 struct SbsActions sbs_actions_parse(struct SbsParser *parser);
 
-#endif /* SBS_ACTION_H */
+#endif /* SBS_OBJECT_ACTION_H */

@@ -17,6 +17,7 @@ compile sbs-objects {
         "src/objects/preset.c",
         "src/objects/target.c",
         "src/objects/toolchain.c",
+        "src/actions/actions.c",
         "src/build/build.c",
         "src/build/archive.c",
         "src/build/compile.c",

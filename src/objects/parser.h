@@ -1,5 +1,5 @@
-#ifndef SBS_PARSER_H
-#define SBS_PARSER_H
+#ifndef SBS_OBJECT_PARSER_H
+#define SBS_OBJECT_PARSER_H
 
 #include "file.h"
 #include "lexer.h"
@@ -19,4 +19,4 @@ void sbs_parser_consume_if(struct SbsParser *parser, enum SbsTokenType type);
 bool sbs_parser_has_input(struct SbsParser *parser);
 bool sbs_parser_parse(struct SbsLexer *lexer, struct SbsFile *file);
 
-#endif
+#endif /* SBS_OBJECT_PARSER_H */

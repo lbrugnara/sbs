@@ -1,5 +1,5 @@
-#ifndef SBS_TOOLCHAIN_H
-#define SBS_TOOLCHAIN_H
+#ifndef SBS_OBJECT_TOOLCHAIN_H
+#define SBS_OBJECT_TOOLCHAIN_H
 
 #include <fllib.h>
 #include "parser.h"
@@ -23,4 +23,4 @@ void sbs_toolchain_map_init(FlHashtable *toolchains);
 const char* sbs_toolchain_get_compiler(const struct SbsToolchainSection *toolchain, const struct SbsEnv *env);
 const char* sbs_toolchain_get_archiver(const struct SbsToolchainSection *toolchain, const struct SbsEnv *env);
 
-#endif /* SBS_TOOLCHAIN_H */
+#endif /* SBS_OBJECT_TOOLCHAIN_H */
