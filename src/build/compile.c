@@ -2,7 +2,7 @@
 
 #define SBS_DIR_SEPARATOR "/"
 
-static char* build_object_filename(const struct SbsBuild *build, const char *source_file, const char *output_dir)
+static char* build_object_filename(const struct SbsBuild *build, struct SbsConfigCompile *config_compile, const char *source_file, const char *output_dir)
 {
     // We need to build the object filename using the source filename for it
     //  ex: main.c -> main.o
@@ -18,7 +18,7 @@ static char* build_object_filename(const struct SbsBuild *build, const char *sou
         defer_expression(fl_cstring_delete(filename));
 
         // If the user supplied an extension, use it. If not take the default ".o"
-        const char *extension = build->config->compile.extension ? build->config->compile.extension : ".o";
+        const char *extension = config_compile->extension ? config_compile->extension : ".o";
 
         filename = fl_cstring_replace_realloc(filename, ".cpp", extension);
         filename = fl_cstring_replace_realloc(filename, ".c", extension);
@@ -64,25 +64,26 @@ static char* build_object_filename(const struct SbsBuild *build, const char *sou
 
 FlVector sbs_build_compile(struct SbsBuild *build)
 {
-    struct SbsTargetCompile *compile = (struct SbsTargetCompile*)build->target;
+    struct SbsTargetCompile *target_compile = (struct SbsTargetCompile*)build->target;
+    struct SbsConfigCompile *config_compile = sbs_config_compile_get(build->config, build->env->name);
 
     // Collect all the compile flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
-    if (build->config->compile.flags)
+    if (config_compile->flags)
     {
-        for (size_t i = 0; i < fl_array_length(build->config->compile.flags); i++)
+        for (size_t i = 0; i < fl_array_length(config_compile->flags); i++)
         {
-            fl_cstring_append(&flags, build->config->compile.flags[i]);
+            fl_cstring_append(&flags, config_compile->flags[i]);
             fl_cstring_append(&flags, " ");
         }
     }
 
     // Glue all the includes together
     char *includes = fl_cstring_new(0);
-    for (size_t i = 0; i < fl_array_length(compile->includes); i++)
+    for (size_t i = 0; i < fl_array_length(target_compile->includes); i++)
     {
-        fl_cstring_append(&includes, build->config->compile.include_dir_flag);
-        fl_cstring_append(&includes, compile->includes[i]);
+        fl_cstring_append(&includes, config_compile->include_dir_flag);
+        fl_cstring_append(&includes, target_compile->includes[i]);
         fl_cstring_append(&includes, " ");
     }
 
@@ -92,17 +93,17 @@ FlVector sbs_build_compile(struct SbsBuild *build)
     bool success = true;
 
     // Compile source objects
-    for (size_t i = 0; success && i < fl_array_length(compile->sources); i++)
+    for (size_t i = 0; success && i < fl_array_length(target_compile->sources); i++)
     {
         // Unify path separators for the source file
-        char *source_file = fl_cstring_replace(compile->sources[i], "\\", SBS_DIR_SEPARATOR);
+        char *source_file = fl_cstring_replace(target_compile->sources[i], "\\", SBS_DIR_SEPARATOR);
 
         // Get the source's last modification timestamp
         unsigned long long source_timestamp;
         fl_io_file_get_modified_timestamp(source_file, &source_timestamp);
 
         // Get the object file path
-        char *object_file = build_object_filename(build, source_file, compile->base.output_dir);
+        char *object_file = build_object_filename(build, config_compile, source_file, target_compile->base.output_dir);
 
         // Add the object_file to the list of objects (no need to free object_file, it outlives this function)
         fl_vector_add(objects, object_file);
@@ -151,6 +152,7 @@ FlVector sbs_build_compile(struct SbsBuild *build)
 
     fl_cstring_delete(includes);
     fl_cstring_delete(flags);
+    sbs_config_compile_free(config_compile);
 
     if (!success)
     {

@@ -9,9 +9,9 @@ struct SbsFile {
     FlHashtable envs;
     /* FlHashtable<char*, struct SbsTarget*> */
     FlHashtable targets;
-    /* FlHashtable<char*, struct SbsToolchain*> */
+    /* FlHashtable<char*, struct SbsToolchainSection*> */
     FlHashtable toolchains;
-    /* FlHashtable<char*, struct SbsConfiguration*> */
+    /* FlHashtable<char*, struct SbsConfigSection*> */
     FlHashtable configurations;
     /* FlHashtable<char*, struct SbsAction*> */
     FlHashtable actions;

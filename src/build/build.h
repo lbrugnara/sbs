@@ -23,9 +23,9 @@ struct SbsBuild {
     const SbsExecutor executor;
     const struct SbsFile *file;
     const struct SbsEnv *env;
-    const struct SbsToolchain *toolchain;
+    const struct SbsToolchainSection *toolchain;
     const struct SbsTarget *target;
-    const struct SbsConfiguration *config;
+    const struct SbsConfigSection *config;
 };
 
 enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArguments arguments);

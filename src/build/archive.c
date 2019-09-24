@@ -3,10 +3,10 @@
 
 #define SBS_DIR_SEPARATOR "/"
 
-static char* build_output_filename(struct SbsBuild *build, const char *output_dir, const char *output_name)
+static char* build_output_filename(struct SbsBuild *build, struct SbsConfigArchive *archive, const char *output_dir, const char *output_name)
 {
     // File
-    const char *extension = build->config->archive.extension ? build->config->archive.extension : ".a";
+    const char *extension = archive->extension ? archive->extension : ".a";
 
     // Path
     char *output_filename = fl_cstring_dup(output_dir);
@@ -29,21 +29,22 @@ static char* build_output_filename(struct SbsBuild *build, const char *output_di
 
 FlVector sbs_build_target_archive(struct SbsBuild *build)
 {
-    struct SbsTargetArchive *archive = (struct SbsTargetArchive*)build->target;
+    struct SbsTargetArchive *target_archive = (struct SbsTargetArchive*)build->target;
+    struct SbsConfigArchive *config_archive = sbs_config_archive_get(build->config, build->env->name);
 
     // Collect all the archive flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
-    if (build->config->archive.flags)
+    if (config_archive->flags)
     {
-        for (size_t i = 0; i < fl_array_length(build->config->archive.flags); i++)
+        for (size_t i = 0; i < fl_array_length(config_archive->flags); i++)
         {
-            fl_cstring_append(&flags, build->config->archive.flags[i]);
+            fl_cstring_append(&flags, config_archive->flags[i]);
             fl_cstring_append(&flags, " ");
         }
     }
 
     // Build the target's output filename
-    char *output_filename = build_output_filename(build, archive->base.output_dir, archive->output_name);
+    char *output_filename = build_output_filename(build, config_archive, target_archive->base.output_dir, target_archive->output_name);
 
     // We add the filename to the output vector that will return the target's result
     FlVector output = fl_vector_new(1, fl_container_cleaner_pointer);
@@ -63,9 +64,9 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
     //  1- An identifier that represents another target, we need to build that target and use its output
     //  2- An string that is the path to a file that can be directly included in the archive
     bool success = true;
-    for (size_t i = 0; i < fl_array_length(archive->objects); i++)
+    for (size_t i = 0; i < fl_array_length(target_archive->objects); i++)
     {
-        if (archive->objects[i].type == SBS_IDENTIFIER)
+        if (target_archive->objects[i].type == SBS_IDENTIFIER)
         {
             // Build the target
             FlVector target_objects = sbs_build_target(&(struct SbsBuild) {
@@ -73,7 +74,7 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
                 .file = build->file,
                 .env = build->env,
                 .toolchain = build->toolchain,
-                .target = fl_hashtable_get(build->file->targets, archive->objects[i].value),
+                .target = fl_hashtable_get(build->file->targets, target_archive->objects[i].value),
                 .config = build->config
             });
 
@@ -108,13 +109,13 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
             // We also check here to see if the object pointed by the string is newer than the archive
             // in order to set the needs_archive fkag
             unsigned long long obj_timestamp;
-            if (!fl_io_file_get_modified_timestamp(archive->objects[i].value, &obj_timestamp))
+            if (!fl_io_file_get_modified_timestamp(target_archive->objects[i].value, &obj_timestamp))
                 needs_archive = true;
 
             if (archive_timestamp < obj_timestamp)
                 needs_archive = true;
 
-            fl_vector_add(archive_objects, archive->objects[i].value);
+            fl_vector_add(archive_objects, target_archive->objects[i].value);
         }
 
         if (needs_archive)
@@ -152,6 +153,7 @@ FlVector sbs_build_target_archive(struct SbsBuild *build)
 
     fl_vector_delete(archive_objects);
     fl_cstring_delete(flags);
+    sbs_config_archive_free(config_archive);
 
     if (!success)
     {

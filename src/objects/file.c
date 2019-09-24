@@ -198,11 +198,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_TOOLCHAIN)
         {
-            const struct SbsToolchain *toolchain = sbs_toolchain_parse(parser);
+            const struct SbsToolchainSection *toolchain = sbs_toolchain_parse(parser);
             if (fl_hashtable_has_key(file->toolchains, toolchain->name))
             {
                 printf("Toolchain %s cannot be redefined\n", toolchain->name);
-                sbs_toolchain_free((struct SbsToolchain*)toolchain);
+                sbs_toolchain_free((struct SbsToolchainSection*)toolchain);
                 success = false;
                 break;
             }
@@ -210,11 +210,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_CONFIG)
         {
-            const struct SbsConfiguration *configuration = sbs_config_parse(parser);
+            const struct SbsConfigSection *configuration = sbs_config_parse(parser);
             if (fl_hashtable_has_key(file->configurations, configuration->name))
             {
                 printf("Configuration %s cannot be redefined\n", configuration->name);
-                sbs_config_free((struct SbsConfiguration*)configuration);
+                sbs_config_free((struct SbsConfigSection*)configuration);
                 success = false;
                 break;
             }

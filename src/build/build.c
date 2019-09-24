@@ -161,20 +161,18 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     if (!target) 
         return sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
 
-    struct SbsToolchain *toolchain = fl_hashtable_get(file->toolchains, toolchain_name);
+    struct SbsToolchainSection *toolchain = fl_hashtable_get(file->toolchains, toolchain_name);
     if (!toolchain) 
         return sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchain_name);
     
+    // The config needs to be processed and deleted after its usage
+    struct SbsConfigSection *config = sbs_config_resolve(file->configurations, configuration_name, env_name);
+    if (!config)
+        return sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
 
     defer_scope 
     {
-        // Resolve the configuration inheritance
-        struct SbsConfiguration extended_config = { 0 };
-
-        if (!sbs_config_inheritance_resolve(&extended_config, configuration_name, file->configurations))
-            defer_return sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
-
-        defer_expression(sbs_config_inheritance_clean(&extended_config));
+        defer_expression(sbs_config_delete(config));
 
         // Create the executor
         SbsExecutor executor = sbs_executor_create(env);
@@ -200,7 +198,7 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
             .env = env, 
             .toolchain = toolchain,
             .target = target, 
-            .config = &extended_config
+            .config = config
         });
         if (vector != NULL)
             defer_expression(fl_vector_delete(vector));

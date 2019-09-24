@@ -26,20 +26,30 @@ struct SbsConfigExecutable {
     char **flags;
 };
 
-struct SbsConfiguration {
-    const char *name;
-    char **extends;
-    char **for_toolchains;
+struct SbsConfigEntry {
     struct SbsConfigCompile compile;
     struct SbsConfigArchive archive;
     struct SbsConfigShared shared;
     struct SbsConfigExecutable executable;
 };
 
-struct SbsConfiguration* sbs_config_parse(struct SbsParser *parser);
-void sbs_config_free(struct SbsConfiguration *config);
+struct SbsConfigSection {
+    const char *name;
+    char **extends;
+    /* FlHashtable<string, struct SbsConfigEntry> */
+    FlHashtable entries;
+};
+
+struct SbsConfigSection* sbs_config_parse(struct SbsParser *parser);
+void sbs_config_free(struct SbsConfigSection *config);
 void sbs_config_map_init(FlHashtable *config_map);
-bool sbs_config_inheritance_resolve(struct SbsConfiguration *extended_config, const char *config_name, const FlHashtable config_map);
-void sbs_config_inheritance_clean(struct SbsConfiguration *extended_config);
+
+struct SbsConfigSection* sbs_config_resolve(FlHashtable config_map, const char *config_name, const char *env_name);
+void sbs_config_delete(struct SbsConfigSection *config);
+
+struct SbsConfigArchive* sbs_config_archive_get(const struct SbsConfigSection *config, const char *env_name);
+void sbs_config_archive_free(struct SbsConfigArchive *archive);
+struct SbsConfigCompile* sbs_config_compile_get(const struct SbsConfigSection *config, const char *env_name);
+void sbs_config_compile_free(struct SbsConfigCompile *compile);
 
 #endif /* SBS_CONFIGURATION_H */
