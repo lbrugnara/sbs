@@ -217,7 +217,7 @@ bool sbs_executor_run_command(SbsExecutor executor, const char *command)
         else
         {
             fl_cstring_append(&output, tmp);
-            fl_cstring_delete(tmp);
+            fl_cstring_free(tmp);
         }
 
         if ((result = fl_cstring_find(output, sentinel_driver_result)) != NULL)
@@ -284,12 +284,12 @@ bool sbs_executor_run_command(SbsExecutor executor, const char *command)
         }
     }
 
-    fl_cstring_delete(output);
+    fl_cstring_free(output);
 CLEAN:
-    fl_cstring_delete(driver_command);
-    fl_cstring_delete(sentinel_driver_echo);
-    fl_cstring_delete(sentinel_driver_result);
-    fl_cstring_delete(exit_code_format);
+    fl_cstring_free(driver_command);
+    fl_cstring_free(sentinel_driver_echo);
+    fl_cstring_free(sentinel_driver_result);
+    fl_cstring_free(exit_code_format);
 
     return success && retval == 0;
 }
@@ -306,7 +306,7 @@ void sbs_executor_free(SbsExecutor executor)
         char **envp = fl_process_environ(process);
         if (envp)
             fl_free(envp);
-        fl_process_delete(process);
+        fl_process_free(process);
     }    
 
     fl_free(executor);

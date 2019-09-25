@@ -378,7 +378,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
         print_cli_header();
         const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, args.file);
         print_error("%s", error);
-        fl_cstring_delete(error);
+        fl_cstring_free(error);
         return SBS_RES_INVALID_FILE;
     }
     
@@ -446,7 +446,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
     for (size_t i=0; i < fl_array_length(keys); i++)
         fprintf(stdout, "%s\n", keys[i]);
     
-    fl_array_delete(keys);
+    fl_array_free(keys);
     sbs_file_free(file);
 
     return SBS_RES_OK;
@@ -535,7 +535,7 @@ enum SbsResult sbs_command_build(int argc, char **argv, char **env)
     {
         const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, args.file);
         print_error("%s", error);
-        fl_cstring_delete(error);
+        fl_cstring_free(error);
         return SBS_RES_INVALID_FILE;
     }
     

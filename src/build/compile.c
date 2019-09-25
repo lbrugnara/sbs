@@ -11,11 +11,11 @@ static char* build_object_filename(const struct SbsBuild *build, const struct Sb
 
     defer_scope {        
         FlVector source_file_parts = fl_cstring_split_by(source_file, SBS_DIR_SEPARATOR);
-        defer_expression(fl_vector_delete(source_file_parts));
+        defer_expression(fl_vector_free(source_file_parts));
         
         char *filename = NULL;
         fl_vector_pop(source_file_parts, &filename);
-        defer_expression(fl_cstring_delete(filename));
+        defer_expression(fl_cstring_free(filename));
 
         // If the user supplied an extension, use it. If not take the default ".o"
         const char *extension = config_compile->extension ? config_compile->extension : ".o";
@@ -26,11 +26,11 @@ static char* build_object_filename(const struct SbsBuild *build, const struct Sb
         // Get the source file path to replicate it under the output path
         //  ex: from the original filename "src/path/to/file.c" we get "src/path/to/"
         char *source_file_path = fl_cstring_join(source_file_parts, SBS_DIR_SEPARATOR);
-        defer_expression(fl_cstring_delete(source_file_path));
+        defer_expression(fl_cstring_free(source_file_path));
 
         // Start building the output path
         char *output_file_fullpath = fl_cstring_dup(output_dir);
-        defer_expression(fl_cstring_delete(output_file_fullpath));
+        defer_expression(fl_cstring_free(output_file_fullpath));
 
         if (output_file_fullpath[strlen(output_file_fullpath) - 1] != SBS_DIR_SEPARATOR[0])
             fl_cstring_append(&output_file_fullpath, SBS_DIR_SEPARATOR);
@@ -137,8 +137,8 @@ char** sbs_build_compile(struct SbsBuild *build)
                 success = sbs_executor_run_command(build->executor, command) && success;
                 
                 // clean
-                fl_cstring_delete(command);
-                fl_cstring_delete(compilation_unit_flags);
+                fl_cstring_free(command);
+                fl_cstring_free(compilation_unit_flags);
             }
             else
             {
@@ -147,15 +147,15 @@ char** sbs_build_compile(struct SbsBuild *build)
             }
         }
 
-        fl_cstring_delete(source_file);
+        fl_cstring_free(source_file);
     }
 
-    fl_cstring_delete(includes);
-    fl_cstring_delete(flags);
+    fl_cstring_free(includes);
+    fl_cstring_free(flags);
 
     if (!success)
     {
-        fl_array_delete_each(objects, sbs_common_free_string);
+        fl_array_free_each(objects, sbs_common_free_string);
         return NULL;
     }
 

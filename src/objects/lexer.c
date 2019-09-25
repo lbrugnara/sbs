@@ -171,7 +171,7 @@ struct SbsToken* sbs_lexer_tokenize(struct SbsLexer *lexer)
 
     struct SbsToken* sbstokens = fl_vector_to_array(tokens);
 
-    fl_vector_delete(tokens);
+    fl_vector_free(tokens);
 
     // for (size_t i=0; i < fl_array_length(sbstokens); i++)
     //     fprintf(stdout, "%s: %.*s\n", token_type_string[sbstokens[i].type], sbstokens[i].value.length, sbstokens[i].value.sequence);

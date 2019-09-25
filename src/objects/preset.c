@@ -4,11 +4,11 @@
 
 void sbs_preset_free(struct SbsPreset *preset)
 {
-    fl_cstring_delete(preset->name);
-    fl_cstring_delete(preset->env);
-    fl_cstring_delete(preset->toolchain);
-    fl_cstring_delete(preset->config);
-    fl_cstring_delete(preset->target);
+    fl_cstring_free(preset->name);
+    fl_cstring_free(preset->env);
+    fl_cstring_free(preset->toolchain);
+    fl_cstring_free(preset->config);
+    fl_cstring_free(preset->target);
     sbs_actions_node_free(&preset->actions);
     fl_free(preset);
 }

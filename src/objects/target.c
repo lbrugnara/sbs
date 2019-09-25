@@ -12,7 +12,7 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
     sbs_actions_node_free(&target_entry->actions);
 
     if (target_entry->output_dir)
-        fl_cstring_delete(target_entry->output_dir);
+        fl_cstring_free(target_entry->output_dir);
 
     switch (target_type)
     {
@@ -21,13 +21,13 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
             struct SbsTargetCompileNode *compile = (struct SbsTargetCompileNode*)target_entry;
             
             if (compile->sources)
-                fl_array_delete_each(compile->sources, sbs_common_free_string);
+                fl_array_free_each(compile->sources, sbs_common_free_string);
 
             if (compile->includes)
-                fl_array_delete_each(compile->includes, sbs_common_free_string);
+                fl_array_free_each(compile->includes, sbs_common_free_string);
 
             if (compile->defines)
-                fl_array_delete_each(compile->defines, sbs_common_free_string);
+                fl_array_free_each(compile->defines, sbs_common_free_string);
 
             break;
         }
@@ -36,10 +36,10 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
             struct SbsTargetArchiveNode *archive = (struct SbsTargetArchiveNode*)target_entry;
 
             if (archive->objects)
-                fl_array_delete_each(archive->objects, sbs_common_free_string_or_id);
+                fl_array_free_each(archive->objects, sbs_common_free_string_or_id);
 
             if (archive->output_name)
-                fl_cstring_delete(archive->output_name);
+                fl_cstring_free(archive->output_name);
 
             break;
         }
@@ -48,10 +48,10 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
             struct SbsTargetSharedNode *shared = (struct SbsTargetSharedNode*)target_entry;
 
             if (shared->objects)
-                fl_array_delete_each(shared->objects, sbs_common_free_string_or_id);
+                fl_array_free_each(shared->objects, sbs_common_free_string_or_id);
 
             if (shared->output_name)
-                fl_cstring_delete(shared->output_name);
+                fl_cstring_free(shared->output_name);
 
             break;
         }
@@ -60,10 +60,10 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
             struct SbsTargetExecutableNode *executable = (struct SbsTargetExecutableNode*)target_entry;
 
             if (executable->objects)
-                fl_array_delete_each(executable->objects, sbs_common_free_string_or_id);
+                fl_array_free_each(executable->objects, sbs_common_free_string_or_id);
 
             if (executable->output_name)
-                fl_cstring_delete(executable->output_name);
+                fl_cstring_free(executable->output_name);
 
             break;
         }
@@ -74,7 +74,7 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
 
 void sbs_target_free(struct SbsTargetSection *target_section)
 {
-    fl_cstring_delete(target_section->name);
+    fl_cstring_free(target_section->name);
 
     if (target_section->entries)
     {
@@ -104,10 +104,10 @@ void sbs_target_free(struct SbsTargetSection *target_section)
             sbs_target_entry_free(target_section->type, target_entries[i]);
         }
 
-        fl_array_delete(target_entries);
+        fl_array_free(target_entries);
 
         // Delete the hashtable including the keys (we already deleted the values)
-        fl_hashtable_delete(target_section->entries);
+        fl_hashtable_free(target_section->entries);
     }
 
     fl_free(target_section);
@@ -512,7 +512,7 @@ static void parse_for_section(struct SbsParser *parser, struct SbsTargetSection 
         fl_hashtable_add(target_section->entries, env, target_entry);
     }
 
-    fl_array_delete_each(envs, sbs_common_free_string);
+    fl_array_free_each(envs, sbs_common_free_string);
 }
 
 /*
@@ -667,7 +667,7 @@ struct SbsTarget* sbs_target_resolve(const char *target_name, FlHashtable target
         node = node->next;
     }
 
-    fl_list_delete(hierarchy);
+    fl_list_free(hierarchy);
 
     return target_obj;
 }
@@ -683,13 +683,13 @@ void sbs_target_release(struct SbsTarget *target)
             struct SbsTargetCompile *compile = (struct SbsTargetCompile*)target;
             
             if (compile->sources)
-                fl_array_delete(compile->sources);
+                fl_array_free(compile->sources);
 
             if (compile->includes)
-                fl_array_delete(compile->includes);
+                fl_array_free(compile->includes);
 
             if (compile->defines)
-                fl_array_delete(compile->defines);
+                fl_array_free(compile->defines);
 
             break;
         }
@@ -698,7 +698,7 @@ void sbs_target_release(struct SbsTarget *target)
             struct SbsTargetArchive *archive = (struct SbsTargetArchive*)target;
 
             if (archive->objects)
-                fl_array_delete(archive->objects);
+                fl_array_free(archive->objects);
 
             break;
         }
@@ -707,7 +707,7 @@ void sbs_target_release(struct SbsTarget *target)
             struct SbsTargetShared *shared = (struct SbsTargetShared*)target;
 
             if (shared->objects)
-                fl_array_delete(shared->objects);
+                fl_array_free(shared->objects);
 
             break;
         }
@@ -716,7 +716,7 @@ void sbs_target_release(struct SbsTarget *target)
             struct SbsTargetExecutable *executable = (struct SbsTargetExecutable*)target;
 
             if (executable->objects)
-                fl_array_delete(executable->objects);
+                fl_array_free(executable->objects);
 
             break;
         }

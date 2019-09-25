@@ -151,7 +151,7 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
             .config = config
         });
         if (target_output != NULL)
-            defer_expression(fl_array_delete_each(target_output, sbs_common_free_string));
+            defer_expression(fl_array_free_each(target_output, sbs_common_free_string));
 
         // We run the target actions only if the build has been successful
         actions_result = run_build_actions(ACTION_AFTER, executor, file, env, target_output != NULL ? target : NULL, preset);

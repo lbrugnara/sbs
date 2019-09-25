@@ -49,7 +49,7 @@ enum SbsResult sbs_result_print_reason(enum SbsResult result, ...)
 
     fputs(str, stderr);
 
-    fl_cstring_delete(str);
+    fl_cstring_free(str);
 
     return result;
 }

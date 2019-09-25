@@ -8,37 +8,37 @@
 void sbs_config_entry_free(struct SbsConfigEntry *config)
 {
     if (config->compile.flags)
-        fl_array_delete_each(config->compile.flags, sbs_common_free_string);
+        fl_array_free_each(config->compile.flags, sbs_common_free_string);
 
     if (config->compile.include_dir_flag)
-        fl_cstring_delete(config->compile.include_dir_flag);
+        fl_cstring_free(config->compile.include_dir_flag);
 
     if (config->compile.define_flag)
-        fl_cstring_delete(config->compile.define_flag);
+        fl_cstring_free(config->compile.define_flag);
 
     if (config->compile.extension)
-        fl_cstring_delete(config->compile.extension);
+        fl_cstring_free(config->compile.extension);
 
 
     if (config->archive.flags)
-        fl_array_delete_each(config->archive.flags, sbs_common_free_string);
+        fl_array_free_each(config->archive.flags, sbs_common_free_string);
 
     if (config->archive.extension)
-        fl_cstring_delete(config->archive.extension);
+        fl_cstring_free(config->archive.extension);
 
 
     if (config->shared.flags)
-        fl_array_delete_each(config->shared.flags, sbs_common_free_string);
+        fl_array_free_each(config->shared.flags, sbs_common_free_string);
     
     if (config->shared.extension)
-        fl_cstring_delete(config->shared.extension);
+        fl_cstring_free(config->shared.extension);
 
 
     if (config->executable.flags)
-        fl_array_delete_each(config->executable.flags, sbs_common_free_string);
+        fl_array_free_each(config->executable.flags, sbs_common_free_string);
 
     if (config->executable.extension)
-        fl_cstring_delete(config->executable.extension);
+        fl_cstring_free(config->executable.extension);
 
 
     fl_free(config);
@@ -47,10 +47,10 @@ void sbs_config_entry_free(struct SbsConfigEntry *config)
 
 void sbs_config_free(struct SbsConfigSection *configuration)
 {
-    fl_cstring_delete(configuration->name);
+    fl_cstring_free(configuration->name);
 
     if (configuration->extends)
-        fl_array_delete_each(configuration->extends, sbs_common_free_string);
+        fl_array_free_each(configuration->extends, sbs_common_free_string);
 
     if (configuration->entries)
     {
@@ -80,10 +80,10 @@ void sbs_config_free(struct SbsConfigSection *configuration)
             sbs_config_entry_free(configurations[i]);
         }
 
-        fl_array_delete(configurations);
+        fl_array_free(configurations);
 
         // Delete the hashtable including the keys (we already deleted the values)
-        fl_hashtable_delete(configuration->entries);
+        fl_hashtable_free(configuration->entries);
     }
 
     fl_free(configuration);
@@ -331,7 +331,7 @@ struct SbsConfigSection* sbs_config_parse(struct SbsParser *parser)
                 fl_hashtable_add(configuration->entries, env, configuration_info);
             }
 
-            fl_array_delete_each(envs, sbs_common_free_string);
+            fl_array_free_each(envs, sbs_common_free_string);
         }
         else
         {
@@ -441,7 +441,7 @@ struct SbsConfiguration* sbs_config_resolve(const char *config_name, FlHashtable
         node = node->next;
     }
 
-    fl_list_delete(hierarchy);
+    fl_list_free(hierarchy);
 
     return extended_config;
 }
@@ -449,16 +449,16 @@ struct SbsConfiguration* sbs_config_resolve(const char *config_name, FlHashtable
 void sbs_config_release(struct SbsConfiguration *extended_config)
 {
     if (extended_config->compile.flags)
-        fl_array_delete(extended_config->compile.flags);
+        fl_array_free(extended_config->compile.flags);
 
     if (extended_config->archive.flags)
-        fl_array_delete(extended_config->archive.flags);
+        fl_array_free(extended_config->archive.flags);
 
     if (extended_config->shared.flags)
-        fl_array_delete(extended_config->shared.flags);
+        fl_array_free(extended_config->shared.flags);
 
     if (extended_config->executable.flags)
-        fl_array_delete(extended_config->executable.flags);
+        fl_array_free(extended_config->executable.flags);
 
     fl_free(extended_config);
 }

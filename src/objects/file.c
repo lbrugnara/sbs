@@ -49,7 +49,7 @@ static void merge_hashtable(FlHashtable dest, FlHashtable src)
     // It is ok to free the keys because of 2 reasons:
     // 1- We removed the entries from *src* WITHOUT cleaning the resources (fl_hashtable_remove with *false* as 3rd parameter)
     // 2- The "dest" hashtable uses the fl_container_allocator_string therefore it creates copies of the keys on fl_hashtable_add
-    fl_array_delete_each(keys, sbs_common_free_string);
+    fl_array_free_each(keys, sbs_common_free_string);
 }
 
 /*
@@ -116,7 +116,7 @@ static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *fi
             current_dir = fl_cstring_dup("./");
         }
 
-        fl_vector_delete(parts);
+        fl_vector_free(parts);
     }
 
     // Iterate over the included files to parse them
@@ -135,12 +135,12 @@ static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *fi
         sbs_file_free(included_file);
 
         // Release the filename
-        fl_cstring_delete(filename);
+        fl_cstring_free(filename);
     }
 
     // Release the memory used by our tmp variables
-    fl_cstring_delete(current_dir);
-    fl_array_delete_each(includes, sbs_common_free_string);
+    fl_cstring_free(current_dir);
+    fl_array_free_each(includes, sbs_common_free_string);
 
     return true;
 }
@@ -373,10 +373,10 @@ struct SbsFile* sbs_file_parse(const char *filename)
         file = NULL;
     }
 
-    fl_array_delete((struct SbsToken*)parser.tokens);
+    fl_array_free((struct SbsToken*)parser.tokens);
     // The parse function dups the strings, so it is safe to release the memory
     // used by the source
-    fl_cstring_delete((char*)source);
+    fl_cstring_free((char*)source);
 
     return file;
 }
@@ -394,27 +394,27 @@ struct SbsFile* sbs_file_parse(const char *filename)
 void sbs_file_free(struct SbsFile *file)
 {
     if (file->filename)
-        fl_cstring_delete(file->filename);
+        fl_cstring_free(file->filename);
 
     // Hashtables should deallocate its key-value objects'
     // memory. Check the init_file function in the parser.c file.
     if (file->presets)
-        fl_hashtable_delete(file->presets);
+        fl_hashtable_free(file->presets);
 
     if (file->envs)
-        fl_hashtable_delete(file->envs);
+        fl_hashtable_free(file->envs);
 
     if (file->targets)
-        fl_hashtable_delete(file->targets);
+        fl_hashtable_free(file->targets);
 
     if (file->toolchains)
-        fl_hashtable_delete(file->toolchains);
+        fl_hashtable_free(file->toolchains);
 
     if (file->configurations)
-        fl_hashtable_delete(file->configurations);
+        fl_hashtable_free(file->configurations);
 
     if (file->actions)
-        fl_hashtable_delete(file->actions);
+        fl_hashtable_free(file->actions);
 
     fl_free(file);
 }

@@ -8,7 +8,7 @@ void sbs_common_free_string(FlByte *obj)
         return;
 
     char *str = *(char**)obj;
-    fl_cstring_delete(str);
+    fl_cstring_free(str);
 }
 
 void sbs_common_free_string_or_id(FlByte *obj)
@@ -19,7 +19,7 @@ void sbs_common_free_string_or_id(FlByte *obj)
     struct SbsStringOrId *str = (struct SbsStringOrId*)obj;
 
     if (str->value)
-        fl_cstring_delete(str->value);
+        fl_cstring_free(str->value);
 }
 
 /*
@@ -43,7 +43,7 @@ char* sbs_common_parse_string(struct SbsParser *parser)
         char *tmp = fl_cstring_replace(string, "\\\"", "\"");
         if (!tmp)
             return NULL;
-        fl_cstring_delete(string);
+        fl_cstring_free(string);
         string = tmp;
     }
 
@@ -71,7 +71,7 @@ char* sbs_common_parse_command_string(struct SbsParser *parser)
         char *tmp = fl_cstring_replace(string, "\\`", "`");
         if (!tmp)
             return NULL;
-        fl_cstring_delete(string);
+        fl_cstring_free(string);
         string = tmp;
     }
 

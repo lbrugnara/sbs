@@ -8,19 +8,19 @@ void sbs_env_free(struct SbsEnv *env)
         return;
 
     if (env->name)
-        fl_cstring_delete(env->name);
+        fl_cstring_free(env->name);
 
     if (env->variables)
-        fl_array_delete_each(env->variables, sbs_common_free_string);
+        fl_array_free_each(env->variables, sbs_common_free_string);
 
     if (env->type)
-        fl_cstring_delete(env->type);
+        fl_cstring_free(env->type);
 
     if (env->terminal)
-        fl_cstring_delete(env->terminal);
+        fl_cstring_free(env->terminal);
 
     if (env->args)
-        fl_array_delete_each(env->args, sbs_common_free_string);
+        fl_array_free_each(env->args, sbs_common_free_string);
 
     sbs_actions_node_free(&env->actions);
 

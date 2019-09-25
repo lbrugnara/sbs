@@ -7,20 +7,20 @@
 void sbs_toolchain_entry_free(struct SbsToolchainEntry *toolchain_entry)
 {
     if (toolchain_entry->compiler)
-        fl_cstring_delete(toolchain_entry->compiler);
+        fl_cstring_free(toolchain_entry->compiler);
 
     if (toolchain_entry->archiver)
-        fl_cstring_delete(toolchain_entry->archiver);
+        fl_cstring_free(toolchain_entry->archiver);
 
     if (toolchain_entry->linker)
-        fl_cstring_delete(toolchain_entry->linker);
+        fl_cstring_free(toolchain_entry->linker);
     
     fl_free(toolchain_entry);
 }
 
 void sbs_toolchain_free(struct SbsToolchainSection *toolchain)
 {
-    fl_cstring_delete(toolchain->name);
+    fl_cstring_free(toolchain->name);
 
     if (toolchain->entries)
     {
@@ -50,10 +50,10 @@ void sbs_toolchain_free(struct SbsToolchainSection *toolchain)
             sbs_toolchain_entry_free(toolchains[i]);
         }
 
-        fl_array_delete(toolchains);
+        fl_array_free(toolchains);
 
         // Delete the hashtable including the keys (we already deleted the values)
-        fl_hashtable_delete(toolchain->entries);
+        fl_hashtable_free(toolchain->entries);
     }
 
     fl_free(toolchain);
@@ -154,7 +154,7 @@ struct SbsToolchainSection* sbs_toolchain_parse(struct SbsParser *parser)
                 fl_hashtable_add(toolchain->entries, env, toolchain_entry);
             }
 
-            fl_array_delete_each(envs, sbs_common_free_string);
+            fl_array_free_each(envs, sbs_common_free_string);
         }
         else
         {

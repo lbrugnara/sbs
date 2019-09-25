@@ -8,19 +8,19 @@ void action_node_free(FlByte *value)
     struct SbsActionNode *command = (struct SbsActionNode*)value;
 
     if (command->commands)
-        fl_array_delete_each(command->commands, sbs_common_free_string);
+        fl_array_free_each(command->commands, sbs_common_free_string);
     if (command->for_envs)
-        fl_array_delete_each(command->for_envs, sbs_common_free_string);
+        fl_array_free_each(command->for_envs, sbs_common_free_string);
 
     // no need to free "command" as it is a struct value
 }
 
 void sbs_action_section_free(struct SbsActionSection *action)
 {
-    fl_cstring_delete(action->name);
+    fl_cstring_free(action->name);
 
     if (action->nodes)
-        fl_array_delete_each(action->nodes, action_node_free);
+        fl_array_free_each(action->nodes, action_node_free);
 
     fl_free(action);
 }
@@ -119,7 +119,7 @@ struct SbsActionSection* sbs_action_section_parse(struct SbsParser *parser)
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
     action_section->nodes = fl_vector_to_array(action_nodes);
-    fl_vector_delete(action_nodes);
+    fl_vector_free(action_nodes);
 
     return action_section;
 }
@@ -175,8 +175,8 @@ struct SbsActionsNode sbs_actions_node_parse(struct SbsParser *parser)
 void sbs_actions_node_free(struct SbsActionsNode *actions)
 {
     if (actions->before)
-        fl_array_delete_each(actions->before, sbs_common_free_string_or_id);
+        fl_array_free_each(actions->before, sbs_common_free_string_or_id);
 
     if (actions->after)
-        fl_array_delete_each(actions->after, sbs_common_free_string_or_id);
+        fl_array_free_each(actions->after, sbs_common_free_string_or_id);
 }

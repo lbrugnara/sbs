@@ -108,7 +108,7 @@ char** sbs_build_target_archive(struct SbsBuild *build)
                 fl_vector_add(archive_objects, obj);
             }
 
-            fl_array_delete(target_objects);
+            fl_array_free(target_objects);
         }
         else
         {
@@ -142,8 +142,8 @@ char** sbs_build_target_archive(struct SbsBuild *build)
                 // Exec
                 success = sbs_executor_run_command(build->executor, command) && success;
 
-                fl_cstring_delete(command);
-                fl_cstring_delete(archive_flags);
+                fl_cstring_free(command);
+                fl_cstring_free(archive_flags);
             }
             else
             {
@@ -157,12 +157,12 @@ char** sbs_build_target_archive(struct SbsBuild *build)
         }
     }
 
-    fl_vector_delete(archive_objects);
-    fl_cstring_delete(flags);
+    fl_vector_free(archive_objects);
+    fl_cstring_free(flags);
 
     if (!success)
     {
-        fl_array_delete_each(output, sbs_common_free_string);
+        fl_array_free_each(output, sbs_common_free_string);
         return NULL;
     }
 
