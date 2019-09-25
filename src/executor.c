@@ -56,7 +56,7 @@ struct SbsCommandDriver {
     }
 ;
 
-SbsExecutor sbs_executor_create(struct SbsEnv *env)
+SbsExecutor sbs_executor_new(struct SbsEnv *env)
 {
     flm_assert(env, "Environment cannot be null");
 
@@ -294,7 +294,7 @@ CLEAN:
     return success && retval == 0;
 }
 
-void sbs_executor_delete(SbsExecutor executor)
+void sbs_executor_free(SbsExecutor executor)
 {
     if (executor->type == SBS_EXEC_CUSTOM)
     {

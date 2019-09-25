@@ -11,15 +11,15 @@ bool sbs_actions_run(SbsExecutor executor, const struct SbsFile *file, const str
     {
         if (actions[j].type == SBS_IDENTIFIER)
         {
-            struct SbsAction *action = fl_hashtable_get(file->actions, actions[j].value);
+            struct SbsActionSection *action = fl_hashtable_get(file->actions, actions[j].value);
 
-            if (!action || !action->commands)
+            if (!action || !action->nodes)
                 continue;
 
-            size_t countOfCommands = fl_array_length(action->commands);
+            size_t countOfCommands = fl_array_length(action->nodes);
             for (size_t k=0; k < countOfCommands; k++)
             {
-                struct SbsActionCommand command = action->commands[k];
+                struct SbsActionNode command = action->nodes[k];
 
                 if (command.for_envs)
                 {

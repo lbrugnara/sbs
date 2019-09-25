@@ -19,7 +19,7 @@ struct SbsTargetSection {
 };
 
 struct SbsTargetNode {
-    struct SbsActions actions;
+    struct SbsActionsNode actions;
     const char *output_dir;
 };
 
@@ -51,14 +51,14 @@ struct SbsTargetExecutableNode {
 struct SbsTarget {
     enum SbsTargetType type;
     const char *name;
-    struct SbsActions actions;
+    struct SbsActionsNode actions;
     const char *output_dir;
 };
 
 struct SbsTargetCompile {
     enum SbsTargetType type;
     const char *name;
-    struct SbsActions actions;
+    struct SbsActionsNode actions;
     const char *output_dir;
     char **includes;
     char **sources;
@@ -68,7 +68,7 @@ struct SbsTargetCompile {
 struct SbsTargetArchive {
     enum SbsTargetType type;
     const char *name;
-    struct SbsActions actions;
+    struct SbsActionsNode actions;
     const char *output_dir;
     const char *output_name;
     struct SbsStringOrId *objects;
@@ -77,7 +77,7 @@ struct SbsTargetArchive {
 struct SbsTargetShared {
     enum SbsTargetType type;
     const char *name;
-    struct SbsActions actions;
+    struct SbsActionsNode actions;
     const char *output_dir;
     const char *output_name;
     struct SbsStringOrId *objects;
@@ -86,13 +86,12 @@ struct SbsTargetShared {
 struct SbsTargetExecutable {
     enum SbsTargetType type;
     const char *name;
-    struct SbsActions actions;
+    struct SbsActionsNode actions;
     const char *output_dir;
     const char *output_name;
     struct SbsStringOrId *objects;
 };
 
-void sbs_target_map_init(FlHashtable *targets);
 void sbs_target_free(struct SbsTargetSection *target);
 struct SbsTargetSection* sbs_target_parse(struct SbsParser *parser);
 

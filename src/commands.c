@@ -421,7 +421,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
     }
     else
     {
-        sbs_file_delete(file);
+        sbs_file_free(file);
         print_cli_header();
         print_error("Unkown object type %s", args.resource);
         return SBS_RES_INVALID_RESOURCE;
@@ -434,7 +434,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
     if (!keys)
     {
         fprintf(stdout, "There are no %s in the build file %s\n", resource, file->filename);
-        sbs_file_delete(file);
+        sbs_file_free(file);
         return SBS_RES_OK;
     }
 
@@ -447,7 +447,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
         fprintf(stdout, "%s\n", keys[i]);
     
     fl_array_delete(keys);
-    sbs_file_delete(file);
+    sbs_file_free(file);
 
     return SBS_RES_OK;
 }
@@ -549,7 +549,7 @@ enum SbsResult sbs_command_build(int argc, char **argv, char **env)
     // Run the build process and leave
     enum SbsResult result = sbs_build_run(file, args);
 
-    sbs_file_delete(file);
+    sbs_file_free(file);
 
     return result;
 }

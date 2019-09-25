@@ -1,4 +1,6 @@
 action rm-objects {
+    `echo Cleaning previous build files`,
+
     for win-cmd-x86, win-cmd-x64 {
         `if exist .\obj\sbs-config-debug (rd /s /q .\obj\sbs-config-debug)`,
         `if exist .\obj\sbs-config-release (rd /s /q .\obj\sbs-config-release)`
@@ -8,5 +10,7 @@ action rm-objects {
     },
     for win-wsl-x64, win-cygwin-x64, linux-wsl-x64 {
         `/bin/rm -fr obj/sbs-config*`
-    }
+    },
+
+    `echo All previous build files have been cleaned`
 }

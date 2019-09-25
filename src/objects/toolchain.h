@@ -19,7 +19,6 @@ struct SbsToolchainSection {
 
 struct SbsToolchainSection* sbs_toolchain_parse(struct SbsParser *parser);
 void sbs_toolchain_free(struct SbsToolchainSection *toolchain);
-void sbs_toolchain_map_init(FlHashtable *toolchains);
 const char* sbs_toolchain_get_compiler(const struct SbsToolchainSection *toolchain, const struct SbsEnv *env);
 const char* sbs_toolchain_get_archiver(const struct SbsToolchainSection *toolchain, const struct SbsEnv *env);
 

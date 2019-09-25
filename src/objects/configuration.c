@@ -89,24 +89,6 @@ void sbs_config_free(struct SbsConfigSection *configuration)
     fl_free(configuration);
 }
 
-static void free_map_entry(void *value)
-{
-    sbs_config_free((struct SbsConfigSection*)value);
-}
-
-void sbs_config_map_init(FlHashtable *config_map)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = free_map_entry
-    };
-    
-    *config_map = fl_hashtable_new_args(new_args);
-}
-
 static void parse_compile_block(struct SbsParser *parser, struct SbsConfigCompile *compile)
 {
     const struct SbsToken *token = NULL;

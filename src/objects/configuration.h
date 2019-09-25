@@ -50,7 +50,6 @@ struct SbsConfiguration {
 
 struct SbsConfigSection* sbs_config_parse(struct SbsParser *parser);
 void sbs_config_free(struct SbsConfigSection *config);
-void sbs_config_map_init(FlHashtable *config_map);
 
 struct SbsConfiguration* sbs_config_resolve(const char *config_name, FlHashtable config_map, const char *env_name);
 void sbs_config_release(struct SbsConfiguration *config);

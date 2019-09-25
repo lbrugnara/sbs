@@ -9,10 +9,9 @@ struct SbsPreset {
     const char *toolchain;
     const char *config;
     const char *target;
-    struct SbsActions actions;
+    struct SbsActionsNode actions;
 };
 
-void sbs_preset_map_init(FlHashtable *presets);
 void sbs_preset_free(struct SbsPreset *preset);
 struct SbsPreset* sbs_preset_parse(struct SbsParser *parser);
 

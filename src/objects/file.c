@@ -25,7 +25,7 @@
  * Returns:
  *  void - This function does not return a value
  */
-void merge_hashtable(FlHashtable dest, FlHashtable src)
+static void merge_hashtable(FlHashtable dest, FlHashtable src)
 {
     // We just get the source hashtable's keys
     char **keys = fl_hashtable_keys(src);
@@ -132,7 +132,7 @@ static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *fi
         merge_into_file(file, included_file);
 
         // Release the included file memory
-        sbs_file_delete(included_file);
+        sbs_file_free(included_file);
 
         // Release the filename
         fl_cstring_delete(filename);
@@ -222,11 +222,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_ACTION)
         {
-            const struct SbsAction *action = sbs_action_parse(parser);
+            const struct SbsActionSection *action = sbs_action_section_parse(parser);
             if (fl_hashtable_has_key(file->actions, action->name))
             {
                 printf("Action %s cannot be redefined\n", action->name);
-                sbs_action_free((struct SbsAction*)action);
+                sbs_action_section_free((struct SbsActionSection*)action);
                 success = false;
                 break;
             }
@@ -253,6 +253,83 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
     return success;
 }
 
+static void map_init_env(FlHashtable *envs)
+{
+    struct FlHashtableArgs new_args = {
+        .hash_function = fl_hashtable_hash_string, 
+        .key_allocator = fl_container_allocator_string,
+        .key_comparer = fl_container_equals_string,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = (void(*)(void*))sbs_env_free
+    };
+    
+    *envs = fl_hashtable_new_args(new_args);
+}
+
+static void map_init_action(FlHashtable *actions)
+{
+    struct FlHashtableArgs new_args = {
+        .hash_function = fl_hashtable_hash_string, 
+        .key_allocator = fl_container_allocator_string,
+        .key_comparer = fl_container_equals_string,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = (void(*)(void*))sbs_action_section_free
+    };
+    
+    *actions = fl_hashtable_new_args(new_args);
+}
+
+static void map_init_config(FlHashtable *config_map)
+{
+    struct FlHashtableArgs new_args = {
+        .hash_function = fl_hashtable_hash_string, 
+        .key_allocator = fl_container_allocator_string,
+        .key_comparer = fl_container_equals_string,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = (void(*)(void*))sbs_config_free
+    };
+    
+    *config_map = fl_hashtable_new_args(new_args);
+}
+
+static void map_init_preset(FlHashtable *presets)
+{
+    struct FlHashtableArgs new_args = {
+        .hash_function = fl_hashtable_hash_string, 
+        .key_allocator = fl_container_allocator_string,
+        .key_comparer = fl_container_equals_string,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = (void(*)(void*))sbs_preset_free
+    };
+    
+    *presets = fl_hashtable_new_args(new_args);
+}
+
+static void map_init_target(FlHashtable *targets)
+{
+    struct FlHashtableArgs new_args = {
+        .hash_function = fl_hashtable_hash_string, 
+        .key_allocator = fl_container_allocator_string,
+        .key_comparer = fl_container_equals_string,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = (void(*)(void*))sbs_target_free
+    };
+    
+    *targets = fl_hashtable_new_args(new_args);
+}
+
+static void map_init_toolchain(FlHashtable *toolchains)
+{
+    struct FlHashtableArgs new_args = {
+        .hash_function = fl_hashtable_hash_string, 
+        .key_allocator = fl_container_allocator_string,
+        .key_comparer = fl_container_equals_string,
+        .key_cleaner = fl_container_cleaner_pointer,
+        .value_cleaner = (void(*)(void*))sbs_toolchain_free
+    };
+    
+    *toolchains = fl_hashtable_new_args(new_args);
+}
 
 /*
  * Function: sbs_file_parse
@@ -275,12 +352,12 @@ struct SbsFile* sbs_file_parse(const char *filename)
     // Create the SbsFile object
     struct SbsFile *file = fl_malloc(sizeof(struct SbsFile));
     file->filename = fl_cstring_replace(filename, "\\", "/");
-    sbs_env_map_init(&file->envs);
-    sbs_config_map_init(&file->configurations);
-    sbs_target_map_init(&file->targets);
-    sbs_toolchain_map_init(&file->toolchains);
-    sbs_action_map_init(&file->actions);
-    sbs_preset_map_init(&file->presets);
+    map_init_action(&file->actions);
+    map_init_config(&file->configurations);
+    map_init_env(&file->envs);
+    map_init_preset(&file->presets);
+    map_init_target(&file->targets);
+    map_init_toolchain(&file->toolchains);
 
     struct SbsLexer lexer = sbs_lexer_new(source, strlen(source));
     struct SbsParser parser = {
@@ -305,7 +382,7 @@ struct SbsFile* sbs_file_parse(const char *filename)
 }
 
 /*
- * Function: sbs_file_delete
+ * Function: sbs_file_free
  *  Releases the memory used by the *file* object.
  *
  * Parameters:
@@ -314,7 +391,7 @@ struct SbsFile* sbs_file_parse(const char *filename)
  * Returns:
  *  void - This function does not return a value
  */
-void sbs_file_delete(struct SbsFile *file)
+void sbs_file_free(struct SbsFile *file)
 {
     if (file->filename)
         fl_cstring_delete(file->filename);

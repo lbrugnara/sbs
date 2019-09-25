@@ -59,24 +59,6 @@ void sbs_toolchain_free(struct SbsToolchainSection *toolchain)
     fl_free(toolchain);
 }
 
-static void free_map_entry(void *value)
-{
-    sbs_toolchain_free((struct SbsToolchainSection*)value);
-}
-
-void sbs_toolchain_map_init(FlHashtable *toolchains)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = free_map_entry
-    };
-    
-    *toolchains = fl_hashtable_new_args(new_args);
-}
-
 static void parse_toolchain_entry(struct SbsParser *parser, struct SbsToolchainEntry *toolchain)
 {
     while (sbs_parser_peek(parser)->type == SBS_TOKEN_IDENTIFIER)

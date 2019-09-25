@@ -9,11 +9,7 @@ static void parse_for_section(struct SbsParser *parser, struct SbsTargetSection 
 
 void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode *target_entry)
 {
-    if (target_entry->actions.before)
-        fl_array_delete_each(target_entry->actions.before, sbs_common_free_string_or_id);
-
-    if (target_entry->actions.after)
-        fl_array_delete_each(target_entry->actions.after, sbs_common_free_string_or_id);
+    sbs_actions_node_free(&target_entry->actions);
 
     if (target_entry->output_dir)
         fl_cstring_delete(target_entry->output_dir);
@@ -117,24 +113,6 @@ void sbs_target_free(struct SbsTargetSection *target_section)
     fl_free(target_section);
 }
 
-static void free_map_entry(void *value)
-{
-    sbs_target_free((struct SbsTargetSection*)value);
-}
-
-void sbs_target_map_init(FlHashtable *targets)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = free_map_entry
-    };
-    
-    *targets = fl_hashtable_new_args(new_args);
-}
-
 static void parse_compile_body(struct SbsParser *parser, struct SbsTargetSection *target_section, struct SbsTargetCompileNode *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
@@ -161,7 +139,7 @@ static void parse_compile_body(struct SbsParser *parser, struct SbsTargetSection
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
         {
-            target->base.actions = sbs_actions_parse(parser);
+            target->base.actions = sbs_actions_node_parse(parser);
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"defines", 7))
         {
@@ -254,7 +232,7 @@ static void parse_archive_body(struct SbsParser *parser, struct SbsTargetSection
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
         {
-            target->base.actions = sbs_actions_parse(parser);
+            target->base.actions = sbs_actions_node_parse(parser);
         }
         else if (token->type == SBS_TOKEN_FOR)
         {
@@ -340,7 +318,7 @@ static void parse_shared_body(struct SbsParser *parser, struct SbsTargetSection 
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
         {
-            target->base.actions = sbs_actions_parse(parser);
+            target->base.actions = sbs_actions_node_parse(parser);
         }
         else if (token->type == SBS_TOKEN_FOR)
         {
@@ -426,7 +404,7 @@ static void parse_executable_body(struct SbsParser *parser, struct SbsTargetSect
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
         {
-            target->base.actions = sbs_actions_parse(parser);
+            target->base.actions = sbs_actions_node_parse(parser);
         }
         else if (token->type == SBS_TOKEN_FOR)
         {
@@ -696,11 +674,7 @@ struct SbsTarget* sbs_target_resolve(const char *target_name, FlHashtable target
 
 void sbs_target_release(struct SbsTarget *target)
 {
-    if (target->actions.before)
-        fl_array_delete(target->actions.before);
-
-    if (target->actions.after)
-        fl_array_delete(target->actions.after);
+    sbs_actions_node_free(&target->actions);
 
     switch (target->type)
     {

@@ -9,34 +9,9 @@ void sbs_preset_free(struct SbsPreset *preset)
     fl_cstring_delete(preset->toolchain);
     fl_cstring_delete(preset->config);
     fl_cstring_delete(preset->target);
-
-    if (preset->actions.before)
-        fl_array_delete_each(preset->actions.before, sbs_common_free_string_or_id);
-
-    if (preset->actions.after)
-        fl_array_delete_each(preset->actions.after, sbs_common_free_string_or_id);
-
+    sbs_actions_node_free(&preset->actions);
     fl_free(preset);
 }
-
-static void free_map_entry(void *value)
-{
-    sbs_preset_free((struct SbsPreset*)value);
-}
-
-void sbs_preset_map_init(FlHashtable *presets)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = free_map_entry
-    };
-    
-    *presets = fl_hashtable_new_args(new_args);
-}
-
 
 /*
  * Function: sbs_preset_parse
@@ -100,7 +75,7 @@ struct SbsPreset* sbs_preset_parse(struct SbsParser *parser)
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
         {
-            preset->actions = sbs_actions_parse(parser);
+            preset->actions = sbs_actions_node_parse(parser);
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

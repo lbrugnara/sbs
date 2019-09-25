@@ -22,31 +22,9 @@ void sbs_env_free(struct SbsEnv *env)
     if (env->args)
         fl_array_delete_each(env->args, sbs_common_free_string);
 
-    if (env->actions.before)
-        fl_array_delete_each(env->actions.before, sbs_common_free_string_or_id);
-
-    if (env->actions.after)
-        fl_array_delete_each(env->actions.after, sbs_common_free_string_or_id);
+    sbs_actions_node_free(&env->actions);
 
     free(env);
-}
-
-static void free_map_entry(void *value)
-{
-    sbs_env_free((struct SbsEnv*)value);
-}
-
-void sbs_env_map_init(FlHashtable *envs)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = free_map_entry
-    };
-    
-    *envs = fl_hashtable_new_args(new_args);
 }
 
 /*
@@ -56,7 +34,7 @@ void sbs_env_map_init(FlHashtable *envs)
  *      - type: The type property allows 3 predefined identifiers: bash, cmd, powershell.
  *      - terminal: The path to an executable shell
  *      - variables: Array of strings with the form of "key=value"
- *      - actions: <struct SbsActions> object with commands to be run before and after the build process
+ *      - actions: <struct SbsActionsNode> object with commands to be run before and after the build process
  *
  * Parameters:
  *  parser - Parser object
@@ -117,7 +95,7 @@ struct SbsEnv* sbs_env_parse(struct SbsParser *parser)
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
         {
-            env->actions = sbs_actions_parse(parser);
+            env->actions = sbs_actions_node_parse(parser);
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

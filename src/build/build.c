@@ -132,8 +132,8 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
         defer_expression(sbs_config_release(config));
 
         // Create the executor
-        SbsExecutor executor = sbs_executor_create(env);
-        defer_expression(sbs_executor_delete(executor));
+        SbsExecutor executor = sbs_executor_new(env);
+        defer_expression(sbs_executor_free(executor));
 
         enum SbsResult actions_result = SBS_RES_OK;
 

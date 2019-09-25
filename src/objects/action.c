@@ -3,9 +3,9 @@
 #include "common.h"
 #include "parser.h"
 
-void free_action_command(FlByte *value)
+void action_node_free(FlByte *value)
 {
-    struct SbsActionCommand *command = (struct SbsActionCommand*)value;
+    struct SbsActionNode *command = (struct SbsActionNode*)value;
 
     if (command->commands)
         fl_array_delete_each(command->commands, sbs_common_free_string);
@@ -15,36 +15,43 @@ void free_action_command(FlByte *value)
     // no need to free "command" as it is a struct value
 }
 
-void sbs_action_free(struct SbsAction *action)
+void sbs_action_section_free(struct SbsActionSection *action)
 {
     fl_cstring_delete(action->name);
 
-    if (action->commands)
-        fl_array_delete_each(action->commands, free_action_command);
+    if (action->nodes)
+        fl_array_delete_each(action->nodes, action_node_free);
 
     fl_free(action);
 }
 
-static void free_map_entry(void *value)
+static void parse_action_body(struct SbsParser *parser, struct SbsActionNode *current_node)
 {
-    sbs_action_free((struct SbsAction*)value);
-}
-
-void sbs_action_map_init(FlHashtable *actions)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = free_map_entry
-    };
-    
-    *actions = fl_hashtable_new_args(new_args);
+    const struct SbsToken *token = NULL;
+    while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_FOR)
+    { 
+        if (token->type == SBS_TOKEN_COMMAND_STRING)
+        {
+            size_t size = fl_array_length(current_node->commands);
+            current_node->commands = fl_array_resize(current_node->commands, size + 1);
+            current_node->commands[size] = sbs_common_parse_command_string(parser);
+        }
+        else if (token->type == SBS_TOKEN_IDENTIFIER)
+        {
+            size_t size = fl_array_length(current_node->commands);
+            current_node->commands = fl_array_resize(current_node->commands, size + 1);
+            current_node->commands[size] = sbs_common_parse_identifier(parser);
+        }
+        else
+        {
+            sbs_parser_error(token, "while parsing an action body");
+        }
+        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
+    }
 }
 
 /*
- * Function: sbs_action_parse
+ * Function: sbs_action_section_parse
  *  Parses an *action* block which supports the following elements withing its body:
  *      - A string: It is processed as a command to execute when the action is invoked
  *      - An identifier: The name of an existant action
@@ -55,12 +62,12 @@ void sbs_action_map_init(FlHashtable *actions)
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsAction* - The parsed *action* block
+ *  struct SbsActionSection* - The parsed *action* block
  *
  */
-struct SbsAction* sbs_action_parse(struct SbsParser *parser)
+struct SbsActionSection* sbs_action_section_parse(struct SbsParser *parser)
 {
-    struct SbsAction *action = fl_malloc(sizeof(struct SbsAction));
+    struct SbsActionSection *action_section = fl_malloc(sizeof(struct SbsActionSection));
 
     // Consume 'action'
     sbs_parser_consume(parser, SBS_TOKEN_ACTION);
@@ -68,81 +75,42 @@ struct SbsAction* sbs_action_parse(struct SbsParser *parser)
     // Consume IDENTIFIER
     const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
-    action->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
+    action_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
-    /*if (sbs_parser_peek(parser)->type == SBS_TOKEN_EXTENDS)
-        action->extends = sbs_common_parse_extends_declaration(parser);*/
-
-    // action_declaration -> 'action' IDENTIFIER '{' action_command* '}'
-    // action_command -> command | for_command
-    // command -> STRING
-    // for_command -> for_declaration '{' command* '}'
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-    FlVector commands = fl_vector_new_args((struct FlVectorArgs) {
+    FlVector action_nodes = fl_vector_new_args((struct FlVectorArgs) {
         .writer = fl_container_writer,
-        .element_size = sizeof(struct SbsActionCommand)
+        .element_size = sizeof(struct SbsActionNode)
     });
 
     const struct SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (token->type == SBS_TOKEN_COMMAND_STRING)
+        if (token->type == SBS_TOKEN_FOR)
         {
-            struct SbsActionCommand command = {
-                .commands =  fl_array_new(sizeof(char*), 1),
-                .for_envs = NULL
-            };
-            
-            command.commands[0] = sbs_common_parse_command_string(parser);
-
-            fl_vector_add(commands, &command);
-        }
-        if (token->type == SBS_TOKEN_IDENTIFIER)
-        {
-            struct SbsActionCommand command = {
-                .commands =  fl_array_new(sizeof(char*), 1),
-                .for_envs = NULL
-            };
-            
-            command.commands[0] = sbs_common_parse_identifier(parser);
-
-            fl_vector_add(commands, &command);
-        }
-        else if (token->type == SBS_TOKEN_FOR)
-        {
-            struct SbsActionCommand command = {
+            // We "reset" the current node to parse the for declaration
+            struct SbsActionNode current_node = { 
+                .commands = fl_array_new(sizeof(char*), 0),
                 .for_envs = sbs_common_parse_for_declaration(parser)
             };
 
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-            
-            size_t commandq = 0;
-            size_t offset = 0;
-            while ((token = sbs_parser_peek_at(parser, offset++)) && token->type != SBS_TOKEN_RBRACE)
-            {
-                if (token->type == SBS_TOKEN_COMMAND_STRING || token->type == SBS_TOKEN_IDENTIFIER)
-                    commandq++;
-            }
-
-            command.commands = fl_array_new(sizeof(char*), commandq);
-            offset = 0;
-            while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
-            {
-                if (token->type == SBS_TOKEN_COMMAND_STRING)
-                {
-                    command.commands[offset++] = sbs_common_parse_command_string(parser);
-                }
-                else if (token->type == SBS_TOKEN_IDENTIFIER)
-                {
-                    command.commands[offset++] = sbs_common_parse_identifier(parser);
-                }
-                sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
-            }
-
+            parse_action_body(parser, &current_node);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-            fl_vector_add(commands, &command);
+            fl_vector_add(action_nodes, &current_node);
+        }
+        else
+        {
+            struct SbsActionNode current_node = { 
+                .commands = fl_array_new(sizeof(char*), 0),
+                .for_envs = NULL
+            };
+
+            parse_action_body(parser, &current_node);
+
+            fl_vector_add(action_nodes, &current_node);
         }
 
        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -150,13 +118,13 @@ struct SbsAction* sbs_action_parse(struct SbsParser *parser)
 
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-    action->commands = fl_vector_to_array(commands);
-    fl_vector_delete(commands);
+    action_section->nodes = fl_vector_to_array(action_nodes);
+    fl_vector_delete(action_nodes);
 
-    return action;
+    return action_section;
 }
 /*
- * Function: sbs_actions_parse
+ * Function: sbs_actions_node_parse
  *  Parses an *actions* block that supports the following properties:
  *      - before: An array of strings or ids that identify actions to be run before a specific moment
  *      - after: An array of strings or ids that identify actions to be run after a specific moment
@@ -165,16 +133,16 @@ struct SbsAction* sbs_action_parse(struct SbsParser *parser)
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsActions - Parsed *actions* block
+ *  struct SbsActionsNode - Parsed *actions* block
  *
  */
-struct SbsActions sbs_actions_parse(struct SbsParser *parser)
+struct SbsActionsNode sbs_actions_node_parse(struct SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
     sbs_parser_consume(parser, SBS_TOKEN_COLON);
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-    struct SbsActions actions = {0};
+    struct SbsActionsNode actions = {0};
     const struct SbsToken *token = NULL;
 
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
@@ -202,4 +170,13 @@ struct SbsActions sbs_actions_parse(struct SbsParser *parser)
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
     return actions;
+}
+
+void sbs_actions_node_free(struct SbsActionsNode *actions)
+{
+    if (actions->before)
+        fl_array_delete_each(actions->before, sbs_common_free_string_or_id);
+
+    if (actions->after)
+        fl_array_delete_each(actions->after, sbs_common_free_string_or_id);
 }

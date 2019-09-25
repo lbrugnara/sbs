@@ -10,10 +10,9 @@ struct SbsEnv {
     const char *terminal;
     char **args;
     char **variables;
-    struct SbsActions actions;
+    struct SbsActionsNode actions;
 };
 
-void sbs_env_map_init(FlHashtable *envs);
 void sbs_env_free(struct SbsEnv *env);
 struct SbsEnv* sbs_env_parse(struct SbsParser *parser);
 
