@@ -556,23 +556,15 @@ static void merge_base_target(struct SbsTarget *extend, const struct SbsTargetNo
     if (source->output_dir)
         extend->output_dir = source->output_dir;
 
-    if (source->actions.before)
-        extend->actions.before = sbs_common_extend_array(extend->actions.before, source->actions.before);
-
-    if (source->actions.after)
-        extend->actions.after = sbs_common_extend_array(extend->actions.after, source->actions.after);
+    extend->actions.before = sbs_common_extend_array(extend->actions.before, source->actions.before);
+    extend->actions.after = sbs_common_extend_array(extend->actions.after, source->actions.after);
 }
 
 static void merge_compile_target(struct SbsTargetCompile *extend, const struct SbsTargetCompileNode *source)
 {
-    if (source->includes)
-        extend->includes = sbs_common_extend_array(extend->includes, source->includes);
-
-    if (source->sources)
-        extend->sources = sbs_common_extend_array(extend->sources, source->sources);
-
-    if (source->defines)
-        extend->defines = sbs_common_extend_array(extend->defines, source->defines);
+    extend->includes = sbs_common_extend_array(extend->includes, source->includes);
+    extend->sources = sbs_common_extend_array(extend->sources, source->sources);
+    extend->defines = sbs_common_extend_array(extend->defines, source->defines);
 }
 
 static void merge_archive_target(struct SbsTargetArchive *extend, const struct SbsTargetArchiveNode *source)
@@ -580,8 +572,7 @@ static void merge_archive_target(struct SbsTargetArchive *extend, const struct S
     if (source->output_name)
         extend->output_name = source->output_name;
 
-    if (source->objects)
-        extend->objects = sbs_common_extend_array(extend->objects, source->objects);
+    extend->objects = sbs_common_extend_array(extend->objects, source->objects);
 }
 
 static void merge_shared_target(struct SbsTargetShared *extend, const struct SbsTargetSharedNode *source)
@@ -589,8 +580,7 @@ static void merge_shared_target(struct SbsTargetShared *extend, const struct Sbs
     if (source->output_name)
         extend->output_name = source->output_name;
 
-    if (source->objects)
-        extend->objects = sbs_common_extend_array(extend->objects, source->objects);
+    extend->objects = sbs_common_extend_array(extend->objects, source->objects);
 }
 
 static void merge_executable_target(struct SbsTargetExecutable *extend, const struct SbsTargetExecutableNode *source)
@@ -598,8 +588,7 @@ static void merge_executable_target(struct SbsTargetExecutable *extend, const st
     if (source->output_name)
         extend->output_name = source->output_name;
 
-    if (source->objects)
-        extend->objects = sbs_common_extend_array(extend->objects, source->objects);
+    extend->objects = sbs_common_extend_array(extend->objects, source->objects);
 }
 
 struct SbsTarget* sbs_target_resolve(const char *target_name, FlHashtable target_map, const char *env_name)

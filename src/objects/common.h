@@ -23,7 +23,6 @@ struct SbsStringOrId* sbs_common_parse_string_or_id_array(struct SbsParser *pars
 char** sbs_common_parse_string_array(struct SbsParser *parser);
 char** sbs_common_parse_extends_declaration(struct SbsParser *parser);
 char** sbs_common_parse_for_declaration(struct SbsParser *parser);
-void sbs_common_extend_fl_array(char ***dest, char** src);
 FlArray sbs_common_extend_array(FlArray dest, FlArray src);
 
 #endif /* SBS_OBJECT_COMMON_H */

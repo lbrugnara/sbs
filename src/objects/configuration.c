@@ -372,8 +372,7 @@ static void merge_compile_config(struct SbsConfigCompile *extend, const struct S
     if (source->extension)
         extend->extension = source->extension;
     
-    if (source->flags)
-        sbs_common_extend_fl_array(&extend->flags, source->flags);
+    extend->flags = sbs_common_extend_array(extend->flags, source->flags);
 
     if (source->include_dir_flag)
         extend->include_dir_flag = source->include_dir_flag;
@@ -387,8 +386,7 @@ static void merge_archive_config(struct SbsConfigArchive *extend, const struct S
     if (source->extension)
         extend->extension = source->extension;
 
-    if (source->flags)
-        sbs_common_extend_fl_array(&extend->flags, source->flags);   
+    extend->flags = sbs_common_extend_array(extend->flags, source->flags);
 }
 
 static void merge_shared_config(struct SbsConfigShared *extend, const struct SbsConfigShared *source)
@@ -396,8 +394,7 @@ static void merge_shared_config(struct SbsConfigShared *extend, const struct Sbs
     if (source->extension)
         extend->extension = source->extension;
 
-    if (source->flags)
-        sbs_common_extend_fl_array(&extend->flags, source->flags);   
+    extend->flags = sbs_common_extend_array(extend->flags, source->flags);
 }
 
 static void merge_executable_config(struct SbsConfigExecutable *extend, const struct SbsConfigExecutable *source)
@@ -405,8 +402,7 @@ static void merge_executable_config(struct SbsConfigExecutable *extend, const st
     if (source->extension)
         extend->extension = source->extension;
 
-    if (source->flags)
-        sbs_common_extend_fl_array(&extend->flags, source->flags);   
+    extend->flags = sbs_common_extend_array(extend->flags, source->flags);
 }
 
 struct SbsConfiguration* sbs_config_resolve(const char *config_name, FlHashtable config_map, const char *env_name)
