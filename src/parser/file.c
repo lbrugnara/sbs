@@ -12,6 +12,8 @@
 #include "parser.h"
 #include "file.h"
 
+#include "../common.h"
+
 
 /*
  * Function: merge_hashtable
@@ -174,11 +176,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_ENV)
         {
-            const struct SbsEnv *env = sbs_env_parse(parser);
+            const struct SbsEnvSection *env = sbs_env_section_parse(parser);
             if (fl_hashtable_has_key(file->envs, env->name))
             {
                 printf("Env %s cannot be redefined\n", env->name);
-                sbs_env_free((struct SbsEnv*)env);
+                sbs_env_section_free((struct SbsEnvSection*)env);
                 success = false;
                 break;
             }
@@ -186,11 +188,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_COMPILE || token->type == SBS_TOKEN_ARCHIVE || token->type == SBS_TOKEN_SHARED || token->type == SBS_TOKEN_EXECUTABLE)
         {
-            const struct SbsTargetSection *target = sbs_target_parse(parser);
+            const struct SbsTargetSection *target = sbs_target_section_parse(parser);
             if (fl_hashtable_has_key(file->targets, target->name))
             {
                 printf("Target %s cannot be redefined\n", target->name);
-                sbs_target_free((struct SbsTargetSection*)target);
+                sbs_target_section_free((struct SbsTargetSection*)target);
                 success = false;
                 break;
             }
@@ -198,11 +200,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_TOOLCHAIN)
         {
-            const struct SbsToolchainSection *toolchain = sbs_toolchain_parse(parser);
+            const struct SbsToolchainSection *toolchain = sbs_toolchain_section_parse(parser);
             if (fl_hashtable_has_key(file->toolchains, toolchain->name))
             {
                 printf("Toolchain %s cannot be redefined\n", toolchain->name);
-                sbs_toolchain_free((struct SbsToolchainSection*)toolchain);
+                sbs_toolchain_section_free((struct SbsToolchainSection*)toolchain);
                 success = false;
                 break;
             }
@@ -210,11 +212,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_CONFIG)
         {
-            const struct SbsConfigSection *configuration = sbs_config_parse(parser);
+            const struct SbsConfigSection *configuration = sbs_config_section_parse(parser);
             if (fl_hashtable_has_key(file->configurations, configuration->name))
             {
                 printf("Configuration %s cannot be redefined\n", configuration->name);
-                sbs_config_free((struct SbsConfigSection*)configuration);
+                sbs_config_section_free((struct SbsConfigSection*)configuration);
                 success = false;
                 break;
             }
@@ -234,11 +236,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_PRESET)
         {
-            const struct SbsPreset *preset = sbs_preset_parse(parser);
+            const struct SbsPresetSection *preset = sbs_preset_parse(parser);
             if (fl_hashtable_has_key(file->presets, preset->name))
             {
                 printf("Preset %s cannot be redefined\n", preset->name);
-                sbs_preset_free((struct SbsPreset*)preset);
+                sbs_preset_free((struct SbsPresetSection*)preset);
                 success = false;
                 break;
             }
@@ -260,7 +262,7 @@ static void map_init_env(FlHashtable *envs)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_env_free
+        .value_cleaner = (void(*)(void*))sbs_env_section_free
     };
     
     *envs = fl_hashtable_new_args(new_args);
@@ -286,7 +288,7 @@ static void map_init_config(FlHashtable *config_map)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_config_free
+        .value_cleaner = (void(*)(void*))sbs_config_section_free
     };
     
     *config_map = fl_hashtable_new_args(new_args);
@@ -312,7 +314,7 @@ static void map_init_target(FlHashtable *targets)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_target_free
+        .value_cleaner = (void(*)(void*))sbs_target_section_free
     };
     
     *targets = fl_hashtable_new_args(new_args);
@@ -325,7 +327,7 @@ static void map_init_toolchain(FlHashtable *toolchains)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_toolchain_free
+        .value_cleaner = (void(*)(void*))sbs_toolchain_section_free
     };
     
     *toolchains = fl_hashtable_new_args(new_args);

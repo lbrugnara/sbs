@@ -2,26 +2,6 @@
 #include "common.h"
 #include "parser.h"
 
-void sbs_common_free_string(FlByte *obj)
-{
-    if (!obj)
-        return;
-
-    char *str = *(char**)obj;
-    fl_cstring_free(str);
-}
-
-void sbs_common_free_string_or_id(FlByte *obj)
-{
-    if (!obj)
-        return;
-
-    struct SbsStringOrId *str = (struct SbsStringOrId*)obj;
-
-    if (str->value)
-        fl_cstring_free(str->value);
-}
-
 /*
  * Function: sbs_common_parse_string
  *  Parses an string
@@ -360,15 +340,4 @@ char** sbs_common_parse_for_declaration(struct SbsParser *parser)
     }
 
     return identifiers;
-}
-
-FlArray sbs_common_extend_array(FlArray dest, FlArray src)
-{
-    if (!src)
-        return dest;
-
-    if (!dest)
-        dest = fl_array_new(fl_array_element_size(src), 0);
-
-    return fl_array_combine(dest, src);
 }

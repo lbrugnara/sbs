@@ -1,4 +1,6 @@
 #include "compile.h"
+#include "../common.h"
+#include "../objects/configuration.h"
 
 #define SBS_DIR_SEPARATOR "/"
 
@@ -122,16 +124,14 @@ char** sbs_build_compile(struct SbsBuild *build)
 
         if (needs_compile)
         {
-            const char *compiler = sbs_toolchain_get_compiler(build->toolchain, build->env);
-
-            if (compiler)
+            if (build->toolchain->compiler)
             {
                 // Replace the special ${source} and ${object} variables in the falgs
                 char *compilation_unit_flags = fl_cstring_replace(flags, "${source}", source_file);
                 compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${object}", object_file);
 
                 // Build the compile command
-                char *command = fl_cstring_vdup("%s %s %s", compiler, includes, compilation_unit_flags);
+                char *command = fl_cstring_vdup("%s %s %s", build->toolchain->compiler, includes, compilation_unit_flags);
 
                 // Exec
                 success = sbs_executor_run_command(build->executor, command) && success;

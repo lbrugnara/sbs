@@ -4,11 +4,11 @@
 #include <fllib.h>
 #include "../result.h"
 #include "../executor.h"
-#include "../objects/file.h"
-#include "../objects/environment.h"
-#include "../objects/toolchain.h"
-#include "../objects/target.h"
+#include "../parser/file.h"
+#include "../parser/environment.h"
 #include "../objects/configuration.h"
+#include "../objects/target.h"
+#include "../objects/toolchain.h"
 
 struct SbsBuildArguments {
     const char *env;
@@ -22,8 +22,8 @@ struct SbsBuildArguments {
 struct SbsBuild {
     const SbsExecutor executor;
     const struct SbsFile *file;
-    const struct SbsEnv *env;
-    const struct SbsToolchainSection *toolchain;
+    const struct SbsEnvSection *env;
+    const struct SbsToolchain *toolchain;
     const struct SbsTarget *target;
     const struct SbsConfiguration *config;
 };

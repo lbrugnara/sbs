@@ -1,11 +1,11 @@
-#ifndef SBS_OBJECT_FILE_H
-#define SBS_OBJECT_FILE_H
+#ifndef SBS_PARSER_FILE_H
+#define SBS_PARSER_FILE_H
 
 #include <fllib.h>
 
 struct SbsFile {
     const char *filename;
-    /* FlHashtable<char*, struct SbsEnv*> */
+    /* FlHashtable<char*, struct SbsEnvSection*> */
     FlHashtable envs;
     /* FlHashtable<char*, struct SbsTargetSection*> */
     FlHashtable targets;
@@ -15,11 +15,11 @@ struct SbsFile {
     FlHashtable configurations;
     /* FlHashtable<char*, struct SbsActionSection*> */
     FlHashtable actions;
-    /* FlHashtable<char*, struct SbsPreset*> */
+    /* FlHashtable<char*, struct SbsPresetSection*> */
     FlHashtable presets;
 };
 
 struct SbsFile* sbs_file_parse(const char *filename);
 void sbs_file_free(struct SbsFile *build);
 
-#endif /* SBS_OBJECT_FILE_H */
+#endif /* SBS_PARSER_FILE_H */

@@ -11,6 +11,8 @@ action rm-objects {
     for win-wsl-x64, win-cygwin-x64, linux-wsl-x64 {
         `/bin/rm -fr obj/sbs-config*`
     },
+    
+    print,
 
     `echo All previous build files have been cleaned`
 }

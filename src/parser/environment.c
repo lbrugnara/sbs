@@ -1,8 +1,9 @@
 #include "environment.h"
 #include "common.h"
 #include "parser.h"
+#include "../common.h"
 
-void sbs_env_free(struct SbsEnv *env)
+void sbs_env_section_free(struct SbsEnvSection *env)
 {
     if (!env)
         return;
@@ -28,7 +29,7 @@ void sbs_env_free(struct SbsEnv *env)
 }
 
 /*
- * Function: sbs_env_parse
+ * Function: sbs_env_section_parse
  *  Parses an *env* block which supports the following properties:
  *      - args: array of strings that represents the *argv* of the shell to be used
  *      - type: The type property allows 3 predefined identifiers: bash, cmd, powershell.
@@ -40,12 +41,12 @@ void sbs_env_free(struct SbsEnv *env)
  *  parser - Parser object
  *
  * Returns:
- *  static struct SbsEnv* - The parsed *env* block
+ *  static struct SbsEnvSection* - The parsed *env* block
  *
  */
-struct SbsEnv* sbs_env_parse(struct SbsParser *parser)
+struct SbsEnvSection* sbs_env_section_parse(struct SbsParser *parser)
 {
-    struct SbsEnv *env = fl_malloc(sizeof(struct SbsEnv));
+    struct SbsEnvSection *env = fl_malloc(sizeof(struct SbsEnvSection));
 
     // Consume 'env'
     sbs_parser_consume(parser, SBS_TOKEN_ENV);

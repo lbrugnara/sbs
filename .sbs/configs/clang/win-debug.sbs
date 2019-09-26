@@ -5,6 +5,7 @@ config clang-win-debug extends clang-win-base {
         ]
     },
     archive: {
+        extension: ".lib",
         flags: [
         ]
     },

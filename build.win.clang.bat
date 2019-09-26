@@ -51,26 +51,32 @@ if "%~1%"=="clean" (
 
 rd /s /q "obj\"
 rd /s /q "build\"
-md .\obj\debug\objects
-md .\obj\debug\build
-md .\obj\debug\actions
+md .\obj\debug\objects .\obj\debug\parser .\obj\debug\build .\obj\debug\actions
 
-
-clang.exe %CFLAGS% -c .\src\objects\action.c  -o .\obj\debug\objects\action.o
-clang.exe %CFLAGS% -c .\src\objects\common.c  -o .\obj\debug\objects\common.o
-clang.exe %CFLAGS% -c .\src\objects\configuration.c  -o .\obj\debug\objects\configuration.o
-clang.exe %CFLAGS% -c .\src\objects\environment.c  -o .\obj\debug\objects\environment.o
-clang.exe %CFLAGS% -c .\src\objects\lexer.c  -o .\obj\debug\objects\lexer.o
-clang.exe %CFLAGS% -c .\src\objects\parser.c  -o .\obj\debug\objects\parser.o
-clang.exe %CFLAGS% -c .\src\objects\preset.c  -o .\obj\debug\objects\preset.o
-clang.exe %CFLAGS% -c .\src\objects\target.c  -o .\obj\debug\objects\target.o
-clang.exe %CFLAGS% -c .\src\objects\toolchain.c  -o .\obj\debug\objects\toolchain.o
-clang.exe %CFLAGS% -c .\src\objects\file.c  -o .\obj\debug\objects\file.o
 clang.exe %CFLAGS% -c .\src\actions\actions.c  -o .\obj\debug\actions\actions.o
+
 clang.exe %CFLAGS% -c .\src\build\build.c  -o .\obj\debug\build\build.o
 clang.exe %CFLAGS% -c .\src\build\archive.c  -o .\obj\debug\build\archive.o
 clang.exe %CFLAGS% -c .\src\build\compile.c  -o .\obj\debug\build\compile.o
+
+clang.exe %CFLAGS% -c .\src\parser\action.c  -o .\obj\debug\parser\action.o
+clang.exe %CFLAGS% -c .\src\parser\common.c  -o .\obj\debug\parser\common.o
+clang.exe %CFLAGS% -c .\src\parser\configuration.c  -o .\obj\debug\parser\configuration.o
+clang.exe %CFLAGS% -c .\src\parser\environment.c  -o .\obj\debug\parser\environment.o
+clang.exe %CFLAGS% -c .\src\parser\lexer.c  -o .\obj\debug\parser\lexer.o
+clang.exe %CFLAGS% -c .\src\parser\parser.c  -o .\obj\debug\parser\parser.o
+clang.exe %CFLAGS% -c .\src\parser\preset.c  -o .\obj\debug\parser\preset.o
+clang.exe %CFLAGS% -c .\src\parser\target.c  -o .\obj\debug\parser\target.o
+clang.exe %CFLAGS% -c .\src\parser\toolchain.c  -o .\obj\debug\parser\toolchain.o
+clang.exe %CFLAGS% -c .\src\parser\file.c  -o .\obj\debug\parser\file.o
+
+clang.exe %CFLAGS% -c .\src\objects\action.c  -o .\obj\debug\objects\action.o
+clang.exe %CFLAGS% -c .\src\objects\configuration.c  -o .\obj\debug\objects\configuration.o
+clang.exe %CFLAGS% -c .\src\objects\target.c  -o .\obj\debug\objects\target.o
+clang.exe %CFLAGS% -c .\src\objects\toolchain.c  -o .\obj\debug\objects\toolchain.o
+
 clang.exe %CFLAGS% -c .\src\commands.c  -o .\obj\debug\commands.o
+clang.exe %CFLAGS% -c .\src\common.c  -o .\obj\debug\common.o
 clang.exe %CFLAGS% -c .\src\executor.c  -o .\obj\debug\executor.o
 clang.exe %CFLAGS% -c .\src\main.c  -o .\obj\debug\main.o
 clang.exe %CFLAGS% -c .\src\result.c  -o .\obj\debug\result.o
@@ -89,20 +95,25 @@ lld-link.exe ^
     -DEBUG:FULL ^
     %LIBSPATH% ^
     %LIBS% ^
-    obj\debug\objects\action.o ^
-    obj\debug\objects\common.o ^
-    obj\debug\objects\configuration.o ^
-    obj\debug\objects\environment.o ^
-    obj\debug\objects\lexer.o ^
-    obj\debug\objects\parser.o ^
-    obj\debug\objects\preset.o ^
-    obj\debug\objects\target.o ^
-    obj\debug\objects\toolchain.o ^
-    obj\debug\objects\file.o ^
     obj\debug\actions\actions.o ^
     obj\debug\build\build.o ^
     obj\debug\build\archive.o ^
     obj\debug\build\compile.o ^
+    obj\debug\parser\action.o ^
+    obj\debug\parser\common.o ^
+    obj\debug\parser\configuration.o ^
+    obj\debug\parser\environment.o ^
+    obj\debug\parser\lexer.o ^
+    obj\debug\parser\parser.o ^
+    obj\debug\parser\preset.o ^
+    obj\debug\parser\target.o ^
+    obj\debug\parser\toolchain.o ^
+    obj\debug\parser\file.o ^
+    obj\debug\objects\action.o ^
+    obj\debug\objects\configuration.o ^
+    obj\debug\objects\target.o ^
+    obj\debug\objects\toolchain.o ^
+    obj\debug\common.o ^
     obj\debug\commands.o ^
     obj\debug\executor.o ^
     obj\debug\main.o ^

@@ -2,7 +2,7 @@
 #include "common.h"
 #include "parser.h"
 
-void sbs_preset_free(struct SbsPreset *preset)
+void sbs_preset_free(struct SbsPresetSection *preset)
 {
     fl_cstring_free(preset->name);
     fl_cstring_free(preset->env);
@@ -26,12 +26,12 @@ void sbs_preset_free(struct SbsPreset *preset)
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsPreset* - Parsed *preset* block
+ *  struct SbsPresetSection* - Parsed *preset* block
  *
  */
-struct SbsPreset* sbs_preset_parse(struct SbsParser *parser)
+struct SbsPresetSection* sbs_preset_parse(struct SbsParser *parser)
 {
-    struct SbsPreset *preset = fl_malloc(sizeof(struct SbsPreset));
+    struct SbsPresetSection *preset = fl_malloc(sizeof(struct SbsPresetSection));
 
     // Consume the 'preset' token
     sbs_parser_consume(parser, SBS_TOKEN_PRESET);

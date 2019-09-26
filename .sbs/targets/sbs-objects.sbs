@@ -1,27 +1,36 @@
 compile sbs-objects {
     actions: {
-        before: [],
-        after: []
+        before: [
+            `echo Building target sbs-objects`
+        ],
+        after: [
+            `echo Target sbs-objects has been successfully built`
+        ]
     },
     includes: [
         "../fllib/include"
     ],
     sources: [ 
-        "src/objects/action.c",
-        "src/objects/common.c",
-        "src/objects/configuration.c",
-        "src/objects/environment.c",
-        "src/objects/file.c",
-        "src/objects/lexer.c",
-        "src/objects/parser.c",
-        "src/objects/preset.c",
-        "src/objects/target.c",
-        "src/objects/toolchain.c",
         "src/actions/actions.c",
         "src/build/build.c",
         "src/build/archive.c",
         "src/build/compile.c",
+        "src/parser/action.c",
+        "src/parser/common.c",
+        "src/parser/configuration.c",
+        "src/parser/environment.c",
+        "src/parser/file.c",
+        "src/parser/lexer.c",
+        "src/parser/parser.c",
+        "src/parser/preset.c",
+        "src/parser/target.c",
+        "src/parser/toolchain.c",
+        "src/objects/action.c",
+        "src/objects/configuration.c",
+        "src/objects/target.c",
+        "src/objects/toolchain.c",
         "src/commands.c",
+        "src/common.c",
         "src/executor.c",
         "src/main.c",
         "src/result.c",

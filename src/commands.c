@@ -2,7 +2,7 @@
 #include "commands.h"
 #include "result.h"
 #include "build/build.h"
-#include "objects/file.h"
+#include "parser/file.h"
 
 #define SBS_VERSION_MAJOR 0
 #define SBS_VERSION_MINOR 1

@@ -1,5 +1,8 @@
 #include "archive.h"
 #include "build.h"
+#include "../common.h"
+#include "../objects/configuration.h"
+#include "../objects/toolchain.h"
 
 #define SBS_DIR_SEPARATOR "/"
 
@@ -70,7 +73,7 @@ char** sbs_build_target_archive(struct SbsBuild *build)
         if (target_archive->objects[i].type == SBS_IDENTIFIER)
         {
             // target_objects is an array of pointers to char allocated by the target
-            struct SbsTarget *target = sbs_target_resolve(target_archive->objects[i].value, build->file->targets, build->env->name);
+            struct SbsTarget *target = sbs_target_resolve(build->file, target_archive->objects[i].value, build->env->name);
 
             char **target_objects = sbs_build_target(&(struct SbsBuild) {
                 .executor = build->executor,
@@ -81,7 +84,7 @@ char** sbs_build_target_archive(struct SbsBuild *build)
                 .config = build->config
             });
 
-            sbs_target_release(target);
+            sbs_target_free(target);
 
             // Something odd happened if it is null, we need to leave with error
             if (target_objects == NULL)
@@ -126,15 +129,13 @@ char** sbs_build_target_archive(struct SbsBuild *build)
 
         if (needs_archive)
         {
-            const char *archiver = sbs_toolchain_get_archiver(build->toolchain, build->env);
-
-            if (archiver != NULL)
+            if (build->toolchain->archiver != NULL)
             {
                 // Replace the special ${archive} variable in the flag
                 char *archive_flags = fl_cstring_replace(flags, "${archive}", output_filename);
 
                 // Build the compile command
-                char *command = fl_cstring_vdup("%s %s", archiver, archive_flags);
+                char *command = fl_cstring_vdup("%s %s", build->toolchain->archiver, archive_flags);
 
                 for (size_t i=0; i < fl_vector_length(archive_objects); i++)
                     fl_cstring_append(fl_cstring_append(&command, " "), fl_vector_get(archive_objects, i));
