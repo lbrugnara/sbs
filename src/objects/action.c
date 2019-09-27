@@ -1,6 +1,20 @@
+#include <fllib.h>
 #include "action.h"
-
 #include "../parser/action.h"
+
+static inline bool is_for_env(const char *env_name, char **for_envs)
+{
+    if (!for_envs)
+        return false;
+
+    for (size_t i=0; i < fl_array_length(for_envs); i++)
+    {
+        if (flm_cstring_equals(for_envs[i], env_name))
+            return true;
+    }
+
+    return false;
+}
 
 struct SbsAction* sbs_action_resolve(const struct SbsFile *file, const char *action_name, const char *env_name)
 {
@@ -19,6 +33,9 @@ struct SbsAction* sbs_action_resolve(const struct SbsFile *file, const char *act
 
         for (size_t i=0; i < fl_array_length(ancestor->commands); i++)
         {
+            if (ancestor->for_envs && !is_for_env(env_name, ancestor->for_envs))
+                continue;
+
             struct SbsStringOrId command = ancestor->commands[i];
 
             if (command.type == SBS_STRING)

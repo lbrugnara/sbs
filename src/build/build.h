@@ -5,7 +5,7 @@
 #include "../result.h"
 #include "../executor.h"
 #include "../parser/file.h"
-#include "../parser/environment.h"
+#include "../objects/environment.h"
 #include "../objects/configuration.h"
 #include "../objects/target.h"
 #include "../objects/toolchain.h"
@@ -22,7 +22,7 @@ struct SbsBuildArguments {
 struct SbsBuild {
     const SbsExecutor executor;
     const struct SbsFile *file;
-    const struct SbsEnvSection *env;
+    const struct SbsEnv *env;
     const struct SbsToolchain *toolchain;
     const struct SbsTarget *target;
     const struct SbsConfiguration *config;

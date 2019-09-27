@@ -2,7 +2,7 @@
 #include "common.h"
 #include "parser.h"
 
-void sbs_preset_free(struct SbsPresetSection *preset)
+void sbs_preset_section_free(struct SbsPresetSection *preset)
 {
     fl_cstring_free(preset->name);
     fl_cstring_free(preset->env);
@@ -14,7 +14,7 @@ void sbs_preset_free(struct SbsPresetSection *preset)
 }
 
 /*
- * Function: sbs_preset_parse
+ * Function: sbs_preset_section_parse
  *  Parses a *preset* block which supports the following properties:
  *      - env: Environment name
  *      - toolchain: Toolchain name
@@ -29,7 +29,7 @@ void sbs_preset_free(struct SbsPresetSection *preset)
  *  struct SbsPresetSection* - Parsed *preset* block
  *
  */
-struct SbsPresetSection* sbs_preset_parse(struct SbsParser *parser)
+struct SbsPresetSection* sbs_preset_section_parse(struct SbsParser *parser)
 {
     struct SbsPresetSection *preset = fl_malloc(sizeof(struct SbsPresetSection));
 

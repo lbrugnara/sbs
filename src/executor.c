@@ -14,7 +14,7 @@ enum SbsExecutorType {
 
 struct SbsExecutor {
     enum SbsExecutorType type;
-    struct SbsEnvSection *env;
+    struct SbsEnv *env;
 };
 
 struct SbsCustomExecutor {
@@ -56,7 +56,7 @@ struct SbsCommandDriver {
     }
 ;
 
-SbsExecutor sbs_executor_new(struct SbsEnvSection *env)
+SbsExecutor sbs_executor_new(struct SbsEnv *env)
 {
     flm_assert(env, "Environment cannot be null");
 

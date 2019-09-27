@@ -10,8 +10,7 @@ compile sbs-objects {
     includes: [
         "../fllib/include"
     ],
-    sources: [ 
-        "src/actions/actions.c",
+    sources: [
         "src/build/build.c",
         "src/build/archive.c",
         "src/build/compile.c",
@@ -27,6 +26,8 @@ compile sbs-objects {
         "src/parser/toolchain.c",
         "src/objects/action.c",
         "src/objects/configuration.c",
+        "src/objects/environment.c",
+        "src/objects/preset.c",
         "src/objects/target.c",
         "src/objects/toolchain.c",
         "src/commands.c",

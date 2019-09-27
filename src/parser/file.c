@@ -236,11 +236,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_PRESET)
         {
-            const struct SbsPresetSection *preset = sbs_preset_parse(parser);
+            const struct SbsPresetSection *preset = sbs_preset_section_parse(parser);
             if (fl_hashtable_has_key(file->presets, preset->name))
             {
                 printf("Preset %s cannot be redefined\n", preset->name);
-                sbs_preset_free((struct SbsPresetSection*)preset);
+                sbs_preset_section_free((struct SbsPresetSection*)preset);
                 success = false;
                 break;
             }
@@ -301,7 +301,7 @@ static void map_init_preset(FlHashtable *presets)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_preset_free
+        .value_cleaner = (void(*)(void*))sbs_preset_section_free
     };
     
     *presets = fl_hashtable_new_args(new_args);

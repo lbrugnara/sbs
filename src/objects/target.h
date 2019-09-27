@@ -7,17 +7,18 @@
 #include "../parser/target.h"
 #include "../parser/file.h"
 
+#define SBS_TARGET_BASE_DEF()     \
+    enum SbsTargetType type;    \
+    char *name;                 \
+    struct SbsActions actions
+
 struct SbsTarget {
-    enum SbsTargetType type;
-    char *name;
-    struct SbsActions actions;
+    SBS_TARGET_BASE_DEF();
     char *output_dir;
 };
 
 struct SbsTargetCompile {
-    enum SbsTargetType type;
-    char *name;
-    struct SbsActions actions;
+    SBS_TARGET_BASE_DEF();
     char *output_dir;
     char **includes;
     char **sources;
@@ -25,27 +26,21 @@ struct SbsTargetCompile {
 };
 
 struct SbsTargetArchive {
-    enum SbsTargetType type;
-    char *name;
-    struct SbsActions actions;
+    SBS_TARGET_BASE_DEF();
     char *output_dir;
     char *output_name;
     struct SbsStringOrId *objects;
 };
 
 struct SbsTargetShared {
-    enum SbsTargetType type;
-    char *name;
-    struct SbsActions actions;
+    SBS_TARGET_BASE_DEF();
     char *output_dir;
     char *output_name;
     struct SbsStringOrId *objects;
 };
 
 struct SbsTargetExecutable {
-    enum SbsTargetType type;
-    char *name;
-    struct SbsActions actions;
+    SBS_TARGET_BASE_DEF();
     char *output_dir;
     char *output_name;
     struct SbsStringOrId *objects;

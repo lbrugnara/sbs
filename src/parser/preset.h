@@ -12,7 +12,7 @@ struct SbsPresetSection {
     struct SbsActionsNode actions;
 };
 
-struct SbsPresetSection* sbs_preset_parse(struct SbsParser *parser);
-void sbs_preset_free(struct SbsPresetSection *preset);
+struct SbsPresetSection* sbs_preset_section_parse(struct SbsParser *parser);
+void sbs_preset_section_free(struct SbsPresetSection *preset);
 
 #endif /* SBS_PARSER_PRESET_H */

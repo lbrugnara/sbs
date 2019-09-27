@@ -12,6 +12,7 @@ set CFLAGS= -std=c99 ^
             -Wno-unused-function ^
             -Wno-missing-braces ^
             -fstrict-aliasing ^
+            -Wvla ^
             -finput-charset=UTF-8 ^
             -fexec-charset=UTF-8 ^
             -ggdb ^
@@ -51,9 +52,7 @@ if "%~1%"=="clean" (
 
 rd /s /q "obj\"
 rd /s /q "build\"
-md .\obj\debug\objects .\obj\debug\parser .\obj\debug\build .\obj\debug\actions
-
-clang.exe %CFLAGS% -c .\src\actions\actions.c  -o .\obj\debug\actions\actions.o
+md .\obj\debug\objects .\obj\debug\parser .\obj\debug\build
 
 clang.exe %CFLAGS% -c .\src\build\build.c  -o .\obj\debug\build\build.o
 clang.exe %CFLAGS% -c .\src\build\archive.c  -o .\obj\debug\build\archive.o
@@ -72,6 +71,8 @@ clang.exe %CFLAGS% -c .\src\parser\file.c  -o .\obj\debug\parser\file.o
 
 clang.exe %CFLAGS% -c .\src\objects\action.c  -o .\obj\debug\objects\action.o
 clang.exe %CFLAGS% -c .\src\objects\configuration.c  -o .\obj\debug\objects\configuration.o
+clang.exe %CFLAGS% -c .\src\objects\environment.c  -o .\obj\debug\objects\environment.o
+clang.exe %CFLAGS% -c .\src\objects\preset.c  -o .\obj\debug\objects\preset.o
 clang.exe %CFLAGS% -c .\src\objects\target.c  -o .\obj\debug\objects\target.o
 clang.exe %CFLAGS% -c .\src\objects\toolchain.c  -o .\obj\debug\objects\toolchain.o
 
@@ -95,7 +96,6 @@ lld-link.exe ^
     -DEBUG:FULL ^
     %LIBSPATH% ^
     %LIBS% ^
-    obj\debug\actions\actions.o ^
     obj\debug\build\build.o ^
     obj\debug\build\archive.o ^
     obj\debug\build\compile.o ^
@@ -111,6 +111,8 @@ lld-link.exe ^
     obj\debug\parser\file.o ^
     obj\debug\objects\action.o ^
     obj\debug\objects\configuration.o ^
+    obj\debug\objects\environment.o ^
+    obj\debug\objects\preset.o ^
     obj\debug\objects\target.o ^
     obj\debug\objects\toolchain.o ^
     obj\debug\common.o ^

@@ -9,7 +9,7 @@ config cl-base {
         define_flag: "/D",
         flags: [
             "/Zi",
-            "/W1",
+            "/WX",
             "/c ${source}",
             "/Fo${object}"
         ]

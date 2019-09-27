@@ -17,6 +17,7 @@ CFLAGS="-std=gnu99 \
         -Wno-missing-braces \
         -Wno-unused-value \
         -fstrict-aliasing \
+        -Wvla \
         -finput-charset=UTF-8 \
         -fexec-charset=UTF-8 \
         -ggdb \
@@ -35,9 +36,7 @@ fi
 function target_sbs() {
     rm -rf obj/
     rm -rf build/
-    mkdir -p ./obj/debug/{parser,objects,build,actions}
-    
-    gcc $CFLAGS -c ./src/actions/actions.c  -o ./obj/debug/actions/actions.o
+    mkdir -p ./obj/debug/{parser,objects,build}
     
     gcc $CFLAGS -c ./src/build/build.c  -o ./obj/debug/build/build.o
     gcc $CFLAGS -c ./src/build/archive.c  -o ./obj/debug/build/archive.o
@@ -56,6 +55,8 @@ function target_sbs() {
 
     gcc $CFLAGS -c ./src/objects/action.c  -o ./obj/debug/objects/action.o
     gcc $CFLAGS -c ./src/objects/configuration.c  -o ./obj/debug/objects/configuration.o
+    gcc $CFLAGS -c ./src/objects/environment.c  -o ./obj/debug/objects/environment.o
+    gcc $CFLAGS -c ./src/objects/preset.c  -o ./obj/debug/objects/preset.o
     gcc $CFLAGS -c ./src/objects/target.c  -o ./obj/debug/objects/target.o
     gcc $CFLAGS -c ./src/objects/toolchain.c  -o ./obj/debug/objects/toolchain.o
     
@@ -69,8 +70,7 @@ function target_sbs() {
 function target_link() {
     mkdir -p ./build/debug
 
-    gcc obj/debug/actions/actions.o \    
-        obj/debug/build/build.o \
+    gcc obj/debug/build/build.o \
         obj/debug/build/archive.o \
         obj/debug/build/compile.o \
         obj/debug/parser/action.o \
@@ -85,6 +85,8 @@ function target_link() {
         obj/debug/parser/file.o \
         obj/debug/objects/action.o \
         obj/debug/objects/configuration.o \
+        obj/debug/objects/environment.o \
+        obj/debug/objects/preset.o \
         obj/debug/objects/target.o \
         obj/debug/objects/toolchain.o \
         obj/debug/commands.o \

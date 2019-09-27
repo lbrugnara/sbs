@@ -18,6 +18,7 @@ config clang-base {
             "-Wno-unused-function",
             "-Wno-missing-braces",
             "-fstrict-aliasing",
+            "-Wvla",
             "-c ${source}",
             "-o ${object}"
         ]
