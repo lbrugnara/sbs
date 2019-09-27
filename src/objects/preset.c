@@ -1,5 +1,4 @@
 #include "preset.h"
-#include "common.h"
 #include "../parser/preset.h"
 
 struct SbsPreset* sbs_preset_resolve(const struct SbsFile *file, const char *preset_name, const char *env_name)
