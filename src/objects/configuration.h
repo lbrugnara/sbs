@@ -6,8 +6,6 @@
 
 struct SbsConfigCompile {
     char *extension;
-    char *include_dir_flag;
-    char *define_flag;
     char **flags;
 };
 
@@ -23,8 +21,6 @@ struct SbsConfigShared {
 
 struct SbsConfigExecutable {
     char *extension;
-    char *lib_dir_flag;
-    char *lib_flag;
     char **flags;
 };
 

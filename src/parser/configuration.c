@@ -9,12 +9,6 @@ void sbs_config_entry_free(struct SbsConfigNode *config)
     if (config->compile.flags)
         fl_array_free_each(config->compile.flags, sbs_common_free_string);
 
-    if (config->compile.include_dir_flag)
-        fl_cstring_free(config->compile.include_dir_flag);
-
-    if (config->compile.define_flag)
-        fl_cstring_free(config->compile.define_flag);
-
     if (config->compile.extension)
         fl_cstring_free(config->compile.extension);
 
@@ -38,12 +32,6 @@ void sbs_config_entry_free(struct SbsConfigNode *config)
 
     if (config->executable.extension)
         fl_cstring_free(config->executable.extension);
-
-    if (config->executable.lib_flag)
-        fl_cstring_free(config->executable.lib_flag);
-
-    if (config->executable.lib_dir_flag)
-        fl_cstring_free(config->executable.lib_dir_flag);
 
 
     fl_free(config);
@@ -99,25 +87,13 @@ static void parse_compile_block(struct SbsParser *parser, struct SbsConfigCompil
     const struct SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"flags", 5))
+        if (sbs_tok_eq(&token->value, "flags"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             compile->flags = sbs_common_parse_string_array(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"include_dir_flag", 16))
-        {
-            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-            sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->include_dir_flag = sbs_common_parse_string(parser);
-        }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"define_flag", 11))
-        {
-            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-            sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->define_flag = sbs_common_parse_string(parser);
-        }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"extension", 9))
+        else if (sbs_tok_eq(&token->value, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -137,13 +113,13 @@ static void parse_archive_block(struct SbsParser *parser, struct SbsConfigArchiv
     const struct SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"flags", 5))
+        if (sbs_tok_eq(&token->value, "flags"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             archive->flags = sbs_common_parse_string_array(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"extension", 9))
+        else if (sbs_tok_eq(&token->value, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -163,13 +139,13 @@ static void parse_shared_block(struct SbsParser *parser, struct SbsConfigSharedN
     const struct SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"flags", 5))
+        if (sbs_tok_eq(&token->value, "flags"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             shared->flags = sbs_common_parse_string_array(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"extension", 9))
+        else if (sbs_tok_eq(&token->value, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -189,25 +165,13 @@ static void parse_executable_block(struct SbsParser *parser, struct SbsConfigExe
     const struct SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"flags", 5))
+        if (sbs_tok_eq(&token->value, "flags"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             executable->flags = sbs_common_parse_string_array(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"lib_dir_flag", 16))
-        {
-            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-            sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->lib_dir_flag = sbs_common_parse_string(parser);
-        }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"lib_flag", 8))
-        {
-            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-            sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->lib_flag = sbs_common_parse_string(parser);
-        }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"extension", 9))
+        else if (sbs_tok_eq(&token->value, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -228,7 +192,7 @@ static void parse_config_body(struct SbsParser *parser, struct SbsConfigNode *co
 
     while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_FOR)
     {
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"compile", 7))
+        if (sbs_tok_eq(&token->value, "compile"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_COMPILE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -236,7 +200,7 @@ static void parse_config_body(struct SbsParser *parser, struct SbsConfigNode *co
             parse_compile_block(parser, &configuration->compile);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"archive", 7))
+        else if (sbs_tok_eq(&token->value, "archive"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_ARCHIVE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -244,7 +208,7 @@ static void parse_config_body(struct SbsParser *parser, struct SbsConfigNode *co
             parse_archive_block(parser, &configuration->archive);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"shared", 6))
+        else if (sbs_tok_eq(&token->value, "shared"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_SHARED);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -252,7 +216,7 @@ static void parse_config_body(struct SbsParser *parser, struct SbsConfigNode *co
             parse_shared_block(parser, &configuration->shared);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"executable", 10))
+        else if (sbs_tok_eq(&token->value, "executable"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_EXECUTABLE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);

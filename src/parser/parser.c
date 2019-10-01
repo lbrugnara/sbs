@@ -3,6 +3,8 @@
 #include "lexer.h"
 #include "parser.h"
 
+extern const char *token_type_string[];
+
 void sbs_parser_error(const struct SbsToken *token, const char *message)
 {
     flm_vexit(ERR_FATAL, "Unexpected token %s %.*s in line %ld, column %ld %s",
@@ -51,7 +53,12 @@ const struct SbsToken* sbs_parser_consume(struct SbsParser *parser, enum SbsToke
     const struct SbsToken *token = parser->tokens + parser->index++;
 
     if (token->type != type)
-        flm_vexit(ERR_FATAL, "Unexpected token %.*s\n", token->value.length, token->value.sequence);
+    {
+        char *message = fl_cstring_vdup("expecting %s but received %s", token_type_string[(size_t)type], token_type_string[(size_t)token->type]);
+        sbs_parser_error(token, message);
+        fl_cstring_free(message);
+        return NULL;
+    }
 
     return token;
 }

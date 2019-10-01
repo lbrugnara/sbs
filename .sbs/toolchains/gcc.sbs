@@ -1,14 +1,35 @@
 toolchain gcc {
 
+    compiler: {
+        include_dir_flag: "-I",
+        define_flag: "-D"
+    },
+    linker: {
+        lib_dir_flag: "-L",
+        lib_flag: "-l"
+    },
+
     for linux-bash-x64, win-wsl-x64 {
-        compiler: "gcc",
-        archiver: "ar",
-        linker: "gcc"
+        compiler: {
+            bin: "gcc"
+        },
+        archiver: {
+            bin: "ar"
+        },
+        linker: {
+            bin: "gcc"
+        }
     },
 
     for win-cygwin-x64 {
-        compiler: "gcc.exe",
-        archiver: "ar.exe",
-        linker: "gcc.exe"
+        compiler: {
+            bin: "gcc.exe",
+        },
+        archiver: {
+            bin: "ar.exe",
+        },
+        linker: {
+            bin: "gcc.exe"
+        }
     }
 }

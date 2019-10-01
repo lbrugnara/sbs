@@ -84,7 +84,7 @@ char** sbs_build_compile(struct SbsBuild *build)
     char *includes = fl_cstring_new(0);
     for (size_t i = 0; target_compile->includes && i < fl_array_length(target_compile->includes); i++)
     {
-        fl_cstring_append(&includes, config_compile->include_dir_flag);
+        fl_cstring_append(&includes, build->toolchain->compiler.include_dir_flag);
         fl_cstring_append(&includes, target_compile->includes[i]);
         fl_cstring_append(&includes, " ");
     }
@@ -124,14 +124,14 @@ char** sbs_build_compile(struct SbsBuild *build)
 
         if (needs_compile)
         {
-            if (build->toolchain->compiler)
+            if (build->toolchain->compiler.bin)
             {
                 // Replace the special ${source} and ${output} variables in the falgs
                 char *compilation_unit_flags = fl_cstring_replace(flags, "${source}", source_file);
                 compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${output}", object_file);
 
                 // Build the compile command
-                char *command = fl_cstring_vdup("%s %s %s", build->toolchain->compiler, includes, compilation_unit_flags);
+                char *command = fl_cstring_vdup("%s %s %s", build->toolchain->compiler.bin, includes, compilation_unit_flags);
 
                 // Exec
                 success = sbs_executor_run_command(build->executor, command) && success;

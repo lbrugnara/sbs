@@ -12,6 +12,8 @@ struct SbsStringOrId {
     const char *value;
 };
 
+#define sbs_tok_eq(slice, value_str) fl_slice_equals_sequence((slice), (FlByte*)(value_str), strlen((value_str)))
+
 char* sbs_common_parse_string(struct SbsParser *parser);
 char* sbs_common_parse_command_string(struct SbsParser *parser);
 char* sbs_common_parse_identifier(struct SbsParser *parser);

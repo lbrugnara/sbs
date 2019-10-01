@@ -5,8 +5,6 @@ config cl-base {
     # object file respectively
     compile: {
         extension: ".o",
-        include_dir_flag: "/I",
-        define_flag: "/D",
         flags: [
             "/Zi",
             "/WX",

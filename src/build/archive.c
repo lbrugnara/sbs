@@ -130,13 +130,13 @@ char** sbs_build_target_archive(struct SbsBuild *build)
 
     if (needs_archive)
     {
-        if (build->toolchain->archiver != NULL)
+        if (build->toolchain->archiver.bin != NULL)
         {
             // Replace the special ${output} variable in the flag
             char *archive_flags = fl_cstring_replace(flags, "${output}", output_filename);
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s", build->toolchain->archiver, archive_flags);
+            char *command = fl_cstring_vdup("%s %s", build->toolchain->archiver.bin, archive_flags);
 
             for (size_t i=0; i < fl_vector_length(archive_objects); i++)
                 fl_cstring_append(fl_cstring_append(&command, " "), fl_vector_get(archive_objects, i));

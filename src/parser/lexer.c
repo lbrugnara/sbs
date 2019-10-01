@@ -5,37 +5,37 @@
 #define is_alpha(chr) (((chr) >= 0x0041 && (chr) <= 0x005A) || ((chr) >= 0x0061 && (chr) <= 0x007A))
 
 const char *token_type_string[] = {
-    "UNKNOWN",
-    "EOF",
+    [SBS_TOKEN_UNKNOWN] = "UNKNOWN",
+    [SBS_TOKEN_EOF] = "EOF",
 
-    "INCLUDE",
-    "ENV",
-    "TOOLCHAIN",
-    "TARGET",
-    "COMPILE",
-    "ARCHIVE",
-    "SHARED",
-    "EXECUTABLE",
-    "CONFIG",
-    "PRESET",
-    "ACTION",
+    [SBS_TOKEN_INCLUDE] = "INCLUDE",
+    [SBS_TOKEN_ENV] = "ENV",
+    [SBS_TOKEN_TOOLCHAIN] = "TOOLCHAIN",
+    [SBS_TOKEN_TARGET] = "TARGET",
+    [SBS_TOKEN_COMPILE] = "COMPILE",
+    [SBS_TOKEN_ARCHIVE] = "ARCHIVE",
+    [SBS_TOKEN_SHARED] = "SHARED",
+    [SBS_TOKEN_EXECUTABLE] = "EXECUTABLE",
+    [SBS_TOKEN_CONFIG] = "CONFIG",
+    [SBS_TOKEN_PRESET] = "PRESET",
+    [SBS_TOKEN_ACTION] = "ACTION",
     
-    "EXTENDS",
-    "FOR",
+    [SBS_TOKEN_EXTENDS] = "EXTENDS",
+    [SBS_TOKEN_FOR] = "FOR",
 
-    "LBRACE",
-    "RBRACE",
+    [SBS_TOKEN_LBRACE] = "LBRACE",
+    [SBS_TOKEN_RBRACE] = "RBRACE",
 
-    "LBRACKET",
-    "RBRACKET",
+    [SBS_TOKEN_LBRACKET] = "LBRACKET",
+    [SBS_TOKEN_RBRACKET] = "RBRACKET",
 
-    "COMMA",
-    "COLON",
+    [SBS_TOKEN_COMMA] = "COMMA",
+    [SBS_TOKEN_COLON] = "COLON",
 
-    "STRING",
-    "COMMAND_STRING",
-    "NUMBER",
-    "IDENTIFIER"
+    [SBS_TOKEN_STRING] = "STRING",
+    [SBS_TOKEN_COMMAND_STRING] = "COMMAND_STRING",
+    [SBS_TOKEN_NUMBER] = "NUMBER",
+    [SBS_TOKEN_IDENTIFIER] = "IDENTIFIER"
 };
 
 struct SbsLexer sbs_lexer_new(const char *source, size_t length)

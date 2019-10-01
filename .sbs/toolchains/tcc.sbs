@@ -1,7 +1,17 @@
 toolchain tcc {
     for win-cmd-x64, win-cmd-x86, win-ps-x64, win-ps-x86, win-cygwin-x64 {
-        compiler: "tcc",
-        archiver: "lib",
-        linker: "link"
+        compiler: {
+            bin: "tcc",
+            include_dir_flag: "-I",
+            define_flag: "-D"
+        }
+        archiver: {
+            bin: "lib"
+        }
+        linker: {
+            bin: "tcc",
+            lib_dir_flag: "-L",
+            lib_flag: "-l"
+        }
     }
 }

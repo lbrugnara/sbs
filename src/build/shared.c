@@ -130,13 +130,13 @@ char** sbs_build_target_shared(struct SbsBuild *build)
 
     if (needs_linkage)
     {
-        if (build->toolchain->linker != NULL)
+        if (build->toolchain->linker.bin != NULL)
         {
             // Replace the special ${output} variable in the flag
             char *shared_flags = fl_cstring_replace(flags, "${output}", output_filename);
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s", build->toolchain->linker, shared_flags);
+            char *command = fl_cstring_vdup("%s %s", build->toolchain->linker.bin, shared_flags);
 
             for (size_t i=0; i < fl_vector_length(shared_objects); i++)
                 fl_cstring_append(fl_cstring_append(&command, " "), fl_vector_get(shared_objects, i));

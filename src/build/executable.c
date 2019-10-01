@@ -54,14 +54,17 @@ char** sbs_build_target_executable(struct SbsBuild *build)
             struct SbsTargetLibrary *library = target_executable->libraries + i;
             if (library->path)
             {
-                fl_cstring_append(&executable_libraries, config_executable->lib_dir_flag);
+                fl_cstring_append(&executable_libraries, build->toolchain->linker.lib_dir_flag);
                 fl_cstring_append(&executable_libraries, library->path);
                 fl_cstring_append(&executable_libraries, " ");
             }
 
-            fl_cstring_append(&executable_libraries, config_executable->lib_flag);
-            fl_cstring_append(&executable_libraries, library->name);
-            fl_cstring_append(&executable_libraries, " ");
+            if (library->name)
+            {
+                fl_cstring_append(&executable_libraries, build->toolchain->linker.lib_flag);
+                fl_cstring_append(&executable_libraries, library->name);
+                fl_cstring_append(&executable_libraries, " ");
+            }
         }
     }
 
@@ -149,18 +152,16 @@ char** sbs_build_target_executable(struct SbsBuild *build)
 
     if (needs_linkage)
     {
-        if (build->toolchain->linker != NULL)
+        if (build->toolchain->linker.bin != NULL)
         {
             // Replace the special ${output} variable in the flag
             char *executable_flags = fl_cstring_replace(flags, "${output}", output_filename);
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s", build->toolchain->linker, executable_flags);
+            char *command = fl_cstring_vdup("%s %s %s ", build->toolchain->linker.bin, executable_libraries, executable_flags);
 
             for (size_t i=0; i < fl_vector_length(executable_objects); i++)
                 fl_cstring_append(fl_cstring_append(&command, " "), fl_vector_get(executable_objects, i));
-
-            fl_cstring_append(&command, executable_libraries);
 
             // Exec
             success = sbs_executor_run_command(build->executor, command) && success;

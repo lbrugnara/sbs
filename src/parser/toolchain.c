@@ -5,14 +5,26 @@
 
 void sbs_toolchain_entry_free(struct SbsToolchainNode *toolchain_entry)
 {
-    if (toolchain_entry->compiler)
-        fl_cstring_free(toolchain_entry->compiler);
+    if (toolchain_entry->compiler.bin)
+        fl_cstring_free(toolchain_entry->compiler.bin);
 
-    if (toolchain_entry->archiver)
-        fl_cstring_free(toolchain_entry->archiver);
+    if (toolchain_entry->compiler.define_flag)
+        fl_cstring_free(toolchain_entry->compiler.define_flag);
 
-    if (toolchain_entry->linker)
-        fl_cstring_free(toolchain_entry->linker);
+    if (toolchain_entry->compiler.include_dir_flag)
+        fl_cstring_free(toolchain_entry->compiler.include_dir_flag);
+
+    if (toolchain_entry->archiver.bin)
+        fl_cstring_free(toolchain_entry->archiver.bin);
+
+    if (toolchain_entry->linker.bin)
+        fl_cstring_free(toolchain_entry->linker.bin);
+
+    if (toolchain_entry->linker.lib_dir_flag)
+        fl_cstring_free(toolchain_entry->linker.lib_dir_flag);
+
+    if (toolchain_entry->linker.lib_flag)
+        fl_cstring_free(toolchain_entry->linker.lib_flag);
     
     fl_free(toolchain_entry);
 }
@@ -64,26 +76,92 @@ static void parse_toolchain_entry(struct SbsParser *parser, struct SbsToolchainN
     {
         const struct SbsToken *property = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
         sbs_parser_consume(parser, SBS_TOKEN_COLON);
+        sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-        const struct SbsToken *value = sbs_parser_peek(parser);
-
-        if (fl_slice_equals_sequence(&property->value, (FlByte*)"compiler", 8))
+        if (sbs_tok_eq(&property->value, "compiler"))
         {
-            toolchain->compiler = sbs_common_parse_string(parser);
+            const struct SbsToken *token = NULL;
+            while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE)
+            {
+                if (sbs_tok_eq(&token->value, "bin"))
+                {
+                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                    toolchain->compiler.bin = sbs_common_parse_string(parser);
+                }
+                else if (sbs_tok_eq(&token->value, "include_dir_flag"))
+                {
+                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                    toolchain->compiler.include_dir_flag = sbs_common_parse_string(parser);
+                }
+                else if (sbs_tok_eq(&token->value, "define_flag"))
+                {
+                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                    toolchain->compiler.define_flag = sbs_common_parse_string(parser);
+                }
+                else
+                {
+                    sbs_parser_error(property, "while parsing a toolchain's compiler block");
+                }
+                sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
+            }
         }
-        else if (fl_slice_equals_sequence(&property->value, (FlByte*)"archiver", 8))
+        else if (sbs_tok_eq(&property->value, "archiver"))
         {
-            toolchain->archiver = sbs_common_parse_string(parser);
+            const struct SbsToken *token = NULL;
+            while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE)
+            {
+                if (sbs_tok_eq(&token->value, "bin"))
+                {
+                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                    toolchain->archiver.bin = sbs_common_parse_string(parser);
+                }
+                else
+                {
+                    sbs_parser_error(property, "while parsing a toolchain's archiver block");
+                }
+                sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
+            }
         }
-        else if (fl_slice_equals_sequence(&property->value, (FlByte*)"linker", 6))
+        else if (sbs_tok_eq(&property->value, "linker"))
         {
-            toolchain->linker = sbs_common_parse_string(parser);
+            const struct SbsToken *token = NULL;
+            while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE)
+            {
+                if (sbs_tok_eq(&token->value, "bin"))
+                {
+                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                    toolchain->linker.bin = sbs_common_parse_string(parser);
+                }
+                else if (sbs_tok_eq(&token->value, "lib_dir_flag"))
+                {
+                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                    toolchain->linker.lib_dir_flag = sbs_common_parse_string(parser);
+                }
+                else if (sbs_tok_eq(&token->value, "lib_flag"))
+                {
+                    sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                    sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                    toolchain->linker.lib_flag = sbs_common_parse_string(parser);
+                }
+                else
+                {
+                    sbs_parser_error(property, "while parsing a toolchain's linker block");
+                }
+                sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
+            }
         }
         else
         {
-            sbs_parser_error(value, "while parsing a toolchain block");
+            sbs_parser_error(property, "while parsing a toolchain block");
         }
 
+        sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
 }
@@ -166,52 +244,4 @@ struct SbsToolchainSection* sbs_toolchain_section_parse(struct SbsParser *parser
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
     return toolchain;
-}
-
-const char* sbs_toolchain_get_compiler(const struct SbsToolchainSection *toolchain, const struct SbsEnvSection *env)
-{
-    const char *compiler = NULL;
-
-    struct SbsToolchainNode *base_tc = fl_hashtable_get(toolchain->nodes, SBS_BASE_OBJECT_KEY);
-    
-    if (!base_tc)
-        return compiler; // NULL
-
-    compiler = base_tc->compiler;
-
-    if (!fl_hashtable_has_key(toolchain->nodes, env->name))
-        return compiler;
-    
-    struct SbsToolchainNode *env_tc = fl_hashtable_get(toolchain->nodes, env->name);
-
-    if (!env_tc || !env_tc->compiler)
-        return compiler;
-
-    compiler = env_tc->compiler;
-
-    return compiler;
-}
-
-const char* sbs_toolchain_get_archiver(const struct SbsToolchainSection *toolchain, const struct SbsEnvSection *env)
-{
-    const char *archiver = NULL;
-
-    struct SbsToolchainNode *base_tc = fl_hashtable_get(toolchain->nodes, SBS_BASE_OBJECT_KEY);
-    
-    if (!base_tc)
-        return archiver; // NULL
-
-    archiver = base_tc->archiver;
-
-    if (!fl_hashtable_has_key(toolchain->nodes, env->name))
-        return archiver;
-    
-    struct SbsToolchainNode *env_tc = fl_hashtable_get(toolchain->nodes, env->name);
-
-    if (!env_tc || !env_tc->archiver)
-        return archiver;
-
-    archiver = env_tc->archiver;
-
-    return archiver;
 }

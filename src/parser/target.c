@@ -176,7 +176,7 @@ static struct SbsTargetLibraryNode* parse_library_array(struct SbsParser *parser
 
         sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-        fl_array_append(libraries, &library);
+        libraries = fl_array_append(libraries, &library);
         
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }

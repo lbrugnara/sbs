@@ -53,12 +53,6 @@ void sbs_config_free(struct SbsConfiguration *config)
     if (config->compile.flags)
         fl_array_free_each(config->compile.flags, sbs_common_free_string);
 
-    if (config->compile.include_dir_flag)
-        fl_cstring_free(config->compile.include_dir_flag);
-
-    if (config->compile.define_flag)
-        fl_cstring_free(config->compile.define_flag);
-
     if (config->compile.extension)
         fl_cstring_free(config->compile.extension);
 
@@ -82,12 +76,6 @@ void sbs_config_free(struct SbsConfiguration *config)
 
     if (config->executable.extension)
         fl_cstring_free(config->executable.extension);
-
-    if (config->executable.lib_flag)
-        fl_cstring_free(config->executable.lib_flag);
-
-    if (config->executable.lib_dir_flag)
-        fl_cstring_free(config->executable.lib_dir_flag);
 
 
     fl_free(config);
@@ -121,12 +109,6 @@ static void merge_compile_config(struct SbsConfigCompile *extend, const struct S
         extend->extension = sbs_common_set_string(extend->extension, source->extension);
     
     extend->flags = sbs_common_extend_array_copy_pointers(extend->flags, source->flags, sbs_common_copy_string);
-
-    if (source->include_dir_flag)
-        extend->include_dir_flag = sbs_common_set_string(extend->include_dir_flag, source->include_dir_flag);
-
-    if (source->define_flag)
-        extend->define_flag = sbs_common_set_string(extend->define_flag, source->define_flag);
 }
 
 static void merge_archive_config(struct SbsConfigArchive *extend, const struct SbsConfigArchiveNode *source)
@@ -149,12 +131,6 @@ static void merge_executable_config(struct SbsConfigExecutable *extend, const st
 {
     if (source->extension)
         extend->extension = sbs_common_set_string(extend->extension, source->extension);
-
-    if (source->lib_dir_flag)
-        extend->lib_dir_flag = sbs_common_set_string(extend->lib_dir_flag, source->lib_dir_flag);
-
-    if (source->lib_flag)
-        extend->lib_flag = sbs_common_set_string(extend->lib_flag, source->lib_flag);
 
     extend->flags = sbs_common_extend_array_copy_pointers(extend->flags, source->flags, sbs_common_copy_string);
 }

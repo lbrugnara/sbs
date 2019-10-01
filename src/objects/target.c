@@ -220,8 +220,8 @@ static void convert_library_node_to_library(void *dest, const void *src, size_t 
         return;
 
     struct SbsTargetLibrary copy = {
-        .name = fl_cstring_dup(src_obj->name),
-        .path = fl_cstring_dup(src_obj->path)
+        .name = src_obj->name ? fl_cstring_dup(src_obj->name) : NULL,
+        .path = src_obj->path ? fl_cstring_dup(src_obj->path) : NULL
     };
 
     memcpy(dest, &copy, elem_size);

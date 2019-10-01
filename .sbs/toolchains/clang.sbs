@@ -1,14 +1,30 @@
 toolchain clang {
 
-    compiler: "clang",    
+    compiler: {
+        bin: "clang",
+        include_dir_flag: "-I",
+        define_flag: "-D"
+    },
 
     for win-cmd-x64, win-cmd-x86, win-ps-x64, win-ps-x86, win-cygwin-x64 {
-        archiver: "llvm-lib.exe",
-        linker: "link"
+        archiver: {
+            bin: "llvm-lib.exe"
+        }
+        linker: {
+            bin: "link",
+            lib_dir_flag: "/LIBPATH:",
+            lib_flag: "/LIB:"
+        }
     },
 
     for win-wsl-x64, linux-bash-x64 {
-        archiver: "ar",
-        linker: "clang"
+        archiver: {
+            bin: "ar"
+        }
+        linker: {
+            bin: "clang",
+            lib_dir_flag: "-L",
+            lib_flag: "-l"
+        }
     }
 }

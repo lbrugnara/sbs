@@ -6,8 +6,6 @@
 
 struct SbsConfigCompileNode {
     const char *extension;
-    const char *include_dir_flag;
-    const char *define_flag;
     char **flags;
 };
 
@@ -23,8 +21,6 @@ struct SbsConfigSharedNode {
 
 struct SbsConfigExecutableNode {
     const char *extension;
-    const char *lib_dir_flag;
-    const char *lib_flag;
     char **flags;
 };
 

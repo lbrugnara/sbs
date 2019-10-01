@@ -26,9 +26,15 @@ struct SbsToolchain* sbs_toolchain_resolve(const struct SbsFile *file, const cha
     {
         const struct SbsToolchainNode *ancestor = (const struct SbsToolchainNode*)node->value;
         
-        toolchain_object->compiler = sbs_common_set_string(toolchain_object->compiler, ancestor->compiler);
-        toolchain_object->archiver = sbs_common_set_string(toolchain_object->archiver, ancestor->archiver);
-        toolchain_object->linker = sbs_common_set_string(toolchain_object->linker, ancestor->linker);
+        toolchain_object->compiler.bin = sbs_common_set_string(toolchain_object->compiler.bin, ancestor->compiler.bin);
+        toolchain_object->compiler.include_dir_flag = sbs_common_set_string(toolchain_object->compiler.include_dir_flag, ancestor->compiler.include_dir_flag);
+        toolchain_object->compiler.define_flag = sbs_common_set_string(toolchain_object->compiler.define_flag, ancestor->compiler.define_flag);
+        
+        toolchain_object->archiver.bin = sbs_common_set_string(toolchain_object->archiver.bin, ancestor->archiver.bin);
+
+        toolchain_object->linker.bin = sbs_common_set_string(toolchain_object->linker.bin, ancestor->linker.bin);
+        toolchain_object->linker.lib_dir_flag = sbs_common_set_string(toolchain_object->linker.lib_dir_flag, ancestor->linker.lib_dir_flag);
+        toolchain_object->linker.lib_flag = sbs_common_set_string(toolchain_object->linker.lib_flag, ancestor->linker.lib_flag);
 
         node = node->next;
     }
@@ -43,14 +49,26 @@ void sbs_toolchain_free(struct SbsToolchain *toolchain)
     if (toolchain->name)
         fl_cstring_free(toolchain->name);
 
-    if (toolchain->compiler)
-        fl_cstring_free(toolchain->compiler);
+    if (toolchain->compiler.bin)
+        fl_cstring_free(toolchain->compiler.bin);
 
-    if (toolchain->archiver)
-        fl_cstring_free(toolchain->archiver);
+    if (toolchain->compiler.include_dir_flag)
+        fl_cstring_free(toolchain->compiler.include_dir_flag);
 
-    if (toolchain->linker)
-        fl_cstring_free(toolchain->linker);
+    if (toolchain->compiler.define_flag)
+        fl_cstring_free(toolchain->compiler.define_flag);
+
+    if (toolchain->archiver.bin)
+        fl_cstring_free(toolchain->archiver.bin);
+
+    if (toolchain->linker.bin)
+        fl_cstring_free(toolchain->linker.bin);
+    
+    if (toolchain->linker.lib_dir_flag)
+        fl_cstring_free(toolchain->linker.lib_dir_flag);
+
+    if (toolchain->linker.lib_flag)
+        fl_cstring_free(toolchain->linker.lib_flag);
     
     fl_free(toolchain);
 }
