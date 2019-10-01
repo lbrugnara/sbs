@@ -39,10 +39,17 @@ struct SbsTargetShared {
     struct SbsStringOrId *objects;
 };
 
+
+struct SbsTargetLibrary {
+    char *path;
+    char *name;
+};
+
 struct SbsTargetExecutable {
     SBS_TARGET_BASE_DEF();
     char *output_dir;
     char *output_name;
+    struct SbsTargetLibrary *libraries;
     struct SbsStringOrId *objects;
 };
 

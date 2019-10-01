@@ -33,7 +33,7 @@ FlArray sbs_common_extend_array(FlArray dest, FlArray src)
     return fl_array_combine(dest, src);
 }
 
-FlArray sbs_common_extend_array_copy_pointers(FlArray dest, FlArray src, void*(*copy_func)(void*))
+FlArray sbs_common_extend_array_copy_pointers(FlArray dest, FlArray src, void(*copy_func)(void*, const void*, size_t))
 {
     if (!src)
         return dest;
@@ -48,20 +48,48 @@ FlArray sbs_common_extend_array_copy_pointers(FlArray dest, FlArray src, void*(*
     dest = fl_array_resize(dest, dest_size + src_size);
 
     if (!dest)
-        return NULL;
+        return NULL;    
 
     for (size_t i=0; i < src_size; i++, dest_size++)
-        ((void**)dest)[dest_size] = copy_func((void*)((FlByte*)src + i * elem_size));
+        copy_func((FlByte*)dest + dest_size * elem_size, (FlByte*)src + i * elem_size, elem_size);
 
     return dest;
 }
 
-char* sbs_common_copy_string(char **string)
+void sbs_common_copy_string(void *dest, const void *src, size_t elem_size)
 {
-    if (!string || !*string)
-        return NULL;
+    if (!src || !dest)
+        return;
 
-    return fl_cstring_dup(*string);
+    char **src_str = (char**)src;
+
+    if (!src_str || !*src_str)
+    {
+        memset(dest, 0, elem_size);
+        return;
+    }
+
+    char *copy = fl_cstring_dup(*src_str);
+
+    memcpy(dest, &copy, elem_size);
+}
+
+void sbs_common_copy_string_or_id(void *dest, const void *src, size_t elem_size)
+{
+    if (!src || !dest)
+        return;
+
+    struct SbsStringOrId *src_obj = (struct SbsStringOrId*)src;
+
+    if (!src_obj)
+        return;
+
+    struct SbsStringOrId copy = {
+        .type = src_obj->type,
+        .value = fl_cstring_dup(src_obj->value)
+    };
+
+    memcpy(dest, &copy, elem_size);
 }
 
 char* sbs_common_set_string(char *dest, const char *src)

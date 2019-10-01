@@ -125,6 +125,9 @@ SbsExecutor sbs_executor_new(struct SbsEnv *env)
 
         cexec->process = fl_process_create(env->terminal ? env->terminal : env->type, argv, envp, fl_process_pipe_new(), fl_process_pipe_new(), NULL);
 
+        if (!cexec->process)
+            return NULL;
+
         executor = (struct SbsExecutor*)cexec;
     }
     else
@@ -223,7 +226,7 @@ bool sbs_executor_run_command(SbsExecutor executor, const char *command)
         if ((result = fl_cstring_find(output, sentinel_driver_result)) != NULL)
             break;
 
-    } while (fl_process_poll_stdout(custom_executor->process, 500, 20));
+    } while (fl_process_poll_stdout(custom_executor->process, 500, 10));
 
     int retval = -1;
 
@@ -282,6 +285,11 @@ bool sbs_executor_run_command(SbsExecutor executor, const char *command)
 
             printf("%s", actual_output_start);
         }
+    }
+    else if (output != NULL)
+    {
+        output = fl_cstring_replace_realloc(output, sentinel_driver_echo, "");
+        printf("%s", output);
     }
 
     fl_cstring_free(output);

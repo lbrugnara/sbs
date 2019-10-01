@@ -5,6 +5,7 @@
 #include "../common.h"
 
 static void parse_for_section(struct SbsParser *parser, struct SbsTargetSection *target_section, enum SbsTargetType target_type);
+static void free_library_node(void*);
 
 void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode *target_entry)
 {
@@ -61,6 +62,9 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
             if (executable->objects)
                 fl_array_free_each(executable->objects, sbs_common_free_string_or_id);
 
+            if (executable->libraries)
+                fl_array_free_each(executable->libraries, free_library_node);
+
             if (executable->output_name)
                 fl_cstring_free(executable->output_name);
 
@@ -110,6 +114,76 @@ void sbs_target_section_free(struct SbsTargetSection *target_section)
     }
 
     fl_free(target_section);
+}
+
+static void free_library_node(void *obj)
+{
+    if (!obj)
+        return;
+
+    struct SbsTargetLibraryNode *lib = (struct SbsTargetLibraryNode*)obj;
+
+    if (lib->name)
+        fl_cstring_free(lib->name);
+
+    if (lib->path)
+        fl_cstring_free(lib->path);
+}
+
+/*
+ * Function: parse_library_array
+ *  Returns an array of strings or identifiers
+ *
+ * Parameters:
+ *  parser - Parser object
+ *
+ * Returns:
+ *  char** - Parsed array of strings or identifiers
+ *
+ */
+static struct SbsTargetLibraryNode* parse_library_array(struct SbsParser *parser)
+{
+    sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
+
+    struct SbsTargetLibraryNode *libraries = fl_array_new(sizeof(struct SbsTargetLibraryNode), 0);
+
+    const struct SbsToken *token;
+    while ((token = sbs_parser_peek(parser))->type != SBS_TOKEN_RBRACKET)
+    {
+        sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
+
+        struct SbsTargetLibraryNode library = { 0 };
+
+        while ((token = sbs_parser_peek(parser))->type != SBS_TOKEN_RBRACE)
+        {
+            if (fl_slice_equals_sequence(&token->value, (FlByte*)"path", 4))
+            {
+                sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                library.path = sbs_common_parse_string(parser);
+            }
+            else if (fl_slice_equals_sequence(&token->value, (FlByte*)"name", 4))
+            {
+                sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+                sbs_parser_consume(parser, SBS_TOKEN_COLON);
+                library.name = sbs_common_parse_string(parser);
+            }
+            else
+            {
+                sbs_parser_error(token, "while parsing a target library node");
+            }
+        }
+
+        sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
+
+        fl_array_append(libraries, &library);
+        
+        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
+    }
+
+    sbs_parser_consume(parser, SBS_TOKEN_RBRACKET);
+
+    return libraries;
 }
 
 static void parse_compile_body(struct SbsParser *parser, struct SbsTargetSection *target_section, struct SbsTargetCompileNode *target)
@@ -404,6 +478,12 @@ static void parse_executable_body(struct SbsParser *parser, struct SbsTargetSect
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
         {
             target->base.actions = sbs_actions_node_parse(parser);
+        }
+        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"libraries", 9))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            target->libraries = parse_library_array(parser);
         }
         else if (token->type == SBS_TOKEN_FOR)
         {

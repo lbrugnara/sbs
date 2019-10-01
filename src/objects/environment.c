@@ -14,8 +14,8 @@ struct SbsEnv* sbs_env_resolve(const struct SbsFile *file, const char *env_name)
     env_object->name = sbs_common_set_string(env_object->name, env_section->name);
     env_object->type = sbs_common_set_string(env_object->type, env_section->type);
     env_object->terminal = sbs_common_set_string(env_object->terminal, env_section->terminal);
-    env_object->args = sbs_common_extend_array_copy_pointers(env_object->args, env_section->args, (void*(*)(void*))sbs_common_copy_string);
-    env_object->variables = sbs_common_extend_array_copy_pointers(env_object->variables, env_section->variables, (void*(*)(void*))sbs_common_copy_string);
+    env_object->args = sbs_common_extend_array_copy_pointers(env_object->args, env_section->args, sbs_common_copy_string);
+    env_object->variables = sbs_common_extend_array_copy_pointers(env_object->variables, env_section->variables, sbs_common_copy_string);
     
     struct SbsAction **before_actions = sbs_action_resolve_all(file, env_section->actions.before, env_name);
     if (before_actions)

@@ -1,13 +1,14 @@
 toolchain clang {
 
-    compiler: "clang",
-    linker: "lld-link"
+    compiler: "clang",    
 
     for win-cmd-x64, win-cmd-x86, win-ps-x64, win-ps-x86, win-cygwin-x64 {
-        archiver: "llvm-lib.exe"
+        archiver: "llvm-lib.exe",
+        linker: "link"
     },
 
     for win-wsl-x64, linux-bash-x64 {
-        archiver: "ar"
+        archiver: "ar",
+        linker: "clang"
     }
 }

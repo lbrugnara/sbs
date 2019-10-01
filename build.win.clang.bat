@@ -57,6 +57,8 @@ md .\obj\debug\objects .\obj\debug\parser .\obj\debug\build
 clang.exe %CFLAGS% -c .\src\build\build.c  -o .\obj\debug\build\build.o
 clang.exe %CFLAGS% -c .\src\build\archive.c  -o .\obj\debug\build\archive.o
 clang.exe %CFLAGS% -c .\src\build\compile.c  -o .\obj\debug\build\compile.o
+clang.exe %CFLAGS% -c .\src\build\executable.c  -o .\obj\debug\build\executable.o
+clang.exe %CFLAGS% -c .\src\build\shared.c  -o .\obj\debug\build\shared.o
 
 clang.exe %CFLAGS% -c .\src\parser\action.c  -o .\obj\debug\parser\action.o
 clang.exe %CFLAGS% -c .\src\parser\common.c  -o .\obj\debug\parser\common.o
@@ -99,6 +101,8 @@ lld-link.exe ^
     obj\debug\build\build.o ^
     obj\debug\build\archive.o ^
     obj\debug\build\compile.o ^
+    obj\debug\build\executable.o ^
+    obj\debug\build\shared.o ^
     obj\debug\parser\action.o ^
     obj\debug\parser\common.o ^
     obj\debug\parser\configuration.o ^

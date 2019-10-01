@@ -1,7 +1,7 @@
 config clang-base {
     
     # Specific attributes for the compile stage.
-    # ${source} and ${object} represents the input source file and the output
+    # ${source} and ${output} represents the input source file and the output
     # object file respectively
     compile: {
         extension: ".o",
@@ -20,7 +20,7 @@ config clang-base {
             "-fstrict-aliasing",
             "-Wvla",
             "-c ${source}",
-            "-o ${object}"
+            "-o ${output}"
         ]
     }
 }

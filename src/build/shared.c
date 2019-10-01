@@ -1,4 +1,4 @@
-#include "archive.h"
+#include "shared.h"
 #include "build.h"
 #include "../common.h"
 #include "../objects/configuration.h"
@@ -6,10 +6,10 @@
 
 #define SBS_DIR_SEPARATOR "/"
 
-static char* build_output_filename(struct SbsBuild *build, const struct SbsConfigArchive *archive, const char *output_dir, const char *output_name)
+static char* build_output_filename(struct SbsBuild *build, const struct SbsConfigShared *shared, const char *output_dir, const char *output_name)
 {
     // File
-    const char *extension = archive->extension ? archive->extension : ".a";
+    const char *extension = shared->extension ? shared->extension : ".a";
 
     // Path
     char *output_filename = fl_cstring_dup(output_dir);
@@ -30,50 +30,50 @@ static char* build_output_filename(struct SbsBuild *build, const struct SbsConfi
     return output_filename;
 }
 
-char** sbs_build_target_archive(struct SbsBuild *build)
+char** sbs_build_target_shared(struct SbsBuild *build)
 {
-    struct SbsTargetArchive *target_archive = (struct SbsTargetArchive*)build->target;
-    const struct SbsConfigArchive *config_archive = &build->config->archive;
+    struct SbsTargetShared *target_shared = (struct SbsTargetShared*)build->target;
+    const struct SbsConfigShared *config_shared = &build->config->shared;
 
-    // Collect all the archive flags in the configuration hierarchy
+    // Collect all the shared flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
-    if (config_archive->flags)
+    if (config_shared->flags)
     {
-        for (size_t i = 0; i < fl_array_length(config_archive->flags); i++)
+        for (size_t i = 0; i < fl_array_length(config_shared->flags); i++)
         {
-            fl_cstring_append(&flags, config_archive->flags[i]);
+            fl_cstring_append(&flags, config_shared->flags[i]);
             fl_cstring_append(&flags, " ");
         }
     }
 
     // Build the target's output filename
-    char *output_filename = build_output_filename(build, config_archive, target_archive->output_dir, target_archive->output_name);
+    char *output_filename = build_output_filename(build, config_shared, target_shared->output_dir, target_shared->output_name);
 
     // We add the filename to the output vector that will return the target's result
     char **output = fl_array_new(sizeof(char*), 1);
     output[0] = output_filename;
 
     // Get the timestamp of the output file (if it exists)
-    unsigned long long archive_timestamp = 0;
-    fl_io_file_get_modified_timestamp(output_filename, &archive_timestamp);
+    unsigned long long shared_timestamp = 0;
+    fl_io_file_get_modified_timestamp(output_filename, &shared_timestamp);
 
     // By default we assume we don't need to run the command (see below)
-    bool needs_archive = false;    
+    bool needs_linkage = false;    
 
-    // This vector will keep track of the objects that are needed to build the archive
-    size_t n_objects = fl_array_length(target_archive->objects);
-    FlVector archive_objects = fl_vector_new(n_objects, fl_container_cleaner_pointer);    
+    // This vector will keep track of the objects that are needed to build the shared
+    size_t n_objects = fl_array_length(target_shared->objects);
+    FlVector shared_objects = fl_vector_new(n_objects, fl_container_cleaner_pointer);    
 
-    // We iterate through all the archive's objects where we can find two type of resources:
+    // We iterate through all the shared's objects where we can find two type of resources:
     //  1- An identifier that represents another target, we need to build that target and use its output
-    //  2- An string that is the path to a file that can be directly included in the archive
+    //  2- An string that is the path to a file that can be directly included in the shared
     bool success = true;
     for (size_t i = 0; i < n_objects; i++)
     {
-        if (target_archive->objects[i].type == SBS_IDENTIFIER)
+        if (target_shared->objects[i].type == SBS_IDENTIFIER)
         {
             // target_objects is an array of pointers to char allocated by the target
-            struct SbsTarget *target = sbs_target_resolve(build->file, target_archive->objects[i].value, build->env->name);
+            struct SbsTarget *target = sbs_target_resolve(build->file, target_shared->objects[i].value, build->env->name);
 
             char **target_objects = sbs_build_target(&(struct SbsBuild) {
                 .executor = build->executor,
@@ -93,8 +93,8 @@ char** sbs_build_target_archive(struct SbsBuild *build)
                 break;
             }
 
-            // Check every object file to see if it is newer than the last archive build's
-            // modification timestamp. If there is just one object newer to the archive, we need to
+            // Check every object file to see if it is newer than the last shared build's
+            // modification timestamp. If there is just one object newer to the shared, we need to
             // run the build.
             for (size_t i=0; i < fl_array_length(target_objects); i++)
             {
@@ -103,54 +103,54 @@ char** sbs_build_target_archive(struct SbsBuild *build)
 
                 unsigned long long obj_timestamp = 0;
                 if (!fl_io_file_get_modified_timestamp(obj, &obj_timestamp))
-                    needs_archive = true;
+                    needs_linkage = true;
 
-                if (archive_timestamp < obj_timestamp)
-                    needs_archive = true;
+                if (shared_timestamp < obj_timestamp)
+                    needs_linkage = true;
 
-                fl_vector_add(archive_objects, obj);
+                fl_vector_add(shared_objects, obj);
             }
 
             fl_array_free(target_objects);
         }
         else
         {
-            // We also check here to see if the object pointed by the string is newer than the archive
-            // in order to set the needs_archive flag
+            // We also check here to see if the object pointed by the string is newer than the shared
+            // in order to set the needs_linkage flag
             unsigned long long obj_timestamp;
-            if (!fl_io_file_get_modified_timestamp(target_archive->objects[i].value, &obj_timestamp))
-                needs_archive = true;
+            if (!fl_io_file_get_modified_timestamp(target_shared->objects[i].value, &obj_timestamp))
+                needs_linkage = true;
 
-            if (archive_timestamp < obj_timestamp)
-                needs_archive = true;
+            if (shared_timestamp < obj_timestamp)
+                needs_linkage = true;
 
-            fl_vector_add(archive_objects, fl_cstring_dup(target_archive->objects[i].value));
-        }        
+            fl_vector_add(shared_objects, fl_cstring_dup(target_shared->objects[i].value));
+        }
     }
 
-    if (needs_archive)
+    if (needs_linkage)
     {
-        if (build->toolchain->archiver != NULL)
+        if (build->toolchain->linker != NULL)
         {
             // Replace the special ${output} variable in the flag
-            char *archive_flags = fl_cstring_replace(flags, "${output}", output_filename);
+            char *shared_flags = fl_cstring_replace(flags, "${output}", output_filename);
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s", build->toolchain->archiver, archive_flags);
+            char *command = fl_cstring_vdup("%s %s", build->toolchain->linker, shared_flags);
 
-            for (size_t i=0; i < fl_vector_length(archive_objects); i++)
-                fl_cstring_append(fl_cstring_append(&command, " "), fl_vector_get(archive_objects, i));
+            for (size_t i=0; i < fl_vector_length(shared_objects); i++)
+                fl_cstring_append(fl_cstring_append(&command, " "), fl_vector_get(shared_objects, i));
 
             // Exec
             success = sbs_executor_run_command(build->executor, command) && success;
 
             fl_cstring_free(command);
-            fl_cstring_free(archive_flags);
+            fl_cstring_free(shared_flags);
         }
         else
         {
             success = false;
-            fprintf(stdout, "Toolchain '%s' does not have an archiver executable defined for environment '%s'", build->toolchain->name, build->env->name);
+            fprintf(stdout, "Toolchain '%s' does not have a linker executable defined for environment '%s'", build->toolchain->name, build->env->name);
         }
     }
     else
@@ -158,7 +158,7 @@ char** sbs_build_target_archive(struct SbsBuild *build)
         fprintf(stdout, "File '%s' has not changed. Skipping target...\n", output_filename);
     }
 
-    fl_vector_free(archive_objects);
+    fl_vector_free(shared_objects);
     fl_cstring_free(flags);
 
     if (!success)

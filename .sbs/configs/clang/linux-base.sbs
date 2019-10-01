@@ -8,11 +8,19 @@ config clang-linux-base extends clang-base {
         ]
     },
 
+    shared: {
+        extension: ".so",
+        flags: [
+            "-shared",
+            "-o ${output}"
+        ]
+    },
+
     # Specific attributes for the shared stage
     executable: {
         extension: "",
         flags: [
-            "-o ${executable}"
+            "-o ${output}"
         ]
     }
 }

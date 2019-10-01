@@ -39,6 +39,12 @@ void sbs_config_entry_free(struct SbsConfigNode *config)
     if (config->executable.extension)
         fl_cstring_free(config->executable.extension);
 
+    if (config->executable.lib_flag)
+        fl_cstring_free(config->executable.lib_flag);
+
+    if (config->executable.lib_dir_flag)
+        fl_cstring_free(config->executable.lib_dir_flag);
+
 
     fl_free(config);
 }
@@ -188,6 +194,18 @@ static void parse_executable_block(struct SbsParser *parser, struct SbsConfigExe
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             executable->flags = sbs_common_parse_string_array(parser);
+        }
+        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"lib_dir_flag", 16))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            executable->lib_dir_flag = sbs_common_parse_string(parser);
+        }
+        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"lib_flag", 8))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            executable->lib_flag = sbs_common_parse_string(parser);
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"extension", 9))
         {

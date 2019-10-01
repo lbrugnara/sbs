@@ -42,9 +42,15 @@ struct SbsTargetSharedNode {
     struct SbsStringOrId *objects;
 };
 
+struct SbsTargetLibraryNode {
+    char *path;
+    char *name;
+};
+
 struct SbsTargetExecutableNode {
     struct SbsTargetNode base;
     const char *output_name;
+    struct SbsTargetLibraryNode *libraries;
     struct SbsStringOrId *objects;
 };
 

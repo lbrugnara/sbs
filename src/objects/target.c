@@ -80,6 +80,21 @@ struct SbsTarget* sbs_target_resolve(const struct SbsFile *file, const char *tar
     return target_obj;
 }
 
+
+static void free_library(void *obj)
+{
+    if (!obj)
+        return;
+
+    struct SbsTargetLibrary *lib = (struct SbsTargetLibrary*)obj;
+
+    if (lib->name)
+        fl_cstring_free(lib->name);
+
+    if (lib->path)
+        fl_cstring_free(lib->path);
+}
+
 void sbs_target_free(struct SbsTarget *target)
 {
     if (target->name)
@@ -143,6 +158,9 @@ void sbs_target_free(struct SbsTarget *target)
             if (executable->objects)
                 fl_array_free_each(executable->objects, sbs_common_free_string_or_id);
 
+            if (executable->libraries)
+                fl_array_free_each(executable->libraries, free_library);
+
             if (executable->output_name)
                 fl_cstring_free(executable->output_name);
 
@@ -174,25 +192,44 @@ static void merge_base_target(const struct SbsFile *file, const char *env_name, 
 
 static void merge_compile_target(struct SbsTargetCompile *extend, const struct SbsTargetCompileNode *source)
 {
-    extend->includes = sbs_common_extend_array_copy_pointers(extend->includes, source->includes, (void*(*)(void*))sbs_common_copy_string);
-    extend->sources = sbs_common_extend_array_copy_pointers(extend->sources, source->sources, (void*(*)(void*))sbs_common_copy_string);
-    extend->defines = sbs_common_extend_array_copy_pointers(extend->defines, source->defines, (void*(*)(void*))sbs_common_copy_string);
+    extend->includes = sbs_common_extend_array_copy_pointers(extend->includes, source->includes, sbs_common_copy_string);
+    extend->sources = sbs_common_extend_array_copy_pointers(extend->sources, source->sources, sbs_common_copy_string);
+    extend->defines = sbs_common_extend_array_copy_pointers(extend->defines, source->defines, sbs_common_copy_string);
 }
 
 static void merge_archive_target(struct SbsTargetArchive *extend, const struct SbsTargetArchiveNode *source)
 {
     extend->output_name = sbs_common_set_string(extend->output_name, source->output_name);
-    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, (void*(*)(void*))sbs_common_copy_string);
+    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, sbs_common_copy_string_or_id);
 }
 
 static void merge_shared_target(struct SbsTargetShared *extend, const struct SbsTargetSharedNode *source)
 {
     extend->output_name = sbs_common_set_string(extend->output_name, source->output_name);
-    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, (void*(*)(void*))sbs_common_copy_string);
+    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, sbs_common_copy_string_or_id);
+}
+
+static void convert_library_node_to_library(void *dest, const void *src, size_t elem_size)
+{
+    if (!src || !dest)
+        return;
+
+    struct SbsTargetLibraryNode *src_obj = (struct SbsTargetLibraryNode*)src;
+
+    if (!src_obj)
+        return;
+
+    struct SbsTargetLibrary copy = {
+        .name = fl_cstring_dup(src_obj->name),
+        .path = fl_cstring_dup(src_obj->path)
+    };
+
+    memcpy(dest, &copy, elem_size);
 }
 
 static void merge_executable_target(struct SbsTargetExecutable *extend, const struct SbsTargetExecutableNode *source)
 {
     extend->output_name = sbs_common_set_string(extend->output_name, source->output_name);
-    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, (void*(*)(void*))sbs_common_copy_string);
+    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, sbs_common_copy_string_or_id);
+    extend->libraries = sbs_common_extend_array_copy_pointers(extend->libraries, source->libraries, convert_library_node_to_library);
 }

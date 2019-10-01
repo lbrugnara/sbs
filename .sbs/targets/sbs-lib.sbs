@@ -1,4 +1,4 @@
-archive sbs-lib {
+archive sbs-lib-static {
     output_name: "sbs",
     output_dir: "build/",
     actions: {
@@ -6,6 +6,19 @@ archive sbs-lib {
         after: []
     },
     objects: [
+        sbs-objects
+    ]
+}
+
+shared sbs-lib-shared {
+    output_name: "sbs",
+    output_dir: "build/",
+    actions: {
+        before: [],
+        after: []
+    },
+    objects: [
+        "../fllib/build/debug/libfl.lib",
         sbs-objects
     ]
 }

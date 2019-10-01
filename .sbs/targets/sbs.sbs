@@ -6,7 +6,7 @@ executable sbs {
         after: []
     },
     objects: [
-        "../fllib/build/debug/libfl.a",
-        sbs-lib
+        "../fllib/build/debug/libfl.lib",
+        sbs-objects
     ]
 }

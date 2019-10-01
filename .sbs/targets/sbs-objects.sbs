@@ -14,6 +14,8 @@ compile sbs-objects {
         "src/build/build.c",
         "src/build/archive.c",
         "src/build/compile.c",
+        "src/build/executable.c",
+        "src/build/shared.c",
         "src/parser/action.c",
         "src/parser/common.c",
         "src/parser/configuration.c",

@@ -22,6 +22,8 @@ static char *reason[] = {
     [SBS_RES_MISSING_CONFIG_ARG] =      "A configuration name is required for this command to run\n",
     [SBS_RES_MISSING_TARGET_ARG] =      "A target name is required for this command to run\n",
 
+    [SBS_RES_EXECUTOR] =                "Couldn't start the environment's shell.\n",
+
     [SBS_RES_ACTION_FAILED] =           "An action has failed\n"
 };
 

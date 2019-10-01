@@ -41,6 +41,8 @@ function target_sbs() {
     gcc $CFLAGS -c ./src/build/build.c  -o ./obj/debug/build/build.o
     gcc $CFLAGS -c ./src/build/archive.c  -o ./obj/debug/build/archive.o
     gcc $CFLAGS -c ./src/build/compile.c  -o ./obj/debug/build/compile.o
+    gcc $CFLAGS -c ./src/build/executable.c  -o ./obj/debug/build/executable.o
+    gcc $CFLAGS -c ./src/build/shared.c  -o ./obj/debug/build/shared.o
 
     gcc $CFLAGS -c ./src/parser/action.c  -o ./obj/debug/parser/action.o
     gcc $CFLAGS -c ./src/parser/common.c  -o ./obj/debug/parser/common.o
@@ -73,6 +75,8 @@ function target_link() {
     gcc obj/debug/build/build.o \
         obj/debug/build/archive.o \
         obj/debug/build/compile.o \
+        obj/debug/build/executable.o \
+        obj/debug/build/shared.o \
         obj/debug/parser/action.o \
         obj/debug/parser/common.o \
         obj/debug/parser/configuration.o \

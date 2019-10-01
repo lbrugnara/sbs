@@ -23,6 +23,8 @@ struct SbsConfigShared {
 
 struct SbsConfigExecutable {
     char *extension;
+    char *lib_dir_flag;
+    char *lib_flag;
     char **flags;
 };
 

@@ -3,7 +3,6 @@
 
 #include <fllib.h>
 #include "build.h"
-#include "../executor.h"
 
 char** sbs_build_target_archive(struct SbsBuild *build);
 

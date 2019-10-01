@@ -11,7 +11,36 @@ config cl-base {
             "/Zi",
             "/WX",
             "/c ${source}",
-            "/Fo${object}"
+            "/Fo${output}"
+        ]
+    },
+
+    # Specific attributes for the archive utility
+    archive: {
+        extension: ".lib",
+        flags: [
+            "/NOLOGO",
+            "/OUT:${output}"
+        ]
+    },
+
+    shared: {
+        extension: ".dll",
+        flags: [
+            "/NOLOGO",
+            "/DLL",
+            "/OUT:${output}"
+        ]
+    },
+
+    # Specific attributes for the shared stage
+    executable: {
+        extension: ".exe",
+        flags: [
+            "/DEFAULTLIB:libcmt.lib",
+            "/NOLOGO",
+            "/SUBSYSTEM:CONSOLE",
+            "/OUT:${output}"
         ]
     }
 }

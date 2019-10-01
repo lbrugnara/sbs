@@ -4,6 +4,8 @@
 #include "build.h"
 #include "archive.h"
 #include "compile.h"
+#include "executable.h"
+#include "shared.h"
 #include "../common.h"
 #include "../executor.h"
 #include "../parser/file.h"
@@ -129,9 +131,13 @@ char** sbs_build_target(struct SbsBuild *build)
     {
         return sbs_build_target_archive(build);
     }
+    else if (build->target->type == SBS_TARGET_SHARED)
+    {
+        return sbs_build_target_shared(build);
+    }
     else if (build->target->type == SBS_TARGET_EXECUTABLE)
     {
-        struct SbsTargetExecutableNode *exe = (struct SbsTargetExecutableNode*)build->target;
+        return sbs_build_target_executable(build);
     }
 
     return NULL;
@@ -202,6 +208,8 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
 
         // Create the executor
         SbsExecutor executor = sbs_executor_new(env);
+        if (!executor)
+            defer_return sbs_result_print_reason(SBS_RES_ERROR);
         defer_expression(sbs_executor_free(executor));
 
         enum SbsResult actions_result = SBS_RES_OK;
