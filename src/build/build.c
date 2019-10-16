@@ -157,11 +157,24 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
             defer_expression(sbs_preset_free(preset));
         }
 
-        // Get the resources from the preset or from the arguments list
-        const char *env_name = preset && preset->env ? preset->env : args.env;
-        const char *toolchain_name = preset && preset->toolchain ? preset->toolchain : args.toolchain;
-        const char *target_name = preset && preset->target ? preset->target : args.target;
-        const char *configuration_name = preset && preset->config ? preset->config : args.config;
+        // Get the resources from the preset or from the arguments list. The preset's values
+        // can be overwritten
+        const char *env_name = preset && preset->env ? preset->env : NULL;
+        if (args.env)
+            env_name = args.env;
+
+        const char *toolchain_name = preset && preset->toolchain ? preset->toolchain : NULL;
+        if (args.toolchain)
+            toolchain_name = args.toolchain;
+
+        const char *target_name = preset && preset->target ? preset->target : NULL;
+        if (args.target)
+            target_name = args.target;
+
+        const char *configuration_name = preset && preset->config ? preset->config : NULL;
+        if (args.config)
+            configuration_name = args.config;
+
 
         // If one of them is not present we can't continue
         if (!env_name)
