@@ -2,7 +2,7 @@ preset win-cmd-clang-x86-debug {
     env: win-cmd-x86,
     toolchain: clang,
     config: clang-win-debug,
-    target: sbs-objects,
+    target: sbs,
     actions: {
         before: [
             `echo 'Running preset win-cmd-x86'`,
@@ -18,7 +18,7 @@ preset win-cmd-clang-x86-release {
     env: win-cmd-x86,
     toolchain: clang,
     config: clang-win-release,
-    target: sbs-objects,
+    target: sbs,
     actions: {
         before: [
             `echo 'Running preset win-cmd-x86'`,

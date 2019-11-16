@@ -15,3 +15,24 @@ config clang-win-debug extends clang-win-base {
         ]
     }
 }
+
+config clang-win-sanitize extends clang-win-debug {
+    compile: {
+        flags: [
+            "-fsanitize=address,undefined",
+            "-O3",
+            "-D_FORTIFY_SOURCE=2"
+        ]
+    },
+    executable: {
+        flags: [
+        ]
+    },
+    for win-cmd-x86, win-cmd-x64 {
+        executable: {
+            flags: [
+                "/DEBUG:FULL"
+            ]
+        }
+    }
+}

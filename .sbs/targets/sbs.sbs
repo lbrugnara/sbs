@@ -10,3 +10,25 @@ executable sbs {
         sbs-objects
     ]
 }
+
+executable sbs-sanitize-x86 {
+    output_name: "sbs",
+    output_dir: "build/",
+    actions: {
+        before: [],
+        after: []
+    }
+    libraries: [
+        {
+            path: "D:\dev\LLVM\x86\lib\clang\8.0.0\lib\windows"
+        }
+    ]
+    objects: [
+        sbs-objects,
+        "clang_rt.ubsan_standalone-i386.lib",
+        "clang_rt.asan-i386.lib",
+        "clang_rt.builtins-i386.lib",
+        "../fllib/build/debug/libfl.lib"
+    ]
+}
+

@@ -145,7 +145,8 @@ char** sbs_build_target(struct SbsBuild *build)
 
 enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArguments args)
 {
-    defer_scope {
+    defer_scope
+    {
         // Check if the build uses a preset and in that case make sure it is a valid preset
         struct SbsPreset *preset = NULL;
         if (args.preset)
