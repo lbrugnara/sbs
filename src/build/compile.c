@@ -5,7 +5,7 @@
 #define SBS_DIR_SEPARATOR "/"
 
 // FIXME: Poor man's kind-of topological sort
-static void resolve_c_file_dependencies(const char *target_file, const char ***resolved_files, FlVector visited_files)
+static void resolve_c_file_dependencies(const char *target_file, const char ***resolved_files, char **include_folders, FlVector visited_files)
 {
     char *content = fl_io_file_read_all_text(target_file);
 
@@ -58,12 +58,51 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
             if (need_to_visit)
             {
                 fl_vector_add(visited_files, file);
-                resolve_c_file_dependencies(file, resolved_files, visited_files);
+                resolve_c_file_dependencies(file, resolved_files, include_folders, visited_files);
             }
 
             *resolved_files = fl_array_append(*resolved_files, &file);
 
             include = ++quote_end;
+        }
+        else if (include != end && *include == '<')
+        {
+            // Skip the starting angle
+            include++;
+            char *angle_end = fl_cstring_find(include, ">");
+            if (!angle_end)
+                break;
+
+            *angle_end = '\0';
+
+            for (size_t i=0; i < fl_array_length(include_folders); i++)
+            {
+                char *file = fl_cstring_vdup("%s%s%s", include_folders[i], SBS_DIR_SEPARATOR, include);
+
+                if (fl_io_file_exists(file))
+                {
+                    bool need_to_visit = true;
+                    for (size_t i=0; need_to_visit && i < fl_vector_length(visited_files); i++)
+                    {
+                        if (flm_cstring_equals(file, fl_vector_get(visited_files, i)))
+                            need_to_visit = false;
+                    }
+
+                    if (need_to_visit)
+                    {
+                        fl_vector_add(visited_files, file);
+                        resolve_c_file_dependencies(file, resolved_files, include_folders, visited_files);
+                    }
+
+                    *resolved_files = fl_array_append(*resolved_files, &file);
+                }
+                else
+                {
+                    fl_cstring_free(file);
+                }
+            }
+
+            include = ++angle_end;
         }
         
         ptr = include;
@@ -75,6 +114,32 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
     fl_cstring_free(path);
     fl_vector_free(target_file_parts);
     fl_cstring_free(content);
+}
+
+const char** resolve_source_files(const char **target_sources)
+{
+    const char** source_files = fl_array_new(sizeof(const char*), 0);
+
+    for (size_t i=0; i < fl_array_length(target_sources); i++)
+    {
+        if (fl_io_file_exists(target_sources[i]))
+        {
+            const char *source_file = fl_cstring_dup(target_sources[i]);
+            source_files = fl_array_append(source_files, &source_file);
+        }
+        else
+        {
+            char **matched_files = fl_io_file_find(target_sources[i], SBS_DIR_SEPARATOR);
+
+            if (matched_files)
+            {
+                source_files = fl_array_combine(source_files, matched_files);
+                fl_array_free(matched_files);
+            }
+        }
+    }
+
+    return source_files;
 }
 
 static char* build_object_filename(const struct SbsBuild *build, const struct SbsConfigCompile *config_compile, const char *source_file, const char *output_dir)
@@ -165,7 +230,10 @@ char** sbs_build_compile(struct SbsBuild *build)
         fl_cstring_append(&includes, " ");
     }
 
-    size_t n_sources = fl_array_length(target_compile->sources);
+    const char **target_source_files = resolve_source_files((const char**)target_compile->sources);
+
+    size_t n_sources = fl_array_length(target_source_files);
+
     // Keep track of the objects
     char **objects = fl_array_new(sizeof(char*), n_sources);
 
@@ -174,7 +242,7 @@ char** sbs_build_compile(struct SbsBuild *build)
     for (size_t i = 0; success && i < n_sources; i++)
     {
         // Unify path separators for the source file
-        char *source_file = fl_cstring_replace(target_compile->sources[i], "\\", SBS_DIR_SEPARATOR);
+        char *source_file = fl_cstring_replace(target_source_files[i], "\\", SBS_DIR_SEPARATOR);
 
         // Get the source's last modification timestamp
         unsigned long long source_timestamp;
@@ -199,7 +267,7 @@ char** sbs_build_compile(struct SbsBuild *build)
             if (!needs_compile)
             {
                 const char **deps = fl_array_new(sizeof(char*), 0);
-                resolve_c_file_dependencies(source_file, &deps, NULL);
+                resolve_c_file_dependencies(source_file, &deps, target_compile->includes, NULL);
 
                 for (size_t i=0; i < fl_array_length(deps); i++)
                 {
@@ -252,6 +320,7 @@ char** sbs_build_compile(struct SbsBuild *build)
         fl_cstring_free(source_file);
     }
 
+    fl_array_free_each(target_source_files, sbs_common_free_string);
     fl_cstring_free(includes);
     fl_cstring_free(flags);
 

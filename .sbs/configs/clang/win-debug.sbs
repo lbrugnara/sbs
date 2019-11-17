@@ -1,7 +1,8 @@
 config clang-win-debug extends clang-win-base {
     compile: {
         flags : [ 
-            "-ggdb"
+            "-ggdb",
+            "-O0"
         ]
     },
     archive: {
@@ -13,26 +14,19 @@ config clang-win-debug extends clang-win-base {
         flags: [
             "-DEBUG:FULL"
         ]
-    }
-}
-
-config clang-win-sanitize extends clang-win-debug {
-    compile: {
-        flags: [
-            "-fsanitize=address,undefined",
-            "-O3",
-            "-D_FORTIFY_SOURCE=2"
-        ]
     },
     executable: {
         flags: [
+            "/DEBUG:FULL"
         ]
-    },
-    for win-cmd-x86, win-cmd-x64 {
-        executable: {
-            flags: [
-                "/DEBUG:FULL"
-            ]
-        }
+    }
+}
+
+config clang-win-debug-sanitize extends clang-win-debug {
+    compile: {
+        flags: [
+            "-fsanitize=address,undefined",
+            "-D_FORTIFY_SOURCE=2"
+        ]
     }
 }
