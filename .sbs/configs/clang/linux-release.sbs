@@ -1,8 +1,0 @@
-config clang-linux-release extends clang-linux-base {
-    compile: {
-        flags: [
-            "-O3",
-            "-D_FORTIFY_SOURCE=2"
-        ]
-    }
-}

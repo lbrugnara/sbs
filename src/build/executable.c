@@ -137,16 +137,23 @@ char** sbs_build_target_executable(struct SbsBuild *build)
         }
         else
         {
+            char *object_filename = fl_cstring_dup(target_executable->objects[i].value);
+
+            object_filename = fl_cstring_replace_realloc(object_filename, "${SBS_ENV_NAME}", build->env->name);
+            object_filename = fl_cstring_replace_realloc(object_filename, "${SBS_CONFIG_NAME}", build->config->name);
+            object_filename = fl_cstring_replace_realloc(object_filename, "${SBS_TARGET_NAME}", build->target->name);
+            object_filename = fl_cstring_replace_realloc(object_filename, "${SBS_TOOLCHAIN_NAME}", build->toolchain->name);
+
             // We also check here to see if the object pointed by the string is newer than the executable
             // in order to set the needs_linkage flag
             unsigned long long obj_timestamp;
-            if (!fl_io_file_get_modified_timestamp(target_executable->objects[i].value, &obj_timestamp))
+            if (!fl_io_file_get_modified_timestamp(object_filename, &obj_timestamp))
                 needs_linkage = true;
 
             if (executable_timestamp < obj_timestamp)
                 needs_linkage = true;
 
-            fl_vector_add(executable_objects, fl_cstring_dup(target_executable->objects[i].value));
+            fl_vector_add(executable_objects, object_filename);
         }        
     }
 
@@ -154,14 +161,16 @@ char** sbs_build_target_executable(struct SbsBuild *build)
     {
         if (build->toolchain->linker.bin != NULL)
         {
-            // Replace the special ${output} variable in the flag
-            char *executable_flags = fl_cstring_replace(flags, "${output}", output_filename);
+            // Replace the special ${OUTPUT_FILE} variable in the flag
+            char *executable_flags = fl_cstring_replace(flags, "${OUTPUT_FILE}", output_filename);
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s %s ", build->toolchain->linker.bin, executable_libraries, executable_flags);
+            char *command = fl_cstring_vdup("%s %s ", build->toolchain->linker.bin, executable_flags);
 
             for (size_t i=0; i < fl_vector_length(executable_objects); i++)
                 fl_cstring_append(fl_cstring_append(&command, " "), fl_vector_get(executable_objects, i));
+
+            fl_cstring_append(fl_cstring_append(&command, " "), executable_libraries);
 
             // Exec
             success = sbs_executor_run_command(build->executor, command) && success;

@@ -65,10 +65,11 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
 
             include = ++quote_end;
         }
-        else if (include != end && *include == '<')
+        else if (include_folders != NULL && include != end && *include == '<')
         {
             // Skip the starting angle
             include++;
+
             char *angle_end = fl_cstring_find(include, ">");
             if (!angle_end)
                 break;
@@ -103,6 +104,10 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
             }
 
             include = ++angle_end;
+        }
+        else
+        {
+            include++;
         }
         
         ptr = include;
@@ -292,9 +297,9 @@ char** sbs_build_compile(struct SbsBuild *build)
         {
             if (build->toolchain->compiler.bin)
             {
-                // Replace the special ${source} and ${output} variables in the falgs
-                char *compilation_unit_flags = fl_cstring_replace(flags, "${source}", source_file);
-                compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${output}", object_file);
+                // Replace the special ${INPUT_FILE} and ${OUTPUT_FILE} variables in the falgs
+                char *compilation_unit_flags = fl_cstring_replace(flags, "${INPUT_FILE}", source_file);
+                compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${OUTPUT_FILE}", object_file);
 
                 // Build the compile command
                 char *command = fl_cstring_vdup("%s %s %s", build->toolchain->compiler.bin, includes, compilation_unit_flags);

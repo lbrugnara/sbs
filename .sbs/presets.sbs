@@ -1,0 +1,66 @@
+# All this present in this build do not define the environment to be used, so the build
+# command must include the --env (or -e) flag to specify one
+
+# This preset builds the sbs build system in release mode
+preset win-clang-release {
+    env: win-cmd,
+    toolchain: clang,
+    config: clang-release,
+    target: sbs,
+    actions: {
+        before: [ copy-fllib ]
+    }
+}
+
+# This preset builds the sbs build system in debug mode
+preset win-clang-debug {
+    env: win-cmd,
+    toolchain: clang,
+    config: clang-debug,
+    target: sbs,
+    actions: {
+        before: [ copy-fllib ]
+    }
+}
+
+# This preset builds the sbs build system in release mode
+preset linux-gcc-release {
+    env: linux-bash,
+    toolchain: gcc,
+    config: clang-release,
+    target: sbs,
+    actions: {
+        before: [ copy-fllib ]
+    }
+}
+
+# This preset builds the sbs build system in debug mode
+preset linux-gcc-debug {
+    env: linux-bash,
+    toolchain: gcc,
+    config: clang-debug,
+    target: sbs,
+    actions: {
+        before: [ copy-fllib ]
+    }
+}
+
+# This is a dummy preset to hack my own build system. We get a clean action for free by running:
+# sbs build -e=<win-cmd|linux-bash> clean
+preset clean {
+    toolchain: dummy,
+    config: dummy,
+    target: dummy,
+    actions: {
+        before: [ clean ]
+    }
+}
+
+preset copy-fllib {
+    toolchain: dummy,
+    config: dummy,
+    target: dummy,
+    actions: {
+        before: [ copy-fllib ]
+    }
+}

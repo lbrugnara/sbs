@@ -1,48 +1,11 @@
+# This is the main build file, just a bunch of includes...
+
 include [
-    # toolchains
-    "toolchains/clang.sbs",
-    "toolchains/gcc.sbs",
-    "toolchains/tcc.sbs",
-    "toolchains/cl.sbs",
-
-    # environments
-    "envs/linux-bash.sbs",
-    "envs/win-cmd.sbs",
-    "envs/win-cygwin.sbs",
-    "envs/win-ps.sbs",
-    "envs/win-wsl.sbs",
-
-    # actions
-    "actions/print.sbs",
-    "actions/rm.sbs",    
-
-    # configurations
-    "configs/clang/base.sbs",
-    "configs/clang/linux-base.sbs",
-    "configs/clang/linux-debug.sbs",
-    "configs/clang/linux-release.sbs",
-    "configs/clang/win-base.sbs",
-    "configs/clang/win-debug.sbs",
-    "configs/clang/win-release.sbs",
-    "configs/cl/base.sbs",
-    "configs/cl/debug.sbs",
-    "configs/cl/release.sbs",
-
-    # targets
-    "targets/sbs-lib.sbs",
-    "targets/sbs-objects.sbs",
-    "targets/sbs.sbs",
-
-    # presets
-    "presets/linux-bash-gcc-x64.sbs",
-    "presets/win-cmd-cl-x64.sbs",
-    "presets/win-cmd-cl-x86.sbs",
-    "presets/win-cmd-clang-x64.sbs",
-    "presets/win-cmd-clang-x86.sbs",
-    "presets/win-cmd-tcc-x64.sbs",
-    "presets/win-cmd-tcc-x86.sbs",
-    "presets/win-cygwin-clang-x64.sbs",
-    "presets/win-ps-clang-x64.sbs",
-    "presets/win-ps-clang-x86.sbs",
-    "presets/win-wsl-clang-x64.sbs"
+    "actions.sbs",
+    "configs.sbs",
+    "envs.sbs",
+    "presets.sbs",
+    "targets.sbs",
+    "toolchains.sbs",
+    "dummy.sbs"
 ]

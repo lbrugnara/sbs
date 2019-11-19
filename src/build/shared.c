@@ -132,8 +132,8 @@ char** sbs_build_target_shared(struct SbsBuild *build)
     {
         if (build->toolchain->linker.bin != NULL)
         {
-            // Replace the special ${output} variable in the flag
-            char *shared_flags = fl_cstring_replace(flags, "${output}", output_filename);
+            // Replace the special ${OUTPUT_FILE} variable in the flag
+            char *shared_flags = fl_cstring_replace(flags, "${OUTPUT_FILE}", output_filename);
 
             // Build the compile command
             char *command = fl_cstring_vdup("%s %s", build->toolchain->linker.bin, shared_flags);

@@ -1,0 +1,31 @@
+# The sbs-objects target compiles all the source files
+compile sbs-objects {
+    includes: [
+        "../fllib/include"
+    ],
+    output_dir: "obj/",
+    sources: [
+        "src/.*[.]c$"
+    ]
+}
+
+# This target creates the sbs executable
+executable sbs {
+    output_name: "sbs",
+    output_dir: "build/",
+    objects: [
+        sbs-objects
+    ],
+
+    for win-cmd {
+        objects: [ "./lib/fllib/win/${SBS_CONFIG_NAME}/libfl.lib" ]
+    }
+
+    for linux-bash {
+        objects: [ "./lib/fllib/linux/${SBS_CONFIG_NAME}/libfl.a" ],
+        libraries: [
+            { name: "m" },
+            { name: "pthread" }
+        ]
+    }
+}

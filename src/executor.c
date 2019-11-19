@@ -58,7 +58,8 @@ struct SbsCommandDriver {
 
 SbsExecutor sbs_executor_new(struct SbsEnv *env)
 {
-    flm_assert(env, "Environment cannot be null");
+    if (env == NULL)
+        return NULL;
 
     enum SbsExecutorType type = env->type && !flm_cstring_equals("system", env->type) ? SBS_EXEC_CUSTOM : SBS_EXEC_SYSTEM;
 

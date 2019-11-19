@@ -1,0 +1,27 @@
+action clean {
+    for win-cmd {
+        `if exist .\obj (rd /s /q .\obj)`,
+        `if exist .\build (rd /s /q .\build)`
+    },
+    for linux-bash {
+        `/bin/rm -fr obj/ build/`
+    }
+}
+
+action copy-fllib {
+    for win-cmd {
+        `if not exist .\include (md .\include)`,
+        `if exist ..\fllib\include\fllib.h (copy ..\fllib\include\fllib.h .\include\)`,
+
+        `if not exist .\lib\fllib\win\${SBS_CONFIG_NAME} (md .\lib\fllib\win\${SBS_CONFIG_NAME})`
+        `if exist ..\fllib\build\${SBS_CONFIG_NAME}\libfl.lib (copy ..\fllib\build\${SBS_CONFIG_NAME}\libfl.lib .\lib\fllib\win\${SBS_CONFIG_NAME})`,
+    }
+
+    for linux-bash {
+        `mkdir -p ./include`
+        `if [ -f "../fllib/include/fllib.h" ]; then cp ../fllib/include/fllib.h ./include/ ; fi`
+
+        `mkdir -p ./lib/fllib/linux/${SBS_CONFIG_NAME}`
+        `if [ -f "../fllib/build/${SBS_CONFIG_NAME}/libfl.a" ]; then cp ../fllib/build/${SBS_CONFIG_NAME}/libfl.a ./lib/fllib/linux/${SBS_CONFIG_NAME} ; fi`
+    }
+}
