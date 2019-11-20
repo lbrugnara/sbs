@@ -83,11 +83,17 @@ config clang-debug extends clang-config {
     compile: {
         flags: [
             "-ggdb",
+            "-O0",
             "-DFL_DEBUG"
         ]
     }
 
     for win-cmd {
+        shared: {
+            flags: [
+                "/DEBUG:FULL"
+            ]
+        },
         executable: {
             flags: [
                 "/DEBUG:FULL"
