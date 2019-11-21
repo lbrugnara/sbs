@@ -64,3 +64,12 @@ preset copy-fllib {
         before: [ copy-fllib ]
     }
 }
+
+preset install {
+    toolchain: dummy,
+    config: dummy,
+    target: dummy,
+    actions: {
+        before: [ install ]
+    }
+}

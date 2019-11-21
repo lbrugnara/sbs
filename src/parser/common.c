@@ -55,6 +55,9 @@ char* sbs_common_parse_command_string(struct SbsParser *parser)
         string = tmp;
     }
 
+    string = fl_cstring_replace(string, "\\\r\n", "");
+    string = fl_cstring_replace(string, "\\\n", "");
+    
     return string;
 }
 

@@ -235,6 +235,18 @@ char** sbs_build_compile(struct SbsBuild *build)
         fl_cstring_append(&includes, " ");
     }
 
+    // Glue all the defines together
+    char *defines = fl_cstring_new(0);
+    if (target_compile->defines)
+    {
+        for (size_t i = 0; i < fl_array_length(target_compile->defines); i++)
+        {
+            fl_cstring_append(&defines, build->toolchain->compiler.define_flag);
+            fl_cstring_append(&defines, target_compile->defines[i]);
+            fl_cstring_append(&defines, " ");
+        }
+    }
+
     const char **target_source_files = resolve_source_files((const char**)target_compile->sources);
 
     size_t n_sources = fl_array_length(target_source_files);
@@ -302,7 +314,7 @@ char** sbs_build_compile(struct SbsBuild *build)
                 compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${OUTPUT_FILE}", object_file);
 
                 // Build the compile command
-                char *command = fl_cstring_vdup("%s %s %s", build->toolchain->compiler.bin, includes, compilation_unit_flags);
+                char *command = fl_cstring_vdup("%s %s %s %s", build->toolchain->compiler.bin, defines, includes, compilation_unit_flags);
 
                 // Exec
                 success = sbs_executor_run_command(build->executor, command) && success;
@@ -326,6 +338,7 @@ char** sbs_build_compile(struct SbsBuild *build)
     }
 
     fl_array_free_each(target_source_files, sbs_common_free_string);
+    fl_cstring_free(defines);
     fl_cstring_free(includes);
     fl_cstring_free(flags);
 

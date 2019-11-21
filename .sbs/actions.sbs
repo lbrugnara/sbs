@@ -25,3 +25,17 @@ action copy-fllib {
         `if [ -f "../fllib/build/${SBS_CONFIG_NAME}/libfl.a" ]; then cp ../fllib/build/${SBS_CONFIG_NAME}/libfl.a ./lib/fllib/linux/${SBS_CONFIG_NAME} ; fi`
     }
 }
+
+action install {
+    for win-cmd {
+        `if exist .\build\clang-debug\sbs.exe (                 \
+            copy .\build\clang-debug\sbs.exe ..\fllib\ &        \
+            copy .\build\clang-debug\sbs.exe ..\zenit\ &        \
+            copy .\build\clang-debug\sbs.exe ..\gkit\           \
+        ) else if exist .\build\clang-release\sbs.exe (         \
+            copy .\build\clang-release\sbs.exe ..\fllib\ &      \
+            copy .\build\clang-release\sbs.exe ..\zenit\ &      \
+            copy .\build\clang-release\sbs.exe ..\gkit\         \
+        )`
+    }
+}
