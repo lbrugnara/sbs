@@ -128,7 +128,7 @@ char** sbs_build_target_shared(struct SbsBuild *build)
         }
     }
 
-    if (needs_linkage)
+    if (success && needs_linkage)
     {
         if (build->toolchain->linker.bin != NULL)
         {
@@ -153,9 +153,13 @@ char** sbs_build_target_shared(struct SbsBuild *build)
             fprintf(stdout, "Toolchain '%s' does not have a linker executable defined for environment '%s'", build->toolchain->name, build->env->name);
         }
     }
-    else
+    else if (success)
     {
         fprintf(stdout, "File '%s' has not changed. Skipping target...\n", output_filename);
+    }
+    else
+    {
+        fprintf(stdout, "A dependency of '%s' is missing or not valid, could not build the output file.\n", output_filename);
     }
 
     fl_vector_free(shared_objects);

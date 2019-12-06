@@ -128,7 +128,7 @@ char** sbs_build_target_archive(struct SbsBuild *build)
         }        
     }
 
-    if (needs_archive)
+    if (success && needs_archive)
     {
         if (build->toolchain->archiver.bin != NULL)
         {
@@ -153,9 +153,13 @@ char** sbs_build_target_archive(struct SbsBuild *build)
             fprintf(stdout, "Toolchain '%s' does not have an archiver executable defined for environment '%s'", build->toolchain->name, build->env->name);
         }
     }
-    else
+    else if (success)
     {
         fprintf(stdout, "File '%s' has not changed. Skipping target...\n", output_filename);
+    }
+    else
+    {
+        fprintf(stdout, "A dependency of '%s' is missing or not valid, could not build output file.\n", output_filename);
     }
 
     fl_vector_free(archive_objects);

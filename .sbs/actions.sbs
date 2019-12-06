@@ -38,4 +38,16 @@ action install {
             copy .\build\clang-release\sbs.exe ..\gkit\         \
         )`
     }
+
+    for linux-bash {
+        `if [ -f "build/clang-debug/sbs" ]; then            \
+            cp build/clang-debug/sbs ../fllib/sbs;          \
+            cp build/clang-debug/sbs ../zenit/sbs;          \
+            cp build/clang-debug/sbs ../gkit/sbs;           \
+        elif [ -f "build/clang-release/sbs" ]; then         \
+            cp build/clang-release/sbs ../fllib/sbs;        \
+            cp build/clang-release/sbs ../zenit/sbs;        \
+            cp build/clang-release/sbs ../gkit/sbs;         \
+        fi`
+    }
 }

@@ -249,11 +249,24 @@ struct SbsToken sbs_lexer_next(struct SbsLexer *lexer)
             size_t chars = 0;
             while (peek(lexer) != c)
             {
-                if (peek(lexer) == '\\' && peek_at(lexer, 1) == c)
+                if (peek(lexer) == '\\')
                 {
-                    consume(lexer); // Consume the '\', the next consume call will swallow the character equals to c
+                    consume(lexer); // '\\'
                     chars++;
+
+                    if (peek(lexer) == '\n')
+                    {
+                        consume(lexer); // '\n'
+                        chars++;
+                    }
+                    else if (peek(lexer) == '\r' && peek_at(lexer, 1) == '\n')
+                    {
+                        consume(lexer); // '\r'
+                        consume(lexer); // '\n'
+                        chars += 2;
+                    }
                 }
+
                 consume(lexer);
                 chars++;
             }

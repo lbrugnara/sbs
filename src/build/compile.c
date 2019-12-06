@@ -299,6 +299,12 @@ char** sbs_build_compile(struct SbsBuild *build)
                             break;
                         }
                     }
+                    else
+                    {
+                        // If the file does not exist, we trigger the (re)compilation to make sure
+                        // we are using the right dependencies
+                        needs_compile = true;
+                    }
                 }
 
                 fl_array_free_each(deps, sbs_common_free_string);
