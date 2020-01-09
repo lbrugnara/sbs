@@ -45,11 +45,11 @@ static void merge_hashtable(FlHashtable dest, FlHashtable src)
 
         // We pass *false* to prevent the source hashtable of cleaning the memory of our
         // values (and keys), because as mentioned above the values are the same pointers
-        fl_hashtable_remove(src, keys[i], false);
+        fl_hashtable_remove(src, keys[i], false, false);
     }
 
     // It is ok to free the keys because of 2 reasons:
-    // 1- We removed the entries from *src* WITHOUT cleaning the resources (fl_hashtable_remove with *false* as 3rd parameter)
+    // 1- We removed the entries from *src* WITHOUT cleaning the resources (fl_hashtable_remove with clean_key = false as 3rd parameter)
     // 2- The "dest" hashtable uses the fl_container_allocator_string therefore it creates copies of the keys on fl_hashtable_add
     fl_array_free_each(keys, sbs_common_free_string);
 }
