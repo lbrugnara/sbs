@@ -6,17 +6,17 @@
 struct SbsFile {
     const char *filename;
     /* FlHashtable<char*, struct SbsEnvSection*> */
-    FlHashtable envs;
+    FlHashtable *envs;
     /* FlHashtable<char*, struct SbsTargetSection*> */
-    FlHashtable targets;
+    FlHashtable *targets;
     /* FlHashtable<char*, struct SbsToolchainSection*> */
-    FlHashtable toolchains;
+    FlHashtable *toolchains;
     /* FlHashtable<char*, struct SbsConfigSection*> */
-    FlHashtable configurations;
+    FlHashtable *configurations;
     /* FlHashtable<char*, struct SbsActionSection*> */
-    FlHashtable actions;
+    FlHashtable *actions;
     /* FlHashtable<char*, struct SbsPresetSection*> */
-    FlHashtable presets;
+    FlHashtable *presets;
 };
 
 struct SbsFile* sbs_file_parse(const char *filename);

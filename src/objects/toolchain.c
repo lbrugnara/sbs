@@ -13,7 +13,7 @@ struct SbsToolchain* sbs_toolchain_resolve(const struct SbsFile *file, const cha
 
     toolchain_object->name = fl_cstring_dup(toolchain_section->name);
 
-    FlList hierarchy = fl_list_new();
+    FlList *hierarchy = fl_list_new();
 
     // Using prepend we will keep the list ordered
     if (fl_hashtable_has_key(toolchain_section->nodes, env_name))

@@ -19,7 +19,7 @@ struct SbsExecutor {
 
 struct SbsCustomExecutor {
     struct SbsExecutor base;
-    FlProcess process;
+    FlProcess *process;
 };
 
 struct SbsCommandDriver {
@@ -307,7 +307,7 @@ void sbs_executor_free(SbsExecutor executor)
 {
     if (executor->type == SBS_EXEC_CUSTOM)
     {
-        FlProcess process = ((struct SbsCustomExecutor*)executor)->process;
+        FlProcess *process = ((struct SbsCustomExecutor*)executor)->process;
         char **argv = fl_process_argv(process);
         if (argv)
             fl_free(argv);

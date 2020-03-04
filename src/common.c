@@ -22,7 +22,7 @@ void sbs_common_free_string_or_id(void *obj)
         fl_cstring_free(str->value);
 }
 
-FlArray sbs_common_extend_array(FlArray dest, FlArray src)
+FlArray* sbs_common_extend_array(FlArray *dest, FlArray *src)
 {
     if (!src)
         return dest;
@@ -33,7 +33,7 @@ FlArray sbs_common_extend_array(FlArray dest, FlArray src)
     return fl_array_combine(dest, src);
 }
 
-FlArray sbs_common_extend_array_copy_pointers(FlArray dest, FlArray src, void(*copy_func)(void*, const void*, size_t))
+FlArray* sbs_common_extend_array_copy_pointers(FlArray *dest, FlArray *src, void(*copy_func)(void*, const void*, size_t))
 {
     if (!src)
         return dest;

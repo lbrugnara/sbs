@@ -62,7 +62,7 @@ struct SbsActionSection* sbs_action_section_parse(struct SbsParser *parser)
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-    FlVector action_nodes = fl_vector_new_args((struct FlVectorArgs) {
+    FlVector *action_nodes = fl_vector_new_args((struct FlVectorArgs) {
         .writer = fl_container_writer,
         .element_size = sizeof(struct SbsActionNode)
     });

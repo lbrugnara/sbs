@@ -15,7 +15,7 @@ enum SbsTargetType {
 struct SbsTargetSection {
     enum SbsTargetType type;
     const char *name;
-    FlHashtable entries;
+    FlHashtable *entries;
 };
 
 struct SbsTargetNode {

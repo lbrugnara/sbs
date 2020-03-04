@@ -1,11 +1,11 @@
-#include "compile.h"
+#include "compile.h" 
 #include "../common.h"
 #include "../objects/configuration.h"
 
 #define SBS_DIR_SEPARATOR "/"
 
 // FIXME: Poor man's kind-of topological sort
-static void resolve_c_file_dependencies(const char *target_file, const char ***resolved_files, char **include_folders, FlVector visited_files)
+static void resolve_c_file_dependencies(const char *target_file, const char ***resolved_files, char **include_folders, FlVector *visited_files)
 {
     char *content = fl_io_file_read_all_text(target_file);
 
@@ -20,7 +20,7 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
     }
 
     // We use the current file's directory to process the includes
-    FlVector target_file_parts = fl_cstring_split_by(target_file, SBS_DIR_SEPARATOR);
+    FlVector *target_file_parts = fl_cstring_split_by(target_file, SBS_DIR_SEPARATOR);
     fl_vector_pop(target_file_parts, NULL);
     const char *path = fl_cstring_join(target_file_parts, SBS_DIR_SEPARATOR);
 
@@ -42,9 +42,19 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
         {
             // Skip the starting quote
             include++;
-            char *quote_end = fl_cstring_find(include, "\"");
-            if (!quote_end)
+            char *quote_end = include;
+
+            while (true)
+            {
+                if (*quote_end == '\n' || *quote_end == '"')
+                    break;
+                
+                quote_end++;
+            }
+            
+            if (!quote_end || *quote_end != '"')
                 break;
+
             *quote_end = '\0';
             char *file = fl_cstring_vdup("%s%s%s", path, SBS_DIR_SEPARATOR, include);
 
@@ -154,7 +164,7 @@ static char* build_object_filename(const struct SbsBuild *build, const struct Sb
 
     char *object_file = NULL;
 
-    FlVector source_file_parts = fl_cstring_split_by(source_file, SBS_DIR_SEPARATOR);
+    FlVector *source_file_parts = fl_cstring_split_by(source_file, SBS_DIR_SEPARATOR);
 
     char *filename = NULL;
     fl_vector_pop(source_file_parts, &filename);

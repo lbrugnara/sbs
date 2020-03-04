@@ -27,7 +27,7 @@
  * Returns:
  *  void - This function does not return a value
  */
-static void merge_hashtable(FlHashtable dest, FlHashtable src)
+static void merge_hashtable(FlHashtable *dest, FlHashtable *src)
 {
     // We just get the source hashtable's keys
     char **keys = fl_hashtable_keys(src);
@@ -105,7 +105,7 @@ static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *fi
     char *current_dir = NULL;
     {
         // Remove the filename to get the current directory
-        FlVector parts = fl_cstring_split_by(file->filename, "/");
+        FlVector *parts = fl_cstring_split_by(file->filename, "/");
         fl_vector_pop(parts, NULL);
 
         if (fl_vector_length(parts) > 0)
@@ -255,7 +255,7 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
     return success;
 }
 
-static void map_init_env(FlHashtable *envs)
+static void map_init_env(FlHashtable **envs)
 {
     struct FlHashtableArgs new_args = {
         .hash_function = fl_hashtable_hash_string, 
@@ -268,7 +268,7 @@ static void map_init_env(FlHashtable *envs)
     *envs = fl_hashtable_new_args(new_args);
 }
 
-static void map_init_action(FlHashtable *actions)
+static void map_init_action(FlHashtable **actions)
 {
     struct FlHashtableArgs new_args = {
         .hash_function = fl_hashtable_hash_string, 
@@ -281,7 +281,7 @@ static void map_init_action(FlHashtable *actions)
     *actions = fl_hashtable_new_args(new_args);
 }
 
-static void map_init_config(FlHashtable *config_map)
+static void map_init_config(FlHashtable **config_map)
 {
     struct FlHashtableArgs new_args = {
         .hash_function = fl_hashtable_hash_string, 
@@ -294,7 +294,7 @@ static void map_init_config(FlHashtable *config_map)
     *config_map = fl_hashtable_new_args(new_args);
 }
 
-static void map_init_preset(FlHashtable *presets)
+static void map_init_preset(FlHashtable **presets)
 {
     struct FlHashtableArgs new_args = {
         .hash_function = fl_hashtable_hash_string, 
@@ -307,7 +307,7 @@ static void map_init_preset(FlHashtable *presets)
     *presets = fl_hashtable_new_args(new_args);
 }
 
-static void map_init_target(FlHashtable *targets)
+static void map_init_target(FlHashtable **targets)
 {
     struct FlHashtableArgs new_args = {
         .hash_function = fl_hashtable_hash_string, 
@@ -320,7 +320,7 @@ static void map_init_target(FlHashtable *targets)
     *targets = fl_hashtable_new_args(new_args);
 }
 
-static void map_init_toolchain(FlHashtable *toolchains)
+static void map_init_toolchain(FlHashtable **toolchains)
 {
     struct FlHashtableArgs new_args = {
         .hash_function = fl_hashtable_hash_string, 
@@ -366,7 +366,7 @@ struct SbsFile* sbs_file_parse(const char *filename)
         // TODO: We can use a buffer here and use the sbs_lexer_next function
         .tokens = sbs_lexer_tokenize(&lexer),
         .index = 0,
-        .length = fl_array_length((FlArray)parser.tokens)
+        .length = fl_array_length((FlArray*) parser.tokens)
     };
     
     if (!parse_file(&parser, file))

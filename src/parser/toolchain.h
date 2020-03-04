@@ -30,7 +30,7 @@ struct SbsToolchainNode {
 struct SbsToolchainSection {
     const char *name;
     /* FlHashtable<string, SbsToolchainNode> */
-    FlHashtable nodes;
+    FlHashtable *nodes;
 };
 
 struct SbsToolchainSection* sbs_toolchain_section_parse(struct SbsParser *parser);

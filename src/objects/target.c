@@ -39,7 +39,7 @@ struct SbsTarget* sbs_target_resolve(const struct SbsFile *file, const char *tar
     target_obj->name = fl_cstring_dup(target_section->name);
     target_obj->type = target_section->type;
 
-    FlList hierarchy = fl_list_new();
+    FlList *hierarchy = fl_list_new();
 
     // Using prepend we will keep the list ordered
     if (fl_hashtable_has_key(target_section->entries, env_name))

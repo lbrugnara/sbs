@@ -387,7 +387,7 @@ enum SbsResult sbs_command_list(int argc, char **argv, char **env)
 
     // Get the requested resource. If the resource name is not valid, show an error.
     const char *resource = NULL;
-    FlHashtable ht  = NULL;
+    FlHashtable *ht  = NULL;
 
     if (flm_cstring_equals("envs", args.resource))
     {

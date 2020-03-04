@@ -35,7 +35,7 @@ struct SbsConfigSection {
     const char *name;
     char **extends;
     /* FlHashtable<string, struct SbsConfigNode> */
-    FlHashtable nodes;
+    FlHashtable *nodes;
 };
 
 struct SbsConfigSection* sbs_config_section_parse(struct SbsParser *parser);

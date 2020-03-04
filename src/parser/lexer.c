@@ -148,7 +148,7 @@ static inline void remove_ws_and_comments(struct SbsLexer *lexer)
 
 struct SbsToken* sbs_lexer_tokenize(struct SbsLexer *lexer)
 {
-    FlVector tokens = fl_vector_new_args((struct FlVectorArgs) {
+    FlVector *tokens = fl_vector_new_args((struct FlVectorArgs) {
         .writer = fl_container_writer,
         .element_size = sizeof(struct SbsToken),
         .capacity = 1000

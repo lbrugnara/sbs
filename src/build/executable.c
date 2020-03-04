@@ -84,7 +84,7 @@ char** sbs_build_target_executable(struct SbsBuild *build)
 
     // This vector will keep track of the objects that are needed to build the executable
     size_t n_objects = fl_array_length(target_executable->objects);
-    FlVector executable_objects = fl_vector_new(n_objects, fl_container_cleaner_pointer);    
+    FlVector *executable_objects = fl_vector_new(n_objects, fl_container_cleaner_pointer);    
 
     // We iterate through all the executable's objects where we can find two type of resources:
     //  1- An identifier that represents another target, we need to build that target and use its output

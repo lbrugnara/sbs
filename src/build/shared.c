@@ -62,7 +62,7 @@ char** sbs_build_target_shared(struct SbsBuild *build)
 
     // This vector will keep track of the objects that are needed to build the shared
     size_t n_objects = fl_array_length(target_shared->objects);
-    FlVector shared_objects = fl_vector_new(n_objects, fl_container_cleaner_pointer);    
+    FlVector *shared_objects = fl_vector_new(n_objects, fl_container_cleaner_pointer);    
 
     // We iterate through all the shared's objects where we can find two type of resources:
     //  1- An identifier that represents another target, we need to build that target and use its output

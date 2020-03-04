@@ -3,7 +3,7 @@
 #include "../parser/configuration.h"
 #include "../common.h"
 
-static void find_ancestors(const struct SbsConfigSection *config, FlList ancestors, const struct SbsFile *file, const char *env_name);
+static void find_ancestors(const struct SbsConfigSection *config, FlList *ancestors, const struct SbsFile *file, const char *env_name);
 static void merge_compile_config(struct SbsConfigCompile *extend, const struct SbsConfigCompileNode *source);
 static void merge_archive_config(struct SbsConfigArchive *extend, const struct SbsConfigArchiveNode *source);
 static void merge_shared_config(struct SbsConfigShared *extend, const struct SbsConfigSharedNode *source);
@@ -19,7 +19,7 @@ struct SbsConfiguration* sbs_config_resolve(const struct SbsFile *file, const ch
     struct SbsConfiguration *config_object = fl_malloc(sizeof(struct SbsConfiguration));
     config_object->name = fl_cstring_dup(config_section->name);
 
-    FlList hierarchy = fl_list_new();
+    FlList *hierarchy = fl_list_new();
 
     // Using prepend we will keep the list ordered
     if (fl_hashtable_has_key(config_section->nodes, env_name))
@@ -82,7 +82,7 @@ void sbs_config_free(struct SbsConfiguration *config)
 }
 
 
-static void find_ancestors(const struct SbsConfigSection *config, FlList ancestors, const struct SbsFile *file, const char *env_name)
+static void find_ancestors(const struct SbsConfigSection *config, FlList *ancestors, const struct SbsFile *file, const char *env_name)
 {
     if (!config->extends)
         return;
