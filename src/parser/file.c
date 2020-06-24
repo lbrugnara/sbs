@@ -12,7 +12,7 @@
 #include "parser.h"
 #include "file.h"
 
-#include "../common.h"
+#include "../common/common.h"
 
 
 /*

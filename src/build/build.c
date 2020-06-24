@@ -6,7 +6,7 @@
 #include "compile.h"
 #include "executable.h"
 #include "shared.h"
-#include "../common.h"
+#include "../common/common.h"
 #include "../executor.h"
 #include "../parser/file.h"
 #include "../parser/action.h"
@@ -222,7 +222,7 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     }
 
     // Resolve target
-    struct SbsTarget *target = sbs_target_resolve(file, target_name, env_name);
+    struct SbsTarget *target = sbs_target_resolve(file, target_name, env_name, NULL);
     if (!target)
     {
         result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);

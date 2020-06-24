@@ -1,6 +1,6 @@
 #include <fllib.h>
 #include "common.h"
-#include "parser/common.h"
+#include "../parser/common.h"
 
 void sbs_common_free_string(void *obj)
 {

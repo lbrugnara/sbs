@@ -1,7 +1,7 @@
 #include "environment.h"
 #include "common.h"
 #include "parser.h"
-#include "../common.h"
+#include "../common/common.h"
 
 void sbs_env_section_free(struct SbsEnvSection *env)
 {

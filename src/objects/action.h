@@ -2,7 +2,7 @@
 #define SBS_OBJECT_ACTION_H
 
 #include <fllib.h>
-#include "../common.h"
+#include "../common/common.h"
 #include "../parser/common.h"
 #include "../parser/file.h"
 

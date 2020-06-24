@@ -2,7 +2,7 @@
 #include "configuration.h"
 #include "common.h"
 #include "parser.h"
-#include "../common.h"
+#include "../common/common.h"
 
 void sbs_config_entry_free(struct SbsConfigNode *config)
 {

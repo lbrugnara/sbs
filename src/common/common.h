@@ -2,7 +2,7 @@
 #define SBS_COMMON_H
 
 #include <fllib.h>
-#include "parser/common.h"
+#include "../parser/common.h"
 
 #define SBS_BASE_OBJECT_KEY "#base"
 

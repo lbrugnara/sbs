@@ -23,6 +23,17 @@ preset win-clang-debug {
     }
 }
 
+# This preset builds the sbs build system in debug mode
+preset win-clang-tests {
+    env: win-cmd,
+    toolchain: clang,
+    config: clang-debug,
+    target: sbs-tests,
+    actions: {
+        before: [ copy-fllib ]
+    }
+}
+
 # This preset builds the sbs build system in release mode
 preset linux-gcc-release {
     env: linux-bash,

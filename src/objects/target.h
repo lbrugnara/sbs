@@ -46,9 +46,10 @@ struct SbsTargetExecutable {
     char *output_name;
     struct SbsTargetLibrary *libraries;
     struct SbsStringOrId *objects;
+    char **defines;
 };
 
-struct SbsTarget* sbs_target_resolve(const struct SbsFile *file, const char *target_name, const char *env_name);
+struct SbsTarget* sbs_target_resolve(const struct SbsFile *file, const char *target_name, const char *env_name, const struct SbsTarget *caller);
 void sbs_target_free(struct SbsTarget *target);
 
 #endif /* SBS_OBJECT_TARGET_H */

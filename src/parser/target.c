@@ -2,7 +2,7 @@
 #include "target.h"
 #include "common.h"
 #include "parser.h"
-#include "../common.h"
+#include "../common/common.h"
 
 static void parse_for_section(struct SbsParser *parser, struct SbsTargetSection *target_section, enum SbsTargetType target_type);
 static void free_library_node(void*);
@@ -67,6 +67,9 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
 
             if (executable->output_name)
                 fl_cstring_free(executable->output_name);
+
+            if (executable->defines)
+                fl_array_free_each(executable->defines, sbs_common_free_string);
 
             break;
         }
@@ -484,6 +487,12 @@ static void parse_executable_body(struct SbsParser *parser, struct SbsTargetSect
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->libraries = parse_library_array(parser);
+        }
+        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"defines", 7))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            target->defines = sbs_common_parse_string_array(parser);
         }
         else if (token->type == SBS_TOKEN_FOR)
         {

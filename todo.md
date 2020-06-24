@@ -1,3 +1,4 @@
+[ ] Check flags and defines to invalidate the build
 [ ] Improve error handling throughout the project
 [ ] sbs init command (scaffolding): Add basic elements and common toolchains
 [ ] sbs setup command? A configuration block that requests input from the user to configure the local build

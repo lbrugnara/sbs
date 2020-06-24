@@ -1,7 +1,7 @@
 #include <fllib.h>
 #include "configuration.h"
 #include "../parser/configuration.h"
-#include "../common.h"
+#include "../common/common.h"
 
 static void find_ancestors(const struct SbsConfigSection *config, FlList *ancestors, const struct SbsFile *file, const char *env_name);
 static void merge_compile_config(struct SbsConfigCompile *extend, const struct SbsConfigCompileNode *source);

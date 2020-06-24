@@ -1,16 +1,16 @@
 #include <fllib.h>
 #include "target.h"
-#include "../common.h"
+#include "../common/common.h"
 #include "../parser/target.h"
 #include "../parser/action.h"
 
 static void merge_base_target(const struct SbsFile *file, const char *env_name, struct SbsTarget *extend, const struct SbsTargetNode *source);
-static void merge_compile_target(struct SbsTargetCompile *extend, const struct SbsTargetCompileNode *source);
+static void merge_compile_target(struct SbsTargetCompile *extend, const struct SbsTargetCompileNode *source, const struct SbsTarget *parent);
 static void merge_archive_target(struct SbsTargetArchive *extend, const struct SbsTargetArchiveNode *source);
 static void merge_shared_target(struct SbsTargetShared *extend, const struct SbsTargetSharedNode *source);
 static void merge_executable_target(struct SbsTargetExecutable *extend, const struct SbsTargetExecutableNode *source);
 
-struct SbsTarget* sbs_target_resolve(const struct SbsFile *file, const char *target_name, const char *env_name)
+struct SbsTarget* sbs_target_resolve(const struct SbsFile *file, const char *target_name, const char *env_name, const struct SbsTarget *parent)
 {    
     const struct SbsTargetSection *target_section = fl_hashtable_get(file->targets, target_name);
 
@@ -57,7 +57,7 @@ struct SbsTarget* sbs_target_resolve(const struct SbsFile *file, const char *tar
         switch (target_section->type)
         {
             case SBS_TARGET_COMPILE:
-                merge_compile_target((struct SbsTargetCompile*)target_obj, (struct SbsTargetCompileNode*)node->value);
+                merge_compile_target((struct SbsTargetCompile*)target_obj, (struct SbsTargetCompileNode*)node->value, parent);
                 break;
             case SBS_TARGET_ARCHIVE:
                 merge_archive_target((struct SbsTargetArchive*)target_obj, (struct SbsTargetArchiveNode*)node->value);
@@ -164,6 +164,9 @@ void sbs_target_free(struct SbsTarget *target)
             if (executable->output_name)
                 fl_cstring_free(executable->output_name);
 
+            if (executable->defines)
+                fl_array_free_each(executable->defines, sbs_common_free_string);
+
             break;
         }
     }
@@ -190,11 +193,20 @@ static void merge_base_target(const struct SbsFile *file, const char *env_name, 
     }
 }
 
-static void merge_compile_target(struct SbsTargetCompile *extend, const struct SbsTargetCompileNode *source)
+static void merge_compile_target(struct SbsTargetCompile *extend, const struct SbsTargetCompileNode *source, const struct SbsTarget *parent)
 {
     extend->includes = sbs_common_extend_array_copy_pointers(extend->includes, source->includes, sbs_common_copy_string);
     extend->sources = sbs_common_extend_array_copy_pointers(extend->sources, source->sources, sbs_common_copy_string);
     extend->defines = sbs_common_extend_array_copy_pointers(extend->defines, source->defines, sbs_common_copy_string);
+
+    if (parent == NULL)
+        return;
+
+    if (parent->type == SBS_TARGET_EXECUTABLE)
+    {
+        struct SbsTargetExecutable *executable = (struct SbsTargetExecutable*) parent;
+        extend->defines = sbs_common_extend_array_copy_pointers(extend->defines, executable->defines, sbs_common_copy_string);
+    }
 }
 
 static void merge_archive_target(struct SbsTargetArchive *extend, const struct SbsTargetArchiveNode *source)
@@ -232,4 +244,5 @@ static void merge_executable_target(struct SbsTargetExecutable *extend, const st
     extend->output_name = sbs_common_set_string(extend->output_name, source->output_name);
     extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, sbs_common_copy_string_or_id);
     extend->libraries = sbs_common_extend_array_copy_pointers(extend->libraries, source->libraries, convert_library_node_to_library);
+    extend->defines = sbs_common_extend_array_copy_pointers(extend->defines, source->defines, sbs_common_copy_string);
 }

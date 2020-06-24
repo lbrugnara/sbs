@@ -52,6 +52,7 @@ struct SbsTargetExecutableNode {
     const char *output_name;
     struct SbsTargetLibraryNode *libraries;
     struct SbsStringOrId *objects;
+    char **defines;
 };
 
 struct SbsTargetSection* sbs_target_section_parse(struct SbsParser *parser);

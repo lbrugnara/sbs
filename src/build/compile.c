@@ -1,5 +1,5 @@
 #include "compile.h" 
-#include "../common.h"
+#include "../common/common.h"
 #include "../objects/configuration.h"
 
 #define SBS_DIR_SEPARATOR "/"

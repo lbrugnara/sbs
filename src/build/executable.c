@@ -1,6 +1,6 @@
 #include "executable.h"
 #include "build.h"
-#include "../common.h"
+#include "../common/common.h"
 #include "../objects/configuration.h"
 #include "../objects/toolchain.h"
 
@@ -95,7 +95,7 @@ char** sbs_build_target_executable(struct SbsBuild *build)
         if (target_executable->objects[i].type == SBS_IDENTIFIER)
         {
             // target_objects is an array of pointers to char allocated by the target
-            struct SbsTarget *target = sbs_target_resolve(build->file, target_executable->objects[i].value, build->env->name);
+            struct SbsTarget *target = sbs_target_resolve(build->file, target_executable->objects[i].value, build->env->name, (const struct SbsTarget*) target_executable);
 
             char **target_objects = sbs_build_target(&(struct SbsBuild) {
                 .executor = build->executor,

@@ -1,7 +1,7 @@
 #ifndef SBS_COMMANDS_H
 #define SBS_COMMANDS_H
 
-#include "result.h"
+#include "../common/result.h"
 
 enum SbsResult sbs_command_run(int argc, char **argv, char **env);
 

@@ -1,5 +1,5 @@
 #include "toolchain.h"
-#include "../common.h"
+#include "../common/common.h"
 #include "../parser/toolchain.h"
 
 struct SbsToolchain* sbs_toolchain_resolve(const struct SbsFile *file, const char *toolchain_name, const char *env_name)

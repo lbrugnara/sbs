@@ -29,3 +29,39 @@ executable sbs {
         ]
     }
 }
+
+# The sbs-objects target compiles all the source files
+compile sbs-tests-objects {
+    includes: [
+        "../fllib/include"
+    ],
+    output_dir: "obj/",
+    sources: [
+        "tests/.*[.]c$"
+    ]
+}
+
+# This target creates the sbs executable
+executable sbs-tests {
+    output_name: "tests",
+    output_dir: "build/",
+    objects: [
+        sbs-objects,
+        sbs-tests-objects
+    ],
+    defines: [
+        "SBS_TESTS"
+    ]
+
+    for win-cmd {
+        objects: [ "./lib/fllib/win/${SBS_CONFIG_NAME}/libfl.lib" ]
+    }
+
+    for linux-bash {
+        objects: [ "./lib/fllib/linux/${SBS_CONFIG_NAME}/libfl.a" ],
+        libraries: [
+            { name: "m" },
+            { name: "pthread" }
+        ]
+    }
+}
