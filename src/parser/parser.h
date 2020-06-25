@@ -4,19 +4,19 @@
 #include "file.h"
 #include "lexer.h"
 
-struct SbsParser {
-    const struct SbsToken *tokens;
+typedef struct {
+    const SbsToken *tokens;
     unsigned int index;
     size_t length;
-};
+} SbsParser;
 
-void sbs_parser_error(const struct SbsToken *token, const char *message);
-const struct SbsToken* sbs_parser_peek(struct SbsParser *parser);
-const struct SbsToken* sbs_parser_peek_at(struct SbsParser *parser, size_t offset);
-struct FlSlice sbs_parser_peek_many(struct SbsParser *parser, size_t n);
-const struct SbsToken* sbs_parser_consume(struct SbsParser *parser, enum SbsTokenType type);
-void sbs_parser_consume_if(struct SbsParser *parser, enum SbsTokenType type);
-bool sbs_parser_has_input(struct SbsParser *parser);
-bool sbs_parser_parse(struct SbsLexer *lexer, struct SbsFile *file);
+void sbs_parser_error(const SbsToken *token, const char *message);
+const SbsToken* sbs_parser_peek(SbsParser *parser);
+const SbsToken* sbs_parser_peek_at(SbsParser *parser, size_t offset);
+struct FlSlice sbs_parser_peek_many(SbsParser *parser, size_t n);
+const SbsToken* sbs_parser_consume(SbsParser *parser, SbsTokenType type);
+void sbs_parser_consume_if(SbsParser *parser, SbsTokenType type);
+bool sbs_parser_has_input(SbsParser *parser);
+bool sbs_parser_parse(SbsLexer *lexer, SbsFile *file);
 
 #endif /* SBS_PARSER_H */

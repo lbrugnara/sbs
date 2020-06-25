@@ -6,9 +6,9 @@
 
 static void action_node_free(void *value);
 
-static void parse_action_body(struct SbsParser *parser, struct SbsActionNode *current_node)
+static void parse_action_body(SbsParser *parser, SbsActionNode *current_node)
 {
-    const struct SbsToken *token = NULL;
+    const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_FOR)
     { 
         if (token->type == SBS_TOKEN_COMMAND_STRING)
@@ -45,18 +45,18 @@ static void parse_action_body(struct SbsParser *parser, struct SbsActionNode *cu
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsActionSection* - The parsed *action* block
+ *  SbsActionSection* - The parsed *action* block
  *
  */
-struct SbsActionSection* sbs_action_section_parse(struct SbsParser *parser)
+SbsActionSection* sbs_action_section_parse(SbsParser *parser)
 {
-    struct SbsActionSection *action_section = fl_malloc(sizeof(struct SbsActionSection));
+    SbsActionSection *action_section = fl_malloc(sizeof(SbsActionSection));
 
     // Consume 'action'
     sbs_parser_consume(parser, SBS_TOKEN_ACTION);
     
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     action_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
@@ -64,17 +64,17 @@ struct SbsActionSection* sbs_action_section_parse(struct SbsParser *parser)
 
     FlVector *action_nodes = fl_vector_new_args((struct FlVectorArgs) {
         .writer = fl_container_writer,
-        .element_size = sizeof(struct SbsActionNode)
+        .element_size = sizeof(SbsActionNode)
     });
 
-    const struct SbsToken *token = NULL;
+    const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
         if (token->type == SBS_TOKEN_FOR)
         {
             // We "reset" the current node to parse the for declaration
-            struct SbsActionNode current_node = { 
-                .commands = fl_array_new(sizeof(struct SbsStringOrId), 0),
+            SbsActionNode current_node = { 
+                .commands = fl_array_new(sizeof(SbsStringOrId), 0),
                 .for_envs = sbs_common_parse_for_declaration(parser)
             };
 
@@ -86,8 +86,8 @@ struct SbsActionSection* sbs_action_section_parse(struct SbsParser *parser)
         }
         else
         {
-            struct SbsActionNode current_node = { 
-                .commands = fl_array_new(sizeof(struct SbsStringOrId), 0),
+            SbsActionNode current_node = { 
+                .commands = fl_array_new(sizeof(SbsStringOrId), 0),
                 .for_envs = NULL
             };
 
@@ -109,7 +109,7 @@ struct SbsActionSection* sbs_action_section_parse(struct SbsParser *parser)
 
 static void action_node_free(void *value)
 {
-    struct SbsActionNode *command = (struct SbsActionNode*)value;
+    SbsActionNode *command = (SbsActionNode*)value;
 
     if (command->commands)
         fl_array_free_each(command->commands, sbs_common_free_string_or_id);
@@ -119,7 +119,7 @@ static void action_node_free(void *value)
     // no need to free "command" as it is a struct value
 }
 
-void sbs_action_section_free(struct SbsActionSection *action)
+void sbs_action_section_free(SbsActionSection *action)
 {
     fl_cstring_free(action->name);
 
@@ -139,17 +139,17 @@ void sbs_action_section_free(struct SbsActionSection *action)
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsActionsNode - Parsed *actions* block
+ *  SbsActionsNode - Parsed *actions* block
  *
  */
-struct SbsActionsNode sbs_actions_node_parse(struct SbsParser *parser)
+SbsActionsNode sbs_actions_node_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
     sbs_parser_consume(parser, SBS_TOKEN_COLON);
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-    struct SbsActionsNode actions = {0};
-    const struct SbsToken *token = NULL;
+    SbsActionsNode actions = {0};
+    const SbsToken *token = NULL;
 
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
@@ -178,7 +178,7 @@ struct SbsActionsNode sbs_actions_node_parse(struct SbsParser *parser)
     return actions;
 }
 
-void sbs_actions_node_free(struct SbsActionsNode *actions)
+void sbs_actions_node_free(SbsActionsNode *actions)
 {
     if (actions->before)
         fl_array_free_each(actions->before, sbs_common_free_string_or_id);

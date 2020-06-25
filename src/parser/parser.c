@@ -5,7 +5,7 @@
 
 extern const char *token_type_string[];
 
-void sbs_parser_error(const struct SbsToken *token, const char *message)
+void sbs_parser_error(const SbsToken *token, const char *message)
 {
     flm_vexit(ERR_FATAL, "Unexpected token %s %.*s in line %ld, column %ld %s",
         token_type_string[token->type],
@@ -16,12 +16,12 @@ void sbs_parser_error(const struct SbsToken *token, const char *message)
         message);
 }
 
-bool sbs_parser_has_input(struct SbsParser *parser)
+bool sbs_parser_has_input(SbsParser *parser)
 {
     return parser->index < parser->length;
 }
 
-const struct SbsToken* sbs_parser_peek(struct SbsParser *parser)
+const SbsToken* sbs_parser_peek(SbsParser *parser)
 {
     if (parser->index >= parser->length)
         flm_exit(ERR_FATAL, "There's no input to sbs_parser_peek\n");
@@ -29,7 +29,7 @@ const struct SbsToken* sbs_parser_peek(struct SbsParser *parser)
     return parser->tokens + parser->index;
 }
 
-const struct SbsToken* sbs_parser_peek_at(struct SbsParser *parser, size_t offset)
+const SbsToken* sbs_parser_peek_at(SbsParser *parser, size_t offset)
 {
     if (parser->index + offset >= parser->length)
         flm_vexit(ERR_FATAL, "There's no input to sbs_parser_peek at offset %zu\n", offset);
@@ -37,7 +37,7 @@ const struct SbsToken* sbs_parser_peek_at(struct SbsParser *parser, size_t offse
     return parser->tokens + parser->index + offset;
 }
 
-struct FlSlice sbs_parser_peek_many(struct SbsParser *parser, size_t n)
+struct FlSlice sbs_parser_peek_many(SbsParser *parser, size_t n)
 {
     if (parser->index + n >= parser->length)
         return (struct FlSlice){ .sequence = NULL };
@@ -45,12 +45,12 @@ struct FlSlice sbs_parser_peek_many(struct SbsParser *parser, size_t n)
     return fl_slice_new((FlByte*)parser->tokens, sizeof(*parser->tokens), parser->index, n);
 }
 
-const struct SbsToken* sbs_parser_consume(struct SbsParser *parser, enum SbsTokenType type)
+const SbsToken* sbs_parser_consume(SbsParser *parser, SbsTokenType type)
 {
     if (parser->index >= parser->length)
         flm_exit(ERR_FATAL, "There's no input to sbs_parser_consume\n");
 
-    const struct SbsToken *token = parser->tokens + parser->index++;
+    const SbsToken *token = parser->tokens + parser->index++;
 
     if (token->type != type)
     {
@@ -63,7 +63,7 @@ const struct SbsToken* sbs_parser_consume(struct SbsParser *parser, enum SbsToke
     return token;
 }
 
-void sbs_parser_consume_if(struct SbsParser *parser, enum SbsTokenType type)
+void sbs_parser_consume_if(SbsParser *parser, SbsTokenType type)
 {
     if (!sbs_parser_has_input(parser))
         return;

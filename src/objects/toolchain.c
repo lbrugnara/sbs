@@ -2,14 +2,14 @@
 #include "../common/common.h"
 #include "../parser/toolchain.h"
 
-struct SbsToolchain* sbs_toolchain_resolve(const struct SbsFile *file, const char *toolchain_name, const char *env_name)
+SbsToolchain* sbs_toolchain_resolve(const SbsFile *file, const char *toolchain_name, const char *env_name)
 {
-    struct SbsToolchainSection *toolchain_section = fl_hashtable_get(file->toolchains, toolchain_name);
+    SbsToolchainSection *toolchain_section = fl_hashtable_get(file->toolchains, toolchain_name);
 
     if (!toolchain_section)
         return NULL;
 
-    struct SbsToolchain *toolchain_object = fl_malloc(sizeof(struct SbsToolchain));
+    SbsToolchain *toolchain_object = fl_malloc(sizeof(SbsToolchain));
 
     toolchain_object->name = fl_cstring_dup(toolchain_section->name);
 
@@ -24,7 +24,7 @@ struct SbsToolchain* sbs_toolchain_resolve(const struct SbsFile *file, const cha
     struct FlListNode *node = fl_list_head(hierarchy);
     while (node)
     {
-        const struct SbsToolchainNode *ancestor = (const struct SbsToolchainNode*)node->value;
+        const SbsToolchainNode *ancestor = (const SbsToolchainNode*)node->value;
         
         toolchain_object->compiler.bin = sbs_common_set_string(toolchain_object->compiler.bin, ancestor->compiler.bin);
         toolchain_object->compiler.include_dir_flag = sbs_common_set_string(toolchain_object->compiler.include_dir_flag, ancestor->compiler.include_dir_flag);
@@ -44,7 +44,7 @@ struct SbsToolchain* sbs_toolchain_resolve(const struct SbsFile *file, const cha
     return toolchain_object;
 }
 
-void sbs_toolchain_free(struct SbsToolchain *toolchain)
+void sbs_toolchain_free(SbsToolchain *toolchain)
 {
     if (toolchain->name)
         fl_cstring_free(toolchain->name);

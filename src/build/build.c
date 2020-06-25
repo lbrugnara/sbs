@@ -28,14 +28,14 @@ enum ActionType {
     ACTION_AFTER
 };
 
-static bool run_actions(struct SbsBuild *build, struct SbsAction **actions)
+static bool run_actions(SbsBuild *build, SbsAction **actions)
 {
     if (!actions)
         return true;
 
     for (size_t i=0; i < fl_array_length(actions); i++)
     {
-        struct SbsAction *action = actions[i];
+        SbsAction *action = actions[i];
         
         if (!action)
             return false;
@@ -60,9 +60,9 @@ static bool run_actions(struct SbsBuild *build, struct SbsAction **actions)
     return true;
 }
 
-static bool run_env_actions(enum ActionType type, struct SbsBuild *build)
+static bool run_env_actions(enum ActionType type, SbsBuild *build)
 {
-    struct SbsAction **actions = type == ACTION_BEFORE ? build->env->actions.before : build->env->actions.after;
+    SbsAction **actions = type == ACTION_BEFORE ? build->env->actions.before : build->env->actions.after;
 
     if (!actions)
         return true;
@@ -70,12 +70,12 @@ static bool run_env_actions(enum ActionType type, struct SbsBuild *build)
     return run_actions(build, actions);
 }
 
-static bool run_target_actions(enum ActionType type, struct SbsBuild *build)
+static bool run_target_actions(enum ActionType type, SbsBuild *build)
 {
     if (!build->target)
         return true;
 
-    struct SbsAction **actions = type == ACTION_BEFORE ? build->target->actions.before : build->target->actions.after;    
+    SbsAction **actions = type == ACTION_BEFORE ? build->target->actions.before : build->target->actions.after;    
 
     if (!actions)
         return true;
@@ -83,12 +83,12 @@ static bool run_target_actions(enum ActionType type, struct SbsBuild *build)
     return run_actions(build, actions);
 }
 
-static bool run_preset_actions(enum ActionType type, struct SbsBuild *build)
+static bool run_preset_actions(enum ActionType type, SbsBuild *build)
 {
     if (!build->preset)
         return true;
 
-    struct SbsAction **actions = type == ACTION_BEFORE ? build->preset->actions.before : build->preset->actions.after;    
+    SbsAction **actions = type == ACTION_BEFORE ? build->preset->actions.before : build->preset->actions.after;    
 
     if (!actions)
         return true;
@@ -97,7 +97,7 @@ static bool run_preset_actions(enum ActionType type, struct SbsBuild *build)
 }
 
 
-static enum SbsResult run_build_actions(enum ActionType type, struct SbsBuild *build)
+static SbsResult run_build_actions(enum ActionType type, SbsBuild *build)
 {
     if (type == ACTION_BEFORE)
     {
@@ -125,7 +125,7 @@ static enum SbsResult run_build_actions(enum ActionType type, struct SbsBuild *b
     return SBS_RES_OK;
 }
 
-char** sbs_build_target(struct SbsBuild *build)
+char** sbs_build_target(SbsBuild *build)
 {
     if (build->target->output_dir && !fl_io_file_exists(build->target->output_dir))
     {
@@ -153,10 +153,10 @@ char** sbs_build_target(struct SbsBuild *build)
     return NULL;
 }
 
-enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArguments args)
+SbsResult sbs_build_run(const SbsFile *file, SbsBuildArguments args)
 {
     // Check if the build uses a preset and in that case make sure it is a valid preset
-    struct SbsPreset *preset = NULL;
+    SbsPreset *preset = NULL;
     if (args.preset)
     {
         preset = sbs_preset_resolve(file, args.preset, args.env);
@@ -204,9 +204,9 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     if (!fl_hashtable_has_key(file->configurations, configuration_name))
         return sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
 
-    enum SbsResult result = SBS_RES_OK;
+    SbsResult result = SBS_RES_OK;
 
-    struct SbsEnv *env = sbs_env_resolve(file, env_name);
+    SbsEnv *env = sbs_env_resolve(file, env_name);
     if (!env)
     {
         result = sbs_result_print_reason(SBS_RES_INVALID_ENV, env_name);
@@ -214,7 +214,7 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     }
 
     // Resolve toolchain
-    struct SbsToolchain *toolchain = sbs_toolchain_resolve(file, toolchain_name, env_name);
+    SbsToolchain *toolchain = sbs_toolchain_resolve(file, toolchain_name, env_name);
     if (!toolchain)
     {
         result = sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchain_name);
@@ -222,7 +222,7 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     }
 
     // Resolve target
-    struct SbsTarget *target = sbs_target_resolve(file, target_name, env_name, NULL);
+    SbsTarget *target = sbs_target_resolve(file, target_name, env_name, NULL);
     if (!target)
     {
         result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
@@ -230,7 +230,7 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     }
 
     // Resolve configuration
-    struct SbsConfiguration *config = sbs_config_resolve(file, configuration_name, env_name);
+    SbsConfiguration *config = sbs_config_resolve(file, configuration_name, env_name);
     if (!config)
     {
         result = sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
@@ -238,14 +238,14 @@ enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArgument
     }
 
     // Create the executor
-    SbsExecutor executor = sbs_executor_new(env);
+    SbsExecutor *executor = sbs_executor_new(env);
     if (!executor)
     {
         result = sbs_result_print_reason(SBS_RES_ERROR);
         goto executor_error;
     }
 
-    struct SbsBuild build = {
+    SbsBuild build = {
         .executor = executor, 
         .file = file, 
         .env = env, 

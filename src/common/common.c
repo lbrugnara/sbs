@@ -16,7 +16,7 @@ void sbs_common_free_string_or_id(void *obj)
     if (!obj)
         return;
 
-    struct SbsStringOrId *str = (struct SbsStringOrId*)obj;
+    SbsStringOrId *str = (SbsStringOrId*)obj;
 
     if (str->value)
         fl_cstring_free(str->value);
@@ -79,12 +79,12 @@ void sbs_common_copy_string_or_id(void *dest, const void *src, size_t elem_size)
     if (!src || !dest)
         return;
 
-    struct SbsStringOrId *src_obj = (struct SbsStringOrId*)src;
+    SbsStringOrId *src_obj = (SbsStringOrId*)src;
 
     if (!src_obj)
         return;
 
-    struct SbsStringOrId copy = {
+    SbsStringOrId copy = {
         .type = src_obj->type,
         .value = fl_cstring_dup(src_obj->value)
     };

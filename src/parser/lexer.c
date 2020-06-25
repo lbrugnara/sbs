@@ -38,9 +38,9 @@ const char *token_type_string[] = {
     [SBS_TOKEN_IDENTIFIER] = "IDENTIFIER"
 };
 
-struct SbsLexer sbs_lexer_new(const char *source, size_t length)
+SbsLexer sbs_lexer_new(const char *source, size_t length)
 {
-    return (struct SbsLexer) {
+    return (SbsLexer) {
         .source = fl_slice_new((const FlByte*)source, 1, 0, length),
         .index = 0,
         .line = 1,
@@ -48,17 +48,17 @@ struct SbsLexer sbs_lexer_new(const char *source, size_t length)
     };
 }
 
-static inline bool has_input(struct SbsLexer *lexer)
+static inline bool has_input(SbsLexer *lexer)
 {
     return lexer->index < lexer->source.length;
 }
 
-static inline char peek(struct SbsLexer *lexer)
+static inline char peek(SbsLexer *lexer)
 {
     return lexer->source.sequence[lexer->index];
 }
 
-static inline char peek_at(struct SbsLexer *lexer, size_t index)
+static inline char peek_at(SbsLexer *lexer, size_t index)
 {
     if (lexer->index + index >= lexer->source.length)
         return '\0';
@@ -66,7 +66,7 @@ static inline char peek_at(struct SbsLexer *lexer, size_t index)
     return lexer->source.sequence[lexer->index + index];
 }
 
-static inline struct FlSlice peek_many(struct SbsLexer *lexer, size_t n)
+static inline struct FlSlice peek_many(SbsLexer *lexer, size_t n)
 {
     if (lexer->index + n >= lexer->source.length)
         return (struct FlSlice){ .sequence = NULL };
@@ -74,15 +74,15 @@ static inline struct FlSlice peek_many(struct SbsLexer *lexer, size_t n)
     return fl_slice_new(lexer->source.sequence, 1, lexer->index, n);
 }
 
-static inline char consume(struct SbsLexer *lexer)
+static inline char consume(SbsLexer *lexer)
 {
     lexer->col++;
     return lexer->source.sequence[lexer->index++];
 }
 
-static inline struct SbsToken create_token(struct SbsLexer *lexer, enum SbsTokenType type, size_t chars, unsigned int line, unsigned int col)
+static inline SbsToken create_token(SbsLexer *lexer, SbsTokenType type, size_t chars, unsigned int line, unsigned int col)
 {
-    return (struct SbsToken){ 
+    return (SbsToken){ 
         .type = type,
         .value = fl_slice_new((FlByte*)lexer->source.sequence + lexer->index - 1, 1, 0, chars),
         .line = line,
@@ -90,7 +90,7 @@ static inline struct SbsToken create_token(struct SbsLexer *lexer, enum SbsToken
     };
 }
 
-static inline void remove_ws_and_comments(struct SbsLexer *lexer)
+static inline void remove_ws_and_comments(SbsLexer *lexer)
 {
     while(has_input(lexer))
     {
@@ -146,17 +146,17 @@ static inline void remove_ws_and_comments(struct SbsLexer *lexer)
     }
 }
 
-struct SbsToken* sbs_lexer_tokenize(struct SbsLexer *lexer)
+SbsToken* sbs_lexer_tokenize(SbsLexer *lexer)
 {
     FlVector *tokens = fl_vector_new_args((struct FlVectorArgs) {
         .writer = fl_container_writer,
-        .element_size = sizeof(struct SbsToken),
+        .element_size = sizeof(SbsToken),
         .capacity = 1000
     });
 
     while (has_input(lexer))
     {
-        struct SbsToken token = sbs_lexer_next(lexer);
+        SbsToken token = sbs_lexer_next(lexer);
 
         if (token.type == SBS_TOKEN_EOF)
             break;
@@ -169,7 +169,7 @@ struct SbsToken* sbs_lexer_tokenize(struct SbsLexer *lexer)
         remove_ws_and_comments(lexer);
     }
 
-    struct SbsToken* sbstokens = fl_vector_to_array(tokens);
+    SbsToken* sbstokens = fl_vector_to_array(tokens);
 
     fl_vector_free(tokens);
 
@@ -179,12 +179,12 @@ struct SbsToken* sbs_lexer_tokenize(struct SbsLexer *lexer)
     return sbstokens;
 }
 
-struct SbsToken sbs_lexer_next(struct SbsLexer *lexer)
+SbsToken sbs_lexer_next(SbsLexer *lexer)
 {
     remove_ws_and_comments(lexer);
 
     if (!has_input(lexer))
-        return (struct SbsToken){ .type = SBS_TOKEN_EOF };
+        return (SbsToken){ .type = SBS_TOKEN_EOF };
 
     while (has_input(lexer))
     {
@@ -233,7 +233,7 @@ struct SbsToken sbs_lexer_next(struct SbsLexer *lexer)
                 digits++;
             }
 
-            return (struct SbsToken){ 
+            return (SbsToken){ 
                 .type = SBS_TOKEN_NUMBER,
                 .value = fl_slice_new(number, 1, 0, digits),
                 .line = lexer->line,
@@ -271,7 +271,7 @@ struct SbsToken sbs_lexer_next(struct SbsLexer *lexer)
                 chars++;
             }
 
-            struct SbsToken token = { 
+            SbsToken token = { 
                 .type = SBS_TOKEN_STRING,
                 .value = fl_slice_new(string, 1, 0, chars),
                 .line = lexer->line,
@@ -313,7 +313,7 @@ struct SbsToken sbs_lexer_next(struct SbsLexer *lexer)
                 chars++;
             }
 
-            struct SbsToken token = { 
+            SbsToken token = { 
                 .type = SBS_TOKEN_COMMAND_STRING,
                 .value = fl_slice_new(string, 1, 0, chars),
                 .line = lexer->line,
@@ -337,7 +337,7 @@ struct SbsToken sbs_lexer_next(struct SbsLexer *lexer)
             }
 
             struct FlSlice value = fl_slice_new(identifier, 1, 0, chars);
-            enum SbsTokenType type = SBS_TOKEN_IDENTIFIER;
+            SbsTokenType type = SBS_TOKEN_IDENTIFIER;
 
             if (fl_slice_equals_sequence(&value, (FlByte*)"include", 7))
                 type = SBS_TOKEN_INCLUDE;
@@ -366,7 +366,7 @@ struct SbsToken sbs_lexer_next(struct SbsLexer *lexer)
             else if (fl_slice_equals_sequence(&value, (FlByte*)"for", 3))
                 type = SBS_TOKEN_FOR;
 
-            struct SbsToken token = { 
+            SbsToken token = { 
                 .type = type,
                 .value = value,
                 .line = lexer->line,
@@ -377,5 +377,5 @@ struct SbsToken sbs_lexer_next(struct SbsLexer *lexer)
         }
     }
 
-    return (struct SbsToken){ .type = SBS_TOKEN_UNKNOWN };
+    return (SbsToken){ .type = SBS_TOKEN_UNKNOWN };
 }

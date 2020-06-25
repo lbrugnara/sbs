@@ -2,7 +2,7 @@
 #include "common.h"
 #include "parser.h"
 
-void sbs_preset_section_free(struct SbsPresetSection *preset)
+void sbs_preset_section_free(SbsPresetSection *preset)
 {
     fl_cstring_free(preset->name);
     fl_cstring_free(preset->env);
@@ -26,28 +26,28 @@ void sbs_preset_section_free(struct SbsPresetSection *preset)
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsPresetSection* - Parsed *preset* block
+ *  SbsPresetSection* - Parsed *preset* block
  *
  */
-struct SbsPresetSection* sbs_preset_section_parse(struct SbsParser *parser)
+SbsPresetSection* sbs_preset_section_parse(SbsParser *parser)
 {
-    struct SbsPresetSection *preset = fl_malloc(sizeof(struct SbsPresetSection));
+    SbsPresetSection *preset = fl_malloc(sizeof(SbsPresetSection));
 
     // Consume the 'preset' token
     sbs_parser_consume(parser, SBS_TOKEN_PRESET);
 
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     preset->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
-    const struct SbsToken *token = NULL;
+    const SbsToken *token = NULL;
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        const struct SbsToken *token = sbs_parser_peek(parser);
+        const SbsToken *token = sbs_parser_peek(parser);
 
         if (token->type == SBS_TOKEN_ENV)
         {

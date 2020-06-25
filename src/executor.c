@@ -14,13 +14,13 @@ enum SbsExecutorType {
 
 struct SbsExecutor {
     enum SbsExecutorType type;
-    struct SbsEnv *env;
+    SbsEnv *env;
 };
 
-struct SbsCustomExecutor {
-    struct SbsExecutor base;
+typedef struct {
+    SbsExecutor base;
     FlProcess *process;
-};
+} SbsCustomExecutor;
 
 struct SbsCommandDriver {
     // Command's format string where the %s specifier is the actual command to be executed and the %lu is a temporal name
@@ -56,18 +56,18 @@ struct SbsCommandDriver {
     }
 ;
 
-SbsExecutor sbs_executor_new(struct SbsEnv *env)
+SbsExecutor* sbs_executor_new(SbsEnv *env)
 {
     if (env == NULL)
         return NULL;
 
     enum SbsExecutorType type = env->type && !flm_cstring_equals("system", env->type) ? SBS_EXEC_CUSTOM : SBS_EXEC_SYSTEM;
 
-    struct SbsExecutor *executor = NULL;
+    SbsExecutor *executor = NULL;
 
     if (type == SBS_EXEC_CUSTOM)
     {
-        struct SbsCustomExecutor *cexec = fl_malloc(sizeof(struct SbsCustomExecutor));
+        SbsCustomExecutor *cexec = fl_malloc(sizeof(SbsCustomExecutor));
         
         char **envp = NULL;
         if (env->variables)
@@ -129,11 +129,11 @@ SbsExecutor sbs_executor_new(struct SbsEnv *env)
         if (!cexec->process)
             return NULL;
 
-        executor = (struct SbsExecutor*)cexec;
+        executor = (SbsExecutor*)cexec;
     }
     else
     {
-        executor = fl_malloc(sizeof(struct SbsExecutor));
+        executor = fl_malloc(sizeof(SbsExecutor));
 
         if (env->variables)
         {
@@ -164,7 +164,7 @@ static unsigned long djb2_hash(const char *key, size_t size)
     return hash;
 }
 
-bool sbs_executor_run_command(SbsExecutor executor, const char *command)
+bool sbs_executor_run_command(const SbsExecutor *executor, const char *command)
 {
     if (executor->type == SBS_EXEC_SYSTEM)
     {
@@ -173,7 +173,7 @@ bool sbs_executor_run_command(SbsExecutor executor, const char *command)
     }
 
     // SBS_EXEC_CUSTOM
-    struct SbsCustomExecutor *custom_executor = (struct SbsCustomExecutor*)executor;
+    SbsCustomExecutor *custom_executor = (SbsCustomExecutor*)executor;
     struct SbsCommandDriver *driver = NULL;
 
     if (flm_cstring_equals_n(custom_executor->base.env->type, "cmd", 3))
@@ -303,11 +303,11 @@ CLEAN:
     return success && retval == 0;
 }
 
-void sbs_executor_free(SbsExecutor executor)
+void sbs_executor_free(SbsExecutor *executor)
 {
     if (executor->type == SBS_EXEC_CUSTOM)
     {
-        FlProcess *process = ((struct SbsCustomExecutor*)executor)->process;
+        FlProcess *process = ((SbsCustomExecutor*)executor)->process;
         char **argv = fl_process_argv(process);
         if (argv)
             fl_free(argv);

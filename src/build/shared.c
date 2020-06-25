@@ -6,7 +6,7 @@
 
 #define SBS_DIR_SEPARATOR "/"
 
-static char* build_output_filename(struct SbsBuild *build, const struct SbsConfigShared *shared, const char *output_dir, const char *output_name)
+static char* build_output_filename(SbsBuild *build, const SbsConfigShared *shared, const char *output_dir, const char *output_name)
 {
     // File
     const char *extension = shared->extension ? shared->extension : ".a";
@@ -30,10 +30,10 @@ static char* build_output_filename(struct SbsBuild *build, const struct SbsConfi
     return output_filename;
 }
 
-char** sbs_build_target_shared(struct SbsBuild *build)
+char** sbs_build_target_shared(SbsBuild *build)
 {
-    struct SbsTargetShared *target_shared = (struct SbsTargetShared*)build->target;
-    const struct SbsConfigShared *config_shared = &build->config->shared;
+    SbsTargetShared *target_shared = (SbsTargetShared*)build->target;
+    const SbsConfigShared *config_shared = &build->config->shared;
 
     // Collect all the shared flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
@@ -73,9 +73,9 @@ char** sbs_build_target_shared(struct SbsBuild *build)
         if (target_shared->objects[i].type == SBS_IDENTIFIER)
         {
             // target_objects is an array of pointers to char allocated by the target
-            struct SbsTarget *target = sbs_target_resolve(build->file, target_shared->objects[i].value, build->env->name, (const struct SbsTarget*) target_shared);
+            SbsTarget *target = sbs_target_resolve(build->file, target_shared->objects[i].value, build->env->name, (const SbsTarget*) target_shared);
 
-            char **target_objects = sbs_build_target(&(struct SbsBuild) {
+            char **target_objects = sbs_build_target(&(SbsBuild) {
                 .executor = build->executor,
                 .file = build->file,
                 .env = build->env,

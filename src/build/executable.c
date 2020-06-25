@@ -6,7 +6,7 @@
 
 #define SBS_DIR_SEPARATOR "/"
 
-static char* build_output_filename(struct SbsBuild *build, const struct SbsConfigExecutable *executable, const char *output_dir, const char *output_name)
+static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *executable, const char *output_dir, const char *output_name)
 {
     // File
     const char *extension = executable->extension ? executable->extension : ".a";
@@ -30,10 +30,10 @@ static char* build_output_filename(struct SbsBuild *build, const struct SbsConfi
     return output_filename;
 }
 
-char** sbs_build_target_executable(struct SbsBuild *build)
+char** sbs_build_target_executable(SbsBuild *build)
 {
-    struct SbsTargetExecutable *target_executable = (struct SbsTargetExecutable*)build->target;
-    const struct SbsConfigExecutable *config_executable = &build->config->executable;
+    SbsTargetExecutable *target_executable = (SbsTargetExecutable*)build->target;
+    const SbsConfigExecutable *config_executable = &build->config->executable;
 
     // Collect all the executable flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
@@ -51,7 +51,7 @@ char** sbs_build_target_executable(struct SbsBuild *build)
     {
         for (size_t i = 0; i < fl_array_length(target_executable->libraries); i++)
         {
-            struct SbsTargetLibrary *library = target_executable->libraries + i;
+            SbsTargetLibrary *library = target_executable->libraries + i;
             if (library->path)
             {
                 fl_cstring_append(&executable_libraries, build->toolchain->linker.lib_dir_flag);
@@ -95,9 +95,9 @@ char** sbs_build_target_executable(struct SbsBuild *build)
         if (target_executable->objects[i].type == SBS_IDENTIFIER)
         {
             // target_objects is an array of pointers to char allocated by the target
-            struct SbsTarget *target = sbs_target_resolve(build->file, target_executable->objects[i].value, build->env->name, (const struct SbsTarget*) target_executable);
+            SbsTarget *target = sbs_target_resolve(build->file, target_executable->objects[i].value, build->env->name, (const SbsTarget*) target_executable);
 
-            char **target_objects = sbs_build_target(&(struct SbsBuild) {
+            char **target_objects = sbs_build_target(&(SbsBuild) {
                 .executor = build->executor,
                 .file = build->file,
                 .env = build->env,

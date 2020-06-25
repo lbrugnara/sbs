@@ -3,7 +3,7 @@
 #include "parser.h"
 #include "../common/common.h"
 
-void sbs_toolchain_entry_free(struct SbsToolchainNode *toolchain_entry)
+void sbs_toolchain_entry_free(SbsToolchainNode *toolchain_entry)
 {
     if (toolchain_entry->compiler.bin)
         fl_cstring_free(toolchain_entry->compiler.bin);
@@ -29,16 +29,16 @@ void sbs_toolchain_entry_free(struct SbsToolchainNode *toolchain_entry)
     fl_free(toolchain_entry);
 }
 
-void sbs_toolchain_section_free(struct SbsToolchainSection *toolchain)
+void sbs_toolchain_section_free(SbsToolchainSection *toolchain)
 {
     fl_cstring_free(toolchain->name);
 
     if (toolchain->nodes)
     {
-        // We share the same struct SbsToolchainNode between multiple environments, so we nullify 
+        // We share the same SbsToolchainNode between multiple environments, so we nullify 
         // duplicates, release the objects, and finally release the memory used by the array returned
         // by fl_hashtable_values
-        struct SbsToolchainNode **toolchains = fl_hashtable_values(toolchain->nodes);
+        SbsToolchainNode **toolchains = fl_hashtable_values(toolchain->nodes);
 
         size_t count = fl_array_length(toolchains);
         for (size_t i=0; i < count; i++)
@@ -70,17 +70,17 @@ void sbs_toolchain_section_free(struct SbsToolchainSection *toolchain)
     fl_free(toolchain);
 }
 
-static void parse_toolchain_entry(struct SbsParser *parser, struct SbsToolchainNode *toolchain)
+static void parse_toolchain_entry(SbsParser *parser, SbsToolchainNode *toolchain)
 {
     while (sbs_parser_peek(parser)->type == SBS_TOKEN_IDENTIFIER)
     {
-        const struct SbsToken *property = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+        const SbsToken *property = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
         sbs_parser_consume(parser, SBS_TOKEN_COLON);
         sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
         if (sbs_tok_eq(&property->value, "compiler"))
         {
-            const struct SbsToken *token = NULL;
+            const SbsToken *token = NULL;
             while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE)
             {
                 if (sbs_tok_eq(&token->value, "bin"))
@@ -110,7 +110,7 @@ static void parse_toolchain_entry(struct SbsParser *parser, struct SbsToolchainN
         }
         else if (sbs_tok_eq(&property->value, "archiver"))
         {
-            const struct SbsToken *token = NULL;
+            const SbsToken *token = NULL;
             while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE)
             {
                 if (sbs_tok_eq(&token->value, "bin"))
@@ -128,7 +128,7 @@ static void parse_toolchain_entry(struct SbsParser *parser, struct SbsToolchainN
         }
         else if (sbs_tok_eq(&property->value, "linker"))
         {
-            const struct SbsToken *token = NULL;
+            const SbsToken *token = NULL;
             while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE)
             {
                 if (sbs_tok_eq(&token->value, "bin"))
@@ -177,12 +177,12 @@ static void parse_toolchain_entry(struct SbsParser *parser, struct SbsToolchainN
  *  parser - Parser object
  *
  * Returns:
- *  static struct SbsToolchainSection* - The parsed *toolchain* block
+ *  static SbsToolchainSection* - The parsed *toolchain* block
  *
  */
-struct SbsToolchainSection* sbs_toolchain_section_parse(struct SbsParser *parser)
+SbsToolchainSection* sbs_toolchain_section_parse(SbsParser *parser)
 {
-    struct SbsToolchainSection *toolchain = fl_malloc(sizeof(struct SbsToolchainSection));
+    SbsToolchainSection *toolchain = fl_malloc(sizeof(SbsToolchainSection));
 
     toolchain->nodes = fl_hashtable_new_args((struct FlHashtableArgs){
         .hash_function = fl_hashtable_hash_string, 
@@ -191,7 +191,7 @@ struct SbsToolchainSection* sbs_toolchain_section_parse(struct SbsParser *parser
         .key_cleaner = fl_container_cleaner_pointer
     });
 
-    struct SbsToolchainNode *base_toolchain_entry = fl_malloc(sizeof(struct SbsToolchainNode));
+    SbsToolchainNode *base_toolchain_entry = fl_malloc(sizeof(SbsToolchainNode));
 
     // Use the special key #base for the default toolchain
     fl_hashtable_add(toolchain->nodes, SBS_BASE_OBJECT_KEY, base_toolchain_entry);
@@ -200,7 +200,7 @@ struct SbsToolchainSection* sbs_toolchain_section_parse(struct SbsParser *parser
     sbs_parser_consume(parser, SBS_TOKEN_TOOLCHAIN);
     
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     toolchain->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
@@ -210,13 +210,13 @@ struct SbsToolchainSection* sbs_toolchain_section_parse(struct SbsParser *parser
     {
         if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
         {
-            const struct SbsToken *token = sbs_parser_peek(parser);
+            const SbsToken *token = sbs_parser_peek(parser);
 
             // Parse the for declaration
             char **envs = sbs_common_parse_for_declaration(parser);
 
             // Parse the toolchain info
-            struct SbsToolchainNode *toolchain_entry = fl_malloc(sizeof(struct SbsToolchainNode));
+            SbsToolchainNode *toolchain_entry = fl_malloc(sizeof(SbsToolchainNode));
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
             parse_toolchain_entry(parser, toolchain_entry);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);

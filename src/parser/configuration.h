@@ -4,41 +4,41 @@
 #include <fllib.h>
 #include "parser.h"
 
-struct SbsConfigCompileNode {
+typedef struct {
     const char *extension;
     char **flags;
-};
+} SbsConfigCompileNode;
 
-struct SbsConfigArchiveNode {
+typedef struct {
     const char *extension;
     char **flags;
-};
+} SbsConfigArchiveNode;
 
-struct SbsConfigSharedNode {
+typedef struct {
     const char *extension;
     char **flags;
-};
+} SbsConfigSharedNode;
 
-struct SbsConfigExecutableNode {
+typedef struct {
     const char *extension;
     char **flags;
-};
+} SbsConfigExecutableNode;
 
 struct SbsConfigNode {
-    struct SbsConfigCompileNode compile;
-    struct SbsConfigArchiveNode archive;
-    struct SbsConfigSharedNode shared;
-    struct SbsConfigExecutableNode executable;
+    SbsConfigCompileNode compile;
+    SbsConfigArchiveNode archive;
+    SbsConfigSharedNode shared;
+    SbsConfigExecutableNode executable;
 };
 
-struct SbsConfigSection {
+typedef struct {
     const char *name;
     char **extends;
     /* FlHashtable<string, struct SbsConfigNode> */
     FlHashtable *nodes;
-};
+} SbsConfigSection;
 
-struct SbsConfigSection* sbs_config_section_parse(struct SbsParser *parser);
-void sbs_config_section_free(struct SbsConfigSection *config);
+SbsConfigSection* sbs_config_section_parse(SbsParser *parser);
+void sbs_config_section_free(SbsConfigSection *config);
 
 #endif /* SBS_PARSER_CONFIGURATION_H */

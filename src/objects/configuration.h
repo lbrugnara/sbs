@@ -4,35 +4,35 @@
 #include <fllib.h>
 #include "../parser/file.h"
 
-struct SbsConfigCompile {
+typedef struct {
     char *extension;
     char **flags;
-};
+} SbsConfigCompile;
 
-struct SbsConfigArchive {
+typedef struct {
     char *extension;
     char **flags;
-};
+} SbsConfigArchive;
 
-struct SbsConfigShared {
+typedef struct {
     char *extension;
     char **flags;
-};
+} SbsConfigShared;
 
-struct SbsConfigExecutable {
+typedef struct {
     char *extension;
     char **flags;
-};
+} SbsConfigExecutable;
 
-struct SbsConfiguration {
+typedef struct {
     char *name;
-    struct SbsConfigCompile compile;
-    struct SbsConfigArchive archive;
-    struct SbsConfigShared shared;
-    struct SbsConfigExecutable executable;
-};
+    SbsConfigCompile compile;
+    SbsConfigArchive archive;
+    SbsConfigShared shared;
+    SbsConfigExecutable executable;
+} SbsConfiguration;
 
-struct SbsConfiguration* sbs_config_resolve(const struct SbsFile *file, const char *config_name, const char *env_name);
-void sbs_config_free(struct SbsConfiguration *config);
+SbsConfiguration* sbs_config_resolve(const SbsFile *file, const char *config_name, const char *env_name);
+void sbs_config_free(SbsConfiguration *config);
 
 #endif /* SBS_OBJECT_CONFIGURATION_H */

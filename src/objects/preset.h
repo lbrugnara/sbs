@@ -3,16 +3,16 @@
 
 #include "action.h"
 
-struct SbsPreset {
+typedef struct {
     const char *name;
     const char *env;
     const char *toolchain;
     const char *config;
     const char *target;
-    struct SbsActions actions;
-};
+    SbsActions actions;
+} SbsPreset;
 
-struct SbsPreset* sbs_preset_resolve(const struct SbsFile *file, const char *preset_name, const char *env_name);
-void sbs_preset_free(struct SbsPreset *preset);
+SbsPreset* sbs_preset_resolve(const SbsFile *file, const char *preset_name, const char *env_name);
+void sbs_preset_free(SbsPreset *preset);
 
 #endif /* SBS_OBJECT_PRESET_H */

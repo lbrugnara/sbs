@@ -7,29 +7,30 @@
 #include "../parser/file.h"
 #include "../objects/environment.h"
 #include "../objects/configuration.h"
+#include "../objects/preset.h"
 #include "../objects/target.h"
 #include "../objects/toolchain.h"
 
-struct SbsBuildArguments {
+typedef struct {
     const char *env;
     const char *toolchain;
     const char *config;
     const char *target;
     const char *file;
     const char *preset;
-};
+} SbsBuildArguments;
 
-struct SbsBuild {
-    const SbsExecutor executor;
-    const struct SbsFile *file;
-    const struct SbsEnv *env;
-    const struct SbsToolchain *toolchain;
-    const struct SbsTarget *target;
-    const struct SbsConfiguration *config;
-    const struct SbsPreset *preset;
-};
+typedef struct {
+    const SbsExecutor *executor;
+    const SbsFile *file;
+    const SbsEnv *env;
+    const SbsToolchain *toolchain;
+    const SbsTarget *target;
+    const SbsConfiguration *config;
+    const SbsPreset *preset;
+} SbsBuild;
 
-enum SbsResult sbs_build_run(const struct SbsFile *file, struct SbsBuildArguments arguments);
-char** sbs_build_target(struct SbsBuild *build);
+SbsResult sbs_build_run(const SbsFile *file, SbsBuildArguments arguments);
+char** sbs_build_target(SbsBuild *build);
 
 #endif /* SBS_BUILD_H */

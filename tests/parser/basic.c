@@ -12,7 +12,7 @@ void sbs_test_parser_basic(void)
     
     flm_assert(fl_io_file_write_all_text(filename, sbs), "Test setup");
     
-    struct SbsFile *file = sbs_file_parse(filename);
+    SbsFile *file = sbs_file_parse(filename);
     flm_assert(file != NULL, "Basic build file parses without errors");
     sbs_file_free(file);
 

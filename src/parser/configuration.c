@@ -38,7 +38,7 @@ void sbs_config_entry_free(struct SbsConfigNode *config)
 }
 
 
-void sbs_config_section_free(struct SbsConfigSection *configuration)
+void sbs_config_section_free(SbsConfigSection *configuration)
 {
     fl_cstring_free(configuration->name);
 
@@ -82,9 +82,9 @@ void sbs_config_section_free(struct SbsConfigSection *configuration)
     fl_free(configuration);
 }
 
-static void parse_compile_block(struct SbsParser *parser, struct SbsConfigCompileNode *compile)
+static void parse_compile_block(SbsParser *parser, SbsConfigCompileNode *compile)
 {
-    const struct SbsToken *token = NULL;
+    const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
         if (sbs_tok_eq(&token->value, "flags"))
@@ -108,9 +108,9 @@ static void parse_compile_block(struct SbsParser *parser, struct SbsConfigCompil
     }
 }
 
-static void parse_archive_block(struct SbsParser *parser, struct SbsConfigArchiveNode *archive)
+static void parse_archive_block(SbsParser *parser, SbsConfigArchiveNode *archive)
 {
-    const struct SbsToken *token = NULL;
+    const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
         if (sbs_tok_eq(&token->value, "flags"))
@@ -134,9 +134,9 @@ static void parse_archive_block(struct SbsParser *parser, struct SbsConfigArchiv
     }
 }
 
-static void parse_shared_block(struct SbsParser *parser, struct SbsConfigSharedNode *shared)
+static void parse_shared_block(SbsParser *parser, SbsConfigSharedNode *shared)
 {
-    const struct SbsToken *token = NULL;
+    const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
         if (sbs_tok_eq(&token->value, "flags"))
@@ -160,9 +160,9 @@ static void parse_shared_block(struct SbsParser *parser, struct SbsConfigSharedN
     }
 }
 
-static void parse_executable_block(struct SbsParser *parser, struct SbsConfigExecutableNode *executable)
+static void parse_executable_block(SbsParser *parser, SbsConfigExecutableNode *executable)
 {
-    const struct SbsToken *token = NULL;
+    const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
         if (sbs_tok_eq(&token->value, "flags"))
@@ -186,9 +186,9 @@ static void parse_executable_block(struct SbsParser *parser, struct SbsConfigExe
     }
 }
 
-static void parse_config_body(struct SbsParser *parser, struct SbsConfigNode *configuration)
+static void parse_config_body(SbsParser *parser, struct SbsConfigNode *configuration)
 {
-    const struct SbsToken *token = NULL;
+    const SbsToken *token = NULL;
 
     while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_FOR)
     {
@@ -255,12 +255,12 @@ static void parse_config_body(struct SbsParser *parser, struct SbsConfigNode *co
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsConfigSection* - The parsed *config* block
+ *  SbsConfigSection* - The parsed *config* block
  *
  */
-struct SbsConfigSection* sbs_config_section_parse(struct SbsParser *parser)
+SbsConfigSection* sbs_config_section_parse(SbsParser *parser)
 {
-    struct SbsConfigSection *configuration = fl_malloc(sizeof(struct SbsConfigSection));
+    SbsConfigSection *configuration = fl_malloc(sizeof(SbsConfigSection));
 
     configuration->nodes = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_string, 
@@ -278,7 +278,7 @@ struct SbsConfigSection* sbs_config_section_parse(struct SbsParser *parser)
     sbs_parser_consume(parser, SBS_TOKEN_CONFIG);
     
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     configuration->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
@@ -289,7 +289,7 @@ struct SbsConfigSection* sbs_config_section_parse(struct SbsParser *parser)
 
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        const struct SbsToken *token = sbs_parser_peek(parser);
+        const SbsToken *token = sbs_parser_peek(parser);
 
         if (token->type == SBS_TOKEN_FOR)
         {

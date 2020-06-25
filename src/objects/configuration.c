@@ -3,20 +3,20 @@
 #include "../parser/configuration.h"
 #include "../common/common.h"
 
-static void find_ancestors(const struct SbsConfigSection *config, FlList *ancestors, const struct SbsFile *file, const char *env_name);
-static void merge_compile_config(struct SbsConfigCompile *extend, const struct SbsConfigCompileNode *source);
-static void merge_archive_config(struct SbsConfigArchive *extend, const struct SbsConfigArchiveNode *source);
-static void merge_shared_config(struct SbsConfigShared *extend, const struct SbsConfigSharedNode *source);
-static void merge_executable_config(struct SbsConfigExecutable *extend, const struct SbsConfigExecutableNode *source);
+static void find_ancestors(const SbsConfigSection *config, FlList *ancestors, const SbsFile *file, const char *env_name);
+static void merge_compile_config(SbsConfigCompile *extend, const SbsConfigCompileNode *source);
+static void merge_archive_config(SbsConfigArchive *extend, const SbsConfigArchiveNode *source);
+static void merge_shared_config(SbsConfigShared *extend, const SbsConfigSharedNode *source);
+static void merge_executable_config(SbsConfigExecutable *extend, const SbsConfigExecutableNode *source);
 
-struct SbsConfiguration* sbs_config_resolve(const struct SbsFile *file, const char *config_name, const char *env_name)
+SbsConfiguration* sbs_config_resolve(const SbsFile *file, const char *config_name, const char *env_name)
 {    
-    const struct SbsConfigSection *config_section = fl_hashtable_get(file->configurations, config_name);
+    const SbsConfigSection *config_section = fl_hashtable_get(file->configurations, config_name);
 
     if (!config_section)
         return NULL;
 
-    struct SbsConfiguration *config_object = fl_malloc(sizeof(struct SbsConfiguration));
+    SbsConfiguration *config_object = fl_malloc(sizeof(SbsConfiguration));
     config_object->name = fl_cstring_dup(config_section->name);
 
     FlList *hierarchy = fl_list_new();
@@ -32,7 +32,7 @@ struct SbsConfiguration* sbs_config_resolve(const struct SbsFile *file, const ch
     {
         const struct SbsConfigNode *ancestor = (const struct SbsConfigNode*)node->value;
 
-        // struct SbsConfigCompileNode compile;
+        // SbsConfigCompileNode compile;
         merge_compile_config(&config_object->compile, &ancestor->compile);
         merge_archive_config(&config_object->archive, &ancestor->archive);
         merge_shared_config(&config_object->shared, &ancestor->shared);
@@ -46,7 +46,7 @@ struct SbsConfiguration* sbs_config_resolve(const struct SbsFile *file, const ch
     return config_object;
 }
 
-void sbs_config_free(struct SbsConfiguration *config)
+void sbs_config_free(SbsConfiguration *config)
 {
     fl_cstring_free(config->name);
 
@@ -82,7 +82,7 @@ void sbs_config_free(struct SbsConfiguration *config)
 }
 
 
-static void find_ancestors(const struct SbsConfigSection *config, FlList *ancestors, const struct SbsFile *file, const char *env_name)
+static void find_ancestors(const SbsConfigSection *config, FlList *ancestors, const SbsFile *file, const char *env_name)
 {
     if (!config->extends)
         return;
@@ -90,7 +90,7 @@ static void find_ancestors(const struct SbsConfigSection *config, FlList *ancest
     size_t length = fl_array_length(config->extends);
     for (size_t i=0; i < length; i++)
     {
-        struct SbsConfigSection *parent_config = fl_hashtable_get(file->configurations, config->extends[i]);
+        SbsConfigSection *parent_config = fl_hashtable_get(file->configurations, config->extends[i]);
 
         if (fl_hashtable_has_key(parent_config->nodes, env_name))
             fl_list_prepend(ancestors, fl_hashtable_get(parent_config->nodes, env_name));    
@@ -103,7 +103,7 @@ static void find_ancestors(const struct SbsConfigSection *config, FlList *ancest
         find_ancestors(fl_hashtable_get(file->configurations, config->extends[i]), ancestors, file, env_name);
 }
 
-static void merge_compile_config(struct SbsConfigCompile *extend, const struct SbsConfigCompileNode *source)
+static void merge_compile_config(SbsConfigCompile *extend, const SbsConfigCompileNode *source)
 {
     if (source->extension)
         extend->extension = sbs_common_set_string(extend->extension, source->extension);
@@ -111,7 +111,7 @@ static void merge_compile_config(struct SbsConfigCompile *extend, const struct S
     extend->flags = sbs_common_extend_array_copy_pointers(extend->flags, source->flags, sbs_common_copy_string);
 }
 
-static void merge_archive_config(struct SbsConfigArchive *extend, const struct SbsConfigArchiveNode *source)
+static void merge_archive_config(SbsConfigArchive *extend, const SbsConfigArchiveNode *source)
 {
     if (source->extension)
         extend->extension = sbs_common_set_string(extend->extension, source->extension);
@@ -119,7 +119,7 @@ static void merge_archive_config(struct SbsConfigArchive *extend, const struct S
     extend->flags = sbs_common_extend_array_copy_pointers(extend->flags, source->flags, sbs_common_copy_string);
 }
 
-static void merge_shared_config(struct SbsConfigShared *extend, const struct SbsConfigSharedNode *source)
+static void merge_shared_config(SbsConfigShared *extend, const SbsConfigSharedNode *source)
 {
     if (source->extension)
         extend->extension = sbs_common_set_string(extend->extension, source->extension);
@@ -127,7 +127,7 @@ static void merge_shared_config(struct SbsConfigShared *extend, const struct Sbs
     extend->flags = sbs_common_extend_array_copy_pointers(extend->flags, source->flags, sbs_common_copy_string);
 }
 
-static void merge_executable_config(struct SbsConfigExecutable *extend, const struct SbsConfigExecutableNode *source)
+static void merge_executable_config(SbsConfigExecutable *extend, const SbsConfigExecutableNode *source)
 {
     if (source->extension)
         extend->extension = sbs_common_set_string(extend->extension, source->extension);

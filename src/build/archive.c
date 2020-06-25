@@ -6,7 +6,7 @@
 
 #define SBS_DIR_SEPARATOR "/"
 
-static char* build_output_filename(struct SbsBuild *build, const struct SbsConfigArchive *archive, const char *output_dir, const char *output_name)
+static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *archive, const char *output_dir, const char *output_name)
 {
     // File
     const char *extension = archive->extension ? archive->extension : ".a";
@@ -30,10 +30,10 @@ static char* build_output_filename(struct SbsBuild *build, const struct SbsConfi
     return output_filename;
 }
 
-char** sbs_build_target_archive(struct SbsBuild *build)
+char** sbs_build_target_archive(SbsBuild *build)
 {
-    struct SbsTargetArchive *target_archive = (struct SbsTargetArchive*)build->target;
-    const struct SbsConfigArchive *config_archive = &build->config->archive;
+    SbsTargetArchive *target_archive = (SbsTargetArchive*)build->target;
+    const SbsConfigArchive *config_archive = &build->config->archive;
 
     // Collect all the archive flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
@@ -73,9 +73,9 @@ char** sbs_build_target_archive(struct SbsBuild *build)
         if (target_archive->objects[i].type == SBS_IDENTIFIER)
         {
             // target_objects is an array of pointers to char allocated by the target
-            struct SbsTarget *target = sbs_target_resolve(build->file, target_archive->objects[i].value, build->env->name, (const struct SbsTarget*) target_archive);
+            SbsTarget *target = sbs_target_resolve(build->file, target_archive->objects[i].value, build->env->name, (const SbsTarget*) target_archive);
 
-            char **target_objects = sbs_build_target(&(struct SbsBuild) {
+            char **target_objects = sbs_build_target(&(SbsBuild) {
                 .executor = build->executor,
                 .file = build->file,
                 .env = build->env,

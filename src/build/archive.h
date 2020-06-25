@@ -4,6 +4,6 @@
 #include <fllib.h>
 #include "build.h"
 
-char** sbs_build_target_archive(struct SbsBuild *build);
+char** sbs_build_target_archive(SbsBuild *build);
 
 #endif /* SBS_BUILD_ARCHIVE_H */

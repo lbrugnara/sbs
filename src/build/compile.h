@@ -4,6 +4,6 @@
 #include "build.h"
 #include "../executor.h"
 
-char** sbs_build_compile(struct SbsBuild *build);
+char** sbs_build_compile(SbsBuild *build);
 
 #endif /* SBS_BUILD_COMPILE_H */

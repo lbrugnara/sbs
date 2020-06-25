@@ -4,16 +4,16 @@
 #include <fllib.h>
 #include "action.h"
 
-struct SbsEnv {
+typedef struct {
     char *name;
     char *type;
     char *terminal;
     char **args;
     char **variables;
-    struct SbsActions actions;
-};
+    SbsActions actions;
+} SbsEnv;
 
-struct SbsEnv* sbs_env_resolve(const struct SbsFile *file, const char *env_name);
-void sbs_env_free(struct SbsEnv *env);
+SbsEnv* sbs_env_resolve(const SbsFile *file, const char *env_name);
+void sbs_env_free(SbsEnv *env);
 
 #endif /* SBS_OBJECT_ENVIRONMENT_H */

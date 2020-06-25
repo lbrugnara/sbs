@@ -13,9 +13,9 @@
  *  char* - Parsed string
  *
  */
-char* sbs_common_parse_string(struct SbsParser *parser)
+char* sbs_common_parse_string(SbsParser *parser)
 {
-    const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_STRING);
+    const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_STRING);
     
     char *string = fl_cstring_dup_n((const char*)token->value.sequence, token->value.length);
     if (fl_cstring_contains(string, "\\\""))
@@ -41,9 +41,9 @@ char* sbs_common_parse_string(struct SbsParser *parser)
  *  char** - Parsed array of strings (that represents executable commands)
  *
  */
-char* sbs_common_parse_command_string(struct SbsParser *parser)
+char* sbs_common_parse_command_string(SbsParser *parser)
 {
-    const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_COMMAND_STRING);
+    const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_COMMAND_STRING);
     
     char *string = fl_cstring_dup_n((const char*)token->value.sequence, token->value.length);
     if (fl_cstring_contains(string, "\\`"))
@@ -73,9 +73,9 @@ char* sbs_common_parse_command_string(struct SbsParser *parser)
  *  char* - Parsed string
  *
  */
-char* sbs_common_parse_identifier(struct SbsParser *parser)
+char* sbs_common_parse_identifier(SbsParser *parser)
 {
-    const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
     
     return fl_cstring_dup_n((const char*)token->value.sequence, token->value.length);
 }
@@ -91,13 +91,13 @@ char* sbs_common_parse_identifier(struct SbsParser *parser)
  *  char** - Parsed array of strings (that represents executable commands) or ids
  *
  */
-struct SbsStringOrId* sbs_common_parse_command_string_or_id_array(struct SbsParser *parser)
+SbsStringOrId* sbs_common_parse_command_string_or_id_array(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
     // Track how many elements
     size_t nelements = 0;
-    const struct SbsToken *tmp;
+    const SbsToken *tmp;
 
     for (size_t i=0; (tmp = sbs_parser_peek_at(parser, i))->type != SBS_TOKEN_RBRACKET; i++)
     {
@@ -106,29 +106,29 @@ struct SbsStringOrId* sbs_common_parse_command_string_or_id_array(struct SbsPars
         nelements++;
     }
 
-    struct SbsStringOrId *elements = NULL;
+    SbsStringOrId *elements = NULL;
 
     if (nelements > 0)
     {
         
         // Parse the elements
-        elements = fl_array_new(sizeof(struct SbsStringOrId), nelements);
+        elements = fl_array_new(sizeof(SbsStringOrId), nelements);
         size_t index = 0;
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
-            const struct SbsToken *element = sbs_parser_peek(parser);
+            const SbsToken *element = sbs_parser_peek(parser);
 
             if (element->type == SBS_TOKEN_COMMAND_STRING)
             {
-                elements[index++] = (struct SbsStringOrId) {
+                elements[index++] = (SbsStringOrId) {
                     .type = SBS_STRING, 
                     .value = sbs_common_parse_command_string(parser) 
                 };
             }
             else if (element->type == SBS_TOKEN_IDENTIFIER)
             {
-                elements[index++] = (struct SbsStringOrId) {
+                elements[index++] = (SbsStringOrId) {
                     .type = SBS_IDENTIFIER,
                     .value = sbs_common_parse_identifier(parser)
                 };
@@ -159,13 +159,13 @@ struct SbsStringOrId* sbs_common_parse_command_string_or_id_array(struct SbsPars
  *  char** - Parsed array of strings or identifiers
  *
  */
-struct SbsStringOrId* sbs_common_parse_string_or_id_array(struct SbsParser *parser)
+SbsStringOrId* sbs_common_parse_string_or_id_array(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
     // Track how many elements
     size_t nelements = 0;
-    const struct SbsToken *tmp;
+    const SbsToken *tmp;
 
     for (size_t i=0; (tmp = sbs_parser_peek_at(parser, i))->type != SBS_TOKEN_RBRACKET; i++)
     {
@@ -174,29 +174,29 @@ struct SbsStringOrId* sbs_common_parse_string_or_id_array(struct SbsParser *pars
         nelements++;
     }
 
-    struct SbsStringOrId *elements = NULL;
+    SbsStringOrId *elements = NULL;
 
     if (nelements > 0)
     {
         
         // Parse the elements
-        elements = fl_array_new(sizeof(struct SbsStringOrId), nelements);
+        elements = fl_array_new(sizeof(SbsStringOrId), nelements);
         size_t index = 0;
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
-            const struct SbsToken *element = sbs_parser_peek(parser);
+            const SbsToken *element = sbs_parser_peek(parser);
 
             if (element->type == SBS_TOKEN_STRING)
             {
-                elements[index++] = (struct SbsStringOrId) {
+                elements[index++] = (SbsStringOrId) {
                     .type = SBS_STRING, 
                     .value = sbs_common_parse_string(parser) 
                 };
             }
             else if (element->type == SBS_TOKEN_IDENTIFIER)
             {
-                elements[index++] = (struct SbsStringOrId) {
+                elements[index++] = (SbsStringOrId) {
                     .type = SBS_IDENTIFIER,
                     .value = sbs_common_parse_identifier(parser)
                 };
@@ -226,13 +226,13 @@ struct SbsStringOrId* sbs_common_parse_string_or_id_array(struct SbsParser *pars
  *  char** - Parsed array of strings
  *
  */
-char** sbs_common_parse_string_array(struct SbsParser *parser)
+char** sbs_common_parse_string_array(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
     // Track how many strings
     size_t stringsCount = 0;
-    const struct SbsToken *tmp;
+    const SbsToken *tmp;
 
     for (size_t i=0; (tmp = sbs_parser_peek_at(parser, i))->type != SBS_TOKEN_RBRACKET; i++)
     {
@@ -274,13 +274,13 @@ char** sbs_common_parse_string_array(struct SbsParser *parser)
  *  char** - List of identifiers referenced by the *extends* declaration
  *
  */
-char** sbs_common_parse_extends_declaration(struct SbsParser *parser)
+char** sbs_common_parse_extends_declaration(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_EXTENDS);
 
     // Track how many identifiers
     size_t identifiersCount = 0;
-    const struct SbsToken *tmp;
+    const SbsToken *tmp;
 
     for (size_t i=0; (tmp = sbs_parser_peek_at(parser, i))->type == SBS_TOKEN_COMMA || tmp->type == SBS_TOKEN_IDENTIFIER; i++)
     {
@@ -295,7 +295,7 @@ char** sbs_common_parse_extends_declaration(struct SbsParser *parser)
 
     while (identifiersCount--)
     {
-        const struct SbsToken *id = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+        const SbsToken *id = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
         identifiers[index++] = fl_cstring_dup_n((const char*)id->value.sequence, id->value.length);
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -315,13 +315,13 @@ char** sbs_common_parse_extends_declaration(struct SbsParser *parser)
  *  char** - List of identifiers referenced by the *for* declaration
  *
  */
-char** sbs_common_parse_for_declaration(struct SbsParser *parser)
+char** sbs_common_parse_for_declaration(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_FOR);
 
     // Track how many identifiers
     size_t identifiersCount = 0;
-    const struct SbsToken *tmp;
+    const SbsToken *tmp;
 
     for (size_t i=0; (tmp = sbs_parser_peek_at(parser, i))->type == SBS_TOKEN_COMMA || tmp->type == SBS_TOKEN_IDENTIFIER; i++)
     {
@@ -336,7 +336,7 @@ char** sbs_common_parse_for_declaration(struct SbsParser *parser)
 
     while (identifiersCount--)
     {
-        const struct SbsToken *id = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+        const SbsToken *id = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
         identifiers[index++] = fl_cstring_dup_n((const char*)id->value.sequence, id->value.length);
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

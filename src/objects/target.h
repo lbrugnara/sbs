@@ -8,48 +8,48 @@
 #include "../parser/file.h"
 
 #define SBS_TARGET_BASE_DEF()       \
-    enum SbsTargetType type;        \
+    SbsTargetType type;        \
     char *name;                     \
-    struct SbsActions actions;      \
+    SbsActions actions;      \
     char *output_dir
 
-struct SbsTarget {
+typedef struct {
     SBS_TARGET_BASE_DEF();
-};
+} SbsTarget;
 
-struct SbsTargetCompile {
+typedef struct {
     SBS_TARGET_BASE_DEF();
     char **includes;
     char **sources;
     char **defines;
-};
+} SbsTargetCompile;
 
-struct SbsTargetArchive {
+typedef struct {
     SBS_TARGET_BASE_DEF();
     char *output_name;
-    struct SbsStringOrId *objects;
-};
+    SbsStringOrId *objects;
+} SbsTargetArchive;
 
-struct SbsTargetShared {
+typedef struct {
     SBS_TARGET_BASE_DEF();
     char *output_name;
-    struct SbsStringOrId *objects;
-};
+    SbsStringOrId *objects;
+} SbsTargetShared;
 
-struct SbsTargetLibrary {
+typedef struct {
     char *path;
     char *name;
-};
+} SbsTargetLibrary;
 
-struct SbsTargetExecutable {
+typedef struct {
     SBS_TARGET_BASE_DEF();
     char *output_name;
-    struct SbsTargetLibrary *libraries;
-    struct SbsStringOrId *objects;
+    SbsTargetLibrary *libraries;
+    SbsStringOrId *objects;
     char **defines;
-};
+} SbsTargetExecutable;
 
-struct SbsTarget* sbs_target_resolve(const struct SbsFile *file, const char *target_name, const char *env_name, const struct SbsTarget *caller);
-void sbs_target_free(struct SbsTarget *target);
+SbsTarget* sbs_target_resolve(const SbsFile *file, const char *target_name, const char *env_name, const SbsTarget *caller);
+void sbs_target_free(SbsTarget *target);
 
 #endif /* SBS_OBJECT_TARGET_H */

@@ -1,7 +1,7 @@
 #ifndef SBS_RESULT_H
 #define SBS_RESULT_H
 
-enum SbsResult {
+typedef enum {
     SBS_RES_OK = 0,
     SBS_RES_ERROR,
     SBS_RES_WRONG_ARGS,
@@ -28,9 +28,9 @@ enum SbsResult {
 
     //
     SBS_RES_END
-};
+} SbsResult;
 
-enum SbsResult sbs_result_print_reason(enum SbsResult result, ...);
-const char* sbs_result_get_reason(enum SbsResult result, ...);
+SbsResult sbs_result_print_reason(SbsResult result, ...);
+const char* sbs_result_get_reason(SbsResult result, ...);
 
 #endif /* SBS_RESULT_H */

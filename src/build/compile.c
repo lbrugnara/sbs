@@ -157,7 +157,7 @@ const char** resolve_source_files(const char **target_sources)
     return source_files;
 }
 
-static char* build_object_filename(const struct SbsBuild *build, const struct SbsConfigCompile *config_compile, const char *source_file, const char *output_dir)
+static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile *config_compile, const char *source_file, const char *output_dir)
 {
     // We need to build the object filename using the source filename for it
     //  ex: main.c -> main.o
@@ -216,14 +216,14 @@ static char* build_object_filename(const struct SbsBuild *build, const struct Sb
     return object_file;
 }
 
-char** sbs_build_compile(struct SbsBuild *build)
+char** sbs_build_compile(SbsBuild *build)
 {
-    struct SbsTargetCompile *target_compile = (struct SbsTargetCompile*)build->target;
+    SbsTargetCompile *target_compile = (SbsTargetCompile*)build->target;
 
     if (!target_compile || !target_compile->sources)
         return NULL;
 
-    const struct SbsConfigCompile *config_compile = &build->config->compile;
+    const SbsConfigCompile *config_compile = &build->config->compile;
 
     // Collect all the compile flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);

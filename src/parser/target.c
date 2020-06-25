@@ -4,10 +4,10 @@
 #include "parser.h"
 #include "../common/common.h"
 
-static void parse_for_section(struct SbsParser *parser, struct SbsTargetSection *target_section, enum SbsTargetType target_type);
+static void parse_for_section(SbsParser *parser, SbsTargetSection *target_section, SbsTargetType target_type);
 static void free_library_node(void*);
 
-void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode *target_entry)
+void sbs_target_entry_free(SbsTargetType target_type, SbsTargetNode *target_entry)
 {
     sbs_actions_node_free(&target_entry->actions);
 
@@ -18,7 +18,7 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
     {
         case SBS_TARGET_COMPILE:
         {
-            struct SbsTargetCompileNode *compile = (struct SbsTargetCompileNode*)target_entry;
+            SbsTargetCompileNode *compile = (SbsTargetCompileNode*)target_entry;
             
             if (compile->sources)
                 fl_array_free_each(compile->sources, sbs_common_free_string);
@@ -33,7 +33,7 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
         }
         case SBS_TARGET_ARCHIVE:
         {
-            struct SbsTargetArchiveNode *archive = (struct SbsTargetArchiveNode*)target_entry;
+            SbsTargetArchiveNode *archive = (SbsTargetArchiveNode*)target_entry;
 
             if (archive->objects)
                 fl_array_free_each(archive->objects, sbs_common_free_string_or_id);
@@ -45,7 +45,7 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
         }
         case SBS_TARGET_SHARED:
         {
-            struct SbsTargetSharedNode *shared = (struct SbsTargetSharedNode*)target_entry;
+            SbsTargetSharedNode *shared = (SbsTargetSharedNode*)target_entry;
 
             if (shared->objects)
                 fl_array_free_each(shared->objects, sbs_common_free_string_or_id);
@@ -57,7 +57,7 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
         }
         case SBS_TARGET_EXECUTABLE:
         {
-            struct SbsTargetExecutableNode *executable = (struct SbsTargetExecutableNode*)target_entry;
+            SbsTargetExecutableNode *executable = (SbsTargetExecutableNode*)target_entry;
 
             if (executable->objects)
                 fl_array_free_each(executable->objects, sbs_common_free_string_or_id);
@@ -78,16 +78,16 @@ void sbs_target_entry_free(enum SbsTargetType target_type, struct SbsTargetNode 
     fl_free(target_entry);
 }
 
-void sbs_target_section_free(struct SbsTargetSection *target_section)
+void sbs_target_section_free(SbsTargetSection *target_section)
 {
     fl_cstring_free(target_section->name);
 
     if (target_section->entries)
     {
-        // We share the same struct SbsTargetNode between multiple environments, so we nullify 
+        // We share the same SbsTargetNode between multiple environments, so we nullify 
         // duplicates, release the objects, and finally release the memory used by the array returned
         // by fl_hashtable_values
-        struct SbsTargetNode **target_entries = fl_hashtable_values(target_section->entries);
+        SbsTargetNode **target_entries = fl_hashtable_values(target_section->entries);
 
         size_t count = fl_array_length(target_entries);
         for (size_t i=0; i < count; i++)
@@ -124,7 +124,7 @@ static void free_library_node(void *obj)
     if (!obj)
         return;
 
-    struct SbsTargetLibraryNode *lib = (struct SbsTargetLibraryNode*)obj;
+    SbsTargetLibraryNode *lib = (SbsTargetLibraryNode*)obj;
 
     if (lib->name)
         fl_cstring_free(lib->name);
@@ -144,18 +144,18 @@ static void free_library_node(void *obj)
  *  char** - Parsed array of strings or identifiers
  *
  */
-static struct SbsTargetLibraryNode* parse_library_array(struct SbsParser *parser)
+static SbsTargetLibraryNode* parse_library_array(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
-    struct SbsTargetLibraryNode *libraries = fl_array_new(sizeof(struct SbsTargetLibraryNode), 0);
+    SbsTargetLibraryNode *libraries = fl_array_new(sizeof(SbsTargetLibraryNode), 0);
 
-    const struct SbsToken *token;
+    const SbsToken *token;
     while ((token = sbs_parser_peek(parser))->type != SBS_TOKEN_RBRACKET)
     {
         sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-        struct SbsTargetLibraryNode library = { 0 };
+        SbsTargetLibraryNode library = { 0 };
 
         while ((token = sbs_parser_peek(parser))->type != SBS_TOKEN_RBRACE)
         {
@@ -189,11 +189,11 @@ static struct SbsTargetLibraryNode* parse_library_array(struct SbsParser *parser
     return libraries;
 }
 
-static void parse_compile_body(struct SbsParser *parser, struct SbsTargetSection *target_section, struct SbsTargetCompileNode *target)
+static void parse_compile_body(SbsParser *parser, SbsTargetSection *target_section, SbsTargetCompileNode *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        const struct SbsToken *token = sbs_parser_peek(parser);
+        const SbsToken *token = sbs_parser_peek(parser);
         
         if (fl_slice_equals_sequence(&token->value, (FlByte*)"includes", 8))
         {
@@ -249,12 +249,12 @@ static void parse_compile_body(struct SbsParser *parser, struct SbsTargetSection
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsTargetSection* - Parsed *compile* target
+ *  SbsTargetSection* - Parsed *compile* target
  *
  */
-struct SbsTargetSection* sbs_target_parse_compile(struct SbsParser *parser)
+SbsTargetSection* sbs_target_parse_compile(SbsParser *parser)
 {
-    struct SbsTargetSection *target_section = fl_malloc(sizeof(struct SbsTargetSection));
+    SbsTargetSection *target_section = fl_malloc(sizeof(SbsTargetSection));
     target_section->type = SBS_TARGET_COMPILE;
     target_section->entries = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_string, 
@@ -263,14 +263,14 @@ struct SbsTargetSection* sbs_target_parse_compile(struct SbsParser *parser)
         .key_cleaner = fl_container_cleaner_pointer
     });
 
-    struct SbsTargetCompileNode *target_entry = fl_malloc(sizeof(struct SbsTargetCompileNode));
+    SbsTargetCompileNode *target_entry = fl_malloc(sizeof(SbsTargetCompileNode));
     fl_hashtable_add(target_section->entries, SBS_BASE_OBJECT_KEY, target_entry);
 
     // Consume the 'compile' token
     sbs_parser_consume(parser, SBS_TOKEN_COMPILE);
     
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     target_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
@@ -278,15 +278,15 @@ struct SbsTargetSection* sbs_target_parse_compile(struct SbsParser *parser)
     parse_compile_body(parser, target_section, target_entry);
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-    return (struct SbsTargetSection*)target_section;
+    return (SbsTargetSection*)target_section;
 }
 
-static void parse_archive_body(struct SbsParser *parser, struct SbsTargetSection *target_section, struct SbsTargetArchiveNode *target)
+static void parse_archive_body(SbsParser *parser, SbsTargetSection *target_section, SbsTargetArchiveNode *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        const struct SbsToken *token = sbs_parser_peek(parser);
-        //const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+        const SbsToken *token = sbs_parser_peek(parser);
+        //const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
         if (fl_slice_equals_sequence(&token->value, (FlByte*)"objects", 7))
         {
@@ -335,12 +335,12 @@ static void parse_archive_body(struct SbsParser *parser, struct SbsTargetSection
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsTargetSection* - Parsed *archive* target
+ *  SbsTargetSection* - Parsed *archive* target
  *
  */
-struct SbsTargetSection* sbs_target_parse_archive(struct SbsParser *parser)
+SbsTargetSection* sbs_target_parse_archive(SbsParser *parser)
 {
-    struct SbsTargetSection *target_section = fl_malloc(sizeof(struct SbsTargetSection));
+    SbsTargetSection *target_section = fl_malloc(sizeof(SbsTargetSection));
     target_section->type = SBS_TARGET_ARCHIVE;
     target_section->entries = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_string, 
@@ -349,14 +349,14 @@ struct SbsTargetSection* sbs_target_parse_archive(struct SbsParser *parser)
         .key_cleaner = fl_container_cleaner_pointer
     });
 
-    struct SbsTargetArchiveNode *target_entry = fl_malloc(sizeof(struct SbsTargetArchiveNode));
+    SbsTargetArchiveNode *target_entry = fl_malloc(sizeof(SbsTargetArchiveNode));
     fl_hashtable_add(target_section->entries, SBS_BASE_OBJECT_KEY, target_entry);
 
     // Consume 'target'
     sbs_parser_consume(parser, SBS_TOKEN_ARCHIVE);
     
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     target_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
@@ -364,15 +364,15 @@ struct SbsTargetSection* sbs_target_parse_archive(struct SbsParser *parser)
     parse_archive_body(parser, target_section, target_entry);
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-    return (struct SbsTargetSection*)target_section;
+    return (SbsTargetSection*)target_section;
 }
 
-static void parse_shared_body(struct SbsParser *parser, struct SbsTargetSection *target_section, struct SbsTargetSharedNode *target)
+static void parse_shared_body(SbsParser *parser, SbsTargetSection *target_section, SbsTargetSharedNode *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        const struct SbsToken *token = sbs_parser_peek(parser);
-        //const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+        const SbsToken *token = sbs_parser_peek(parser);
+        //const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
         if (fl_slice_equals_sequence(&token->value, (FlByte*)"objects", 7))
         {
@@ -421,12 +421,12 @@ static void parse_shared_body(struct SbsParser *parser, struct SbsTargetSection 
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsTargetSection* - Parsed *shared* target
+ *  SbsTargetSection* - Parsed *shared* target
  *
  */
-struct SbsTargetSection* sbs_target_parse_shared(struct SbsParser *parser)
+SbsTargetSection* sbs_target_parse_shared(SbsParser *parser)
 {
-    struct SbsTargetSection *target_section = fl_malloc(sizeof(struct SbsTargetSection));
+    SbsTargetSection *target_section = fl_malloc(sizeof(SbsTargetSection));
     target_section->type = SBS_TARGET_SHARED;
     target_section->entries = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_string, 
@@ -435,14 +435,14 @@ struct SbsTargetSection* sbs_target_parse_shared(struct SbsParser *parser)
         .key_cleaner = fl_container_cleaner_pointer
     });
 
-    struct SbsTargetSharedNode *target_entry = fl_malloc(sizeof(struct SbsTargetSharedNode));
+    SbsTargetSharedNode *target_entry = fl_malloc(sizeof(SbsTargetSharedNode));
     fl_hashtable_add(target_section->entries, SBS_BASE_OBJECT_KEY, target_entry);
 
     // Consume 'target'
     sbs_parser_consume(parser, SBS_TOKEN_SHARED);
     
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     target_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
@@ -450,15 +450,15 @@ struct SbsTargetSection* sbs_target_parse_shared(struct SbsParser *parser)
     parse_shared_body(parser, target_section, target_entry);
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-    return (struct SbsTargetSection*)target_section;
+    return (SbsTargetSection*)target_section;
 }
 
-static void parse_executable_body(struct SbsParser *parser, struct SbsTargetSection *target_section, struct SbsTargetExecutableNode *target)
+static void parse_executable_body(SbsParser *parser, SbsTargetSection *target_section, SbsTargetExecutableNode *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        const struct SbsToken *token = sbs_parser_peek(parser);
-        //const struct SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+        const SbsToken *token = sbs_parser_peek(parser);
+        //const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
         if (fl_slice_equals_sequence(&token->value, (FlByte*)"objects", 7))
         {
@@ -519,12 +519,12 @@ static void parse_executable_body(struct SbsParser *parser, struct SbsTargetSect
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsTargetSection* - Parsed *executable* target
+ *  SbsTargetSection* - Parsed *executable* target
  *
  */
-struct SbsTargetSection* sbs_target_parse_executable(struct SbsParser *parser)
+SbsTargetSection* sbs_target_parse_executable(SbsParser *parser)
 {
-    struct SbsTargetSection *target_section = fl_malloc(sizeof(struct SbsTargetSection));
+    SbsTargetSection *target_section = fl_malloc(sizeof(SbsTargetSection));
     target_section->type = SBS_TARGET_EXECUTABLE;
     target_section->entries = fl_hashtable_new_args((struct FlHashtableArgs) {
         .hash_function = fl_hashtable_hash_string, 
@@ -533,14 +533,14 @@ struct SbsTargetSection* sbs_target_parse_executable(struct SbsParser *parser)
         .key_cleaner = fl_container_cleaner_pointer
     });
 
-    struct SbsTargetExecutableNode *target_entry = fl_malloc(sizeof(struct SbsTargetExecutableNode));
+    SbsTargetExecutableNode *target_entry = fl_malloc(sizeof(SbsTargetExecutableNode));
     fl_hashtable_add(target_section->entries, SBS_BASE_OBJECT_KEY, target_entry);
 
     // Consume 'target'
     sbs_parser_consume(parser, SBS_TOKEN_EXECUTABLE);
     
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     target_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
@@ -548,12 +548,12 @@ struct SbsTargetSection* sbs_target_parse_executable(struct SbsParser *parser)
     parse_executable_body(parser, target_section, target_entry);
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-    return (struct SbsTargetSection*)target_section;
+    return (SbsTargetSection*)target_section;
 }
 
-static void parse_for_section(struct SbsParser *parser, struct SbsTargetSection *target_section, enum SbsTargetType target_type)
+static void parse_for_section(SbsParser *parser, SbsTargetSection *target_section, SbsTargetType target_type)
 {
-    const struct SbsToken *token = sbs_parser_peek(parser);
+    const SbsToken *token = sbs_parser_peek(parser);
 
     // Parse the for declaration
     char **envs = sbs_common_parse_for_declaration(parser);
@@ -561,27 +561,27 @@ static void parse_for_section(struct SbsParser *parser, struct SbsTargetSection 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
     // Parse the configuration info
-    struct SbsTargetNode *target_entry = NULL;
+    SbsTargetNode *target_entry = NULL;
 
     if (target_type == SBS_TARGET_COMPILE)
     {
-        target_entry = fl_malloc(sizeof(struct SbsTargetCompileNode));
-        parse_compile_body(parser, target_section, (struct SbsTargetCompileNode*)target_entry);
+        target_entry = fl_malloc(sizeof(SbsTargetCompileNode));
+        parse_compile_body(parser, target_section, (SbsTargetCompileNode*)target_entry);
     }
     else if (target_type == SBS_TARGET_ARCHIVE)
     {
-        target_entry = fl_malloc(sizeof(struct SbsTargetArchiveNode));
-        parse_archive_body(parser, target_section, (struct SbsTargetArchiveNode*)target_entry);
+        target_entry = fl_malloc(sizeof(SbsTargetArchiveNode));
+        parse_archive_body(parser, target_section, (SbsTargetArchiveNode*)target_entry);
     }
     else if (target_type == SBS_TARGET_SHARED)
     {
-        target_entry = fl_malloc(sizeof(struct SbsTargetSharedNode));
-        parse_shared_body(parser, target_section, (struct SbsTargetSharedNode*)target_entry);
+        target_entry = fl_malloc(sizeof(SbsTargetSharedNode));
+        parse_shared_body(parser, target_section, (SbsTargetSharedNode*)target_entry);
     }
     else if (target_type == SBS_TARGET_EXECUTABLE)
     {
-        target_entry = fl_malloc(sizeof(struct SbsTargetExecutableNode));
-        parse_executable_body(parser, target_section, (struct SbsTargetExecutableNode*)target_entry);
+        target_entry = fl_malloc(sizeof(SbsTargetExecutableNode));
+        parse_executable_body(parser, target_section, (SbsTargetExecutableNode*)target_entry);
     }
     else
     {
@@ -612,12 +612,12 @@ static void parse_for_section(struct SbsParser *parser, struct SbsTargetSection 
  *  parser - Parser object
  *
  * Returns:
- *  struct SbsTargetSection* - The parsed *target*
+ *  SbsTargetSection* - The parsed *target*
  *
  */
-struct SbsTargetSection* sbs_target_section_parse(struct SbsParser *parser)
+SbsTargetSection* sbs_target_section_parse(SbsParser *parser)
 {
-    const struct SbsToken *token = sbs_parser_peek(parser);
+    const SbsToken *token = sbs_parser_peek(parser);
 
     if (token == NULL)
         return NULL;

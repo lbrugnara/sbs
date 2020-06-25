@@ -6,19 +6,19 @@
 #include "../parser/common.h"
 #include "../parser/file.h"
 
-struct SbsAction {
+typedef struct {
     char *name;
     char **commands;
-};
+} SbsAction;
 
-struct SbsActions {
-    struct SbsAction **before;
-    struct SbsAction **after;
-};
+typedef struct {
+    SbsAction **before;
+    SbsAction **after;
+} SbsActions;
 
-struct SbsAction* sbs_action_resolve(const struct SbsFile *file, const char *action_name, const char *env_name);
-void sbs_action_free(struct SbsAction *action);
-struct SbsAction** sbs_action_resolve_all(const struct SbsFile *file, struct SbsStringOrId *actions, const char *env_name);
-void sbs_action_free_all(struct SbsAction **actions);
+SbsAction* sbs_action_resolve(const SbsFile *file, const char *action_name, const char *env_name);
+void sbs_action_free(SbsAction *action);
+SbsAction** sbs_action_resolve_all(const SbsFile *file, SbsStringOrId *actions, const char *env_name);
+void sbs_action_free_all(SbsAction **actions);
 
 #endif /* SBS_OBJECT_ACTION_H */

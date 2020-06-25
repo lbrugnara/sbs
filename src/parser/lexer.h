@@ -3,7 +3,7 @@
 
 #include <fllib.h>
 
-enum SbsTokenType {
+typedef enum {
     SBS_TOKEN_UNKNOWN,
     SBS_TOKEN_EOF,
 
@@ -35,28 +35,28 @@ enum SbsTokenType {
     SBS_TOKEN_COMMAND_STRING,
     SBS_TOKEN_NUMBER,
     SBS_TOKEN_IDENTIFIER
-} ;
+} SbsTokenType;
 
-struct SbsLexer {
+typedef struct {
     struct FlSlice source;
     unsigned int index;
     unsigned int line;
     unsigned int col;
-};
+} SbsLexer;
 
-struct SbsToken {
-    enum SbsTokenType type;
+typedef struct {
+    SbsTokenType type;
     struct FlSlice value;
     unsigned int line;
     unsigned int col;
-};
+} SbsToken;
 
 extern const char *token_type_string[];
 
-struct SbsLexer sbs_lexer_new(const char *source, size_t length);
+SbsLexer sbs_lexer_new(const char *source, size_t length);
 
-struct SbsToken sbs_lexer_next(struct SbsLexer *lexer);
+SbsToken sbs_lexer_next(SbsLexer *lexer);
 
-struct SbsToken* sbs_lexer_tokenize(struct SbsLexer *lexer);
+SbsToken* sbs_lexer_tokenize(SbsLexer *lexer);
 
 #endif /* SBS_PARSER_LEXER_H */

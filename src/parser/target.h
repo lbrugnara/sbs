@@ -5,57 +5,57 @@
 #include "common.h"
 #include "action.h"
 
-enum SbsTargetType {
+typedef enum {
     SBS_TARGET_COMPILE,
     SBS_TARGET_ARCHIVE,
     SBS_TARGET_SHARED,
     SBS_TARGET_EXECUTABLE,
-};
+} SbsTargetType;
 
-struct SbsTargetSection {
-    enum SbsTargetType type;
+typedef struct {
+    SbsTargetType type;
     const char *name;
     FlHashtable *entries;
-};
+} SbsTargetSection;
 
-struct SbsTargetNode {
-    struct SbsActionsNode actions;
+typedef struct {
+    SbsActionsNode actions;
     const char *output_dir;
-};
+} SbsTargetNode;
 
-struct SbsTargetCompileNode {
-    struct SbsTargetNode base;
+typedef struct {
+    SbsTargetNode base;
     char **includes;
     char **sources;
     char **defines;
-};
+} SbsTargetCompileNode;
 
-struct SbsTargetArchiveNode {
-    struct SbsTargetNode base;
+typedef struct {
+    SbsTargetNode base;
     const char *output_name;
-    struct SbsStringOrId *objects;
-};
+    SbsStringOrId *objects;
+} SbsTargetArchiveNode;
 
-struct SbsTargetSharedNode {
-    struct SbsTargetNode base;
+typedef struct {
+    SbsTargetNode base;
     const char *output_name;
-    struct SbsStringOrId *objects;
-};
+    SbsStringOrId *objects;
+} SbsTargetSharedNode;
 
-struct SbsTargetLibraryNode {
+typedef struct {
     char *path;
     char *name;
-};
+} SbsTargetLibraryNode;
 
-struct SbsTargetExecutableNode {
-    struct SbsTargetNode base;
+typedef struct {
+    SbsTargetNode base;
     const char *output_name;
-    struct SbsTargetLibraryNode *libraries;
-    struct SbsStringOrId *objects;
+    SbsTargetLibraryNode *libraries;
+    SbsStringOrId *objects;
     char **defines;
-};
+} SbsTargetExecutableNode;
 
-struct SbsTargetSection* sbs_target_section_parse(struct SbsParser *parser);
-void sbs_target_section_free(struct SbsTargetSection *target);
+SbsTargetSection* sbs_target_section_parse(SbsParser *parser);
+void sbs_target_section_free(SbsTargetSection *target);
 
 #endif /* SBS_PARSER_TARGET_H */

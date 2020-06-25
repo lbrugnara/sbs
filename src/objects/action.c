@@ -16,27 +16,27 @@ static inline bool is_for_env(const char *env_name, char **for_envs)
     return false;
 }
 
-struct SbsAction* sbs_action_resolve(const struct SbsFile *file, const char *action_name, const char *env_name)
+SbsAction* sbs_action_resolve(const SbsFile *file, const char *action_name, const char *env_name)
 {
-    struct SbsActionSection *action_section = fl_hashtable_get(file->actions, action_name);
+    SbsActionSection *action_section = fl_hashtable_get(file->actions, action_name);
 
     if (!action_section)
         return NULL;
 
-    struct SbsAction *action_object = fl_malloc(sizeof(struct SbsAction));
+    SbsAction *action_object = fl_malloc(sizeof(SbsAction));
     action_object->name = fl_cstring_dup(action_section->name);
     action_object->commands = fl_array_new(sizeof(char*), 0);
 
     for (size_t i=0; i < fl_array_length(action_section->nodes); i++)
     {
-        struct SbsActionNode *ancestor = action_section->nodes + i;
+        SbsActionNode *ancestor = action_section->nodes + i;
 
         for (size_t i=0; i < fl_array_length(ancestor->commands); i++)
         {
             if (ancestor->for_envs && !is_for_env(env_name, ancestor->for_envs))
                 continue;
 
-            struct SbsStringOrId command = ancestor->commands[i];
+            SbsStringOrId command = ancestor->commands[i];
 
             if (command.type == SBS_STRING)
             {
@@ -46,7 +46,7 @@ struct SbsAction* sbs_action_resolve(const struct SbsFile *file, const char *act
             }
             else
             {
-                struct SbsAction *ref_action = sbs_action_resolve(file, command.value, env_name);
+                SbsAction *ref_action = sbs_action_resolve(file, command.value, env_name);
                 
                 if (!ref_action)
                 {
@@ -70,7 +70,7 @@ struct SbsAction* sbs_action_resolve(const struct SbsFile *file, const char *act
     return action_object;
 }
 
-void sbs_action_free(struct SbsAction *action)
+void sbs_action_free(SbsAction *action)
 {
     if (action->name)
         fl_cstring_free(action->name);
@@ -80,18 +80,18 @@ void sbs_action_free(struct SbsAction *action)
     fl_free(action);
 }
 
-struct SbsAction** sbs_action_resolve_all(const struct SbsFile *file, struct SbsStringOrId *actions, const char *env_name)
+SbsAction** sbs_action_resolve_all(const SbsFile *file, SbsStringOrId *actions, const char *env_name)
 {
     if (!actions)
         return NULL;
 
     size_t actions_count = fl_array_length(actions);
 
-    struct SbsAction **resolved_actions = fl_array_new(sizeof(struct SbsAction*), actions_count);
+    SbsAction **resolved_actions = fl_array_new(sizeof(SbsAction*), actions_count);
 
     for (size_t i=0; i < actions_count; i++)
     {
-        struct SbsStringOrId action = actions[i];
+        SbsStringOrId action = actions[i];
 
         if (action.type == SBS_IDENTIFIER)
         {
@@ -99,7 +99,7 @@ struct SbsAction** sbs_action_resolve_all(const struct SbsFile *file, struct Sbs
         }
         else
         {
-            struct SbsAction *action_object = fl_malloc(sizeof(struct SbsAction));
+            SbsAction *action_object = fl_malloc(sizeof(SbsAction));
             action_object->commands = fl_array_new(sizeof(char*), 1);
             action_object->commands[0] = fl_cstring_dup(action.value);
             resolved_actions[i] = action_object;
@@ -109,7 +109,7 @@ struct SbsAction** sbs_action_resolve_all(const struct SbsFile *file, struct Sbs
     return resolved_actions;
 }
 
-void sbs_action_free_all(struct SbsAction **actions)
+void sbs_action_free_all(SbsAction **actions)
 {
     if (!actions)
         return;

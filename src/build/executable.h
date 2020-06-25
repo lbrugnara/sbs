@@ -4,6 +4,6 @@
 #include <fllib.h>
 #include "build.h"
 
-char** sbs_build_target_executable(struct SbsBuild *build);
+char** sbs_build_target_executable(SbsBuild *build);
 
 #endif /* SBS_BUILD_EXECUTABLE_H */

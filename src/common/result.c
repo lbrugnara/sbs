@@ -27,7 +27,7 @@ static char *reason[] = {
     [SBS_RES_ACTION_FAILED] =           "An action has failed\n"
 };
 
-const char* sbs_result_get_reason(enum SbsResult result, ...)
+const char* sbs_result_get_reason(SbsResult result, ...)
 {
 if (result < SBS_RES_OK || result > SBS_RES_END)
         return NULL;
@@ -39,7 +39,7 @@ if (result < SBS_RES_OK || result > SBS_RES_END)
     return str;
 }
 
-enum SbsResult sbs_result_print_reason(enum SbsResult result, ...)
+SbsResult sbs_result_print_reason(SbsResult result, ...)
 {
     if (result < SBS_RES_OK || result > SBS_RES_END)
         return result;

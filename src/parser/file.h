@@ -3,23 +3,23 @@
 
 #include <fllib.h>
 
-struct SbsFile {
+typedef struct {
     const char *filename;
-    /* FlHashtable<char*, struct SbsEnvSection*> */
+    /* FlHashtable<char*, SbsEnvSection*> */
     FlHashtable *envs;
-    /* FlHashtable<char*, struct SbsTargetSection*> */
+    /* FlHashtable<char*, SbsTargetSection*> */
     FlHashtable *targets;
-    /* FlHashtable<char*, struct SbsToolchainSection*> */
+    /* FlHashtable<char*, SbsToolchainSection*> */
     FlHashtable *toolchains;
-    /* FlHashtable<char*, struct SbsConfigSection*> */
+    /* FlHashtable<char*, SbsConfigSection*> */
     FlHashtable *configurations;
-    /* FlHashtable<char*, struct SbsActionSection*> */
+    /* FlHashtable<char*, SbsActionSection*> */
     FlHashtable *actions;
-    /* FlHashtable<char*, struct SbsPresetSection*> */
+    /* FlHashtable<char*, SbsPresetSection*> */
     FlHashtable *presets;
-};
+} SbsFile;
 
-struct SbsFile* sbs_file_parse(const char *filename);
-void sbs_file_free(struct SbsFile *build);
+SbsFile* sbs_file_parse(const char *filename);
+void sbs_file_free(SbsFile *build);
 
 #endif /* SBS_PARSER_FILE_H */

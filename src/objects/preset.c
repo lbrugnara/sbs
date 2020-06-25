@@ -1,14 +1,14 @@
 #include "preset.h"
 #include "../parser/preset.h"
 
-struct SbsPreset* sbs_preset_resolve(const struct SbsFile *file, const char *preset_name, const char *env_name)
+SbsPreset* sbs_preset_resolve(const SbsFile *file, const char *preset_name, const char *env_name)
 {
-    struct SbsPresetSection *preset_section = fl_hashtable_get(file->presets, preset_name);
+    SbsPresetSection *preset_section = fl_hashtable_get(file->presets, preset_name);
 
     if (!preset_section)
         return NULL;
 
-    struct SbsPreset *preset_object = fl_malloc(sizeof(struct SbsPreset));
+    SbsPreset *preset_object = fl_malloc(sizeof(SbsPreset));
 
     preset_object->name = fl_cstring_dup(preset_section->name);
     preset_object->env = preset_section->env ? fl_cstring_dup(preset_section->env) : NULL;
@@ -17,14 +17,14 @@ struct SbsPreset* sbs_preset_resolve(const struct SbsFile *file, const char *pre
     preset_object->target = preset_section->target ? fl_cstring_dup(preset_section->target) : NULL;
     
     
-    struct SbsAction **before_actions = sbs_action_resolve_all(file, preset_section->actions.before, preset_object->env ? preset_object->env : env_name);
+    SbsAction **before_actions = sbs_action_resolve_all(file, preset_section->actions.before, preset_object->env ? preset_object->env : env_name);
     if (before_actions)
     {
         preset_object->actions.before = sbs_common_extend_array(preset_object->actions.before, before_actions);
         fl_array_free(before_actions);
     }
 
-    struct SbsAction **after_actions = sbs_action_resolve_all(file, preset_section->actions.after, preset_object->env ? preset_object->env : env_name);
+    SbsAction **after_actions = sbs_action_resolve_all(file, preset_section->actions.after, preset_object->env ? preset_object->env : env_name);
     if (after_actions)
     {
         preset_object->actions.after = sbs_common_extend_array(preset_object->actions.after, after_actions);
@@ -34,7 +34,7 @@ struct SbsPreset* sbs_preset_resolve(const struct SbsFile *file, const char *pre
     return preset_object;
 }
 
-void sbs_preset_free(struct SbsPreset *preset)
+void sbs_preset_free(SbsPreset *preset)
 {
     fl_cstring_free(preset->name);
     if (preset->env)

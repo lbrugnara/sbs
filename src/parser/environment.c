@@ -3,7 +3,7 @@
 #include "parser.h"
 #include "../common/common.h"
 
-void sbs_env_section_free(struct SbsEnvSection *env)
+void sbs_env_section_free(SbsEnvSection *env)
 {
     if (!env)
         return;
@@ -35,24 +35,24 @@ void sbs_env_section_free(struct SbsEnvSection *env)
  *      - type: The type property allows 3 predefined identifiers: bash, cmd, powershell.
  *      - terminal: The path to an executable shell
  *      - variables: Array of strings with the form of "key=value"
- *      - actions: <struct SbsActionsNode> object with commands to be run before and after the build process
+ *      - actions: <SbsActionsNode> object with commands to be run before and after the build process
  *
  * Parameters:
  *  parser - Parser object
  *
  * Returns:
- *  static struct SbsEnvSection* - The parsed *env* block
+ *  static SbsEnvSection* - The parsed *env* block
  *
  */
-struct SbsEnvSection* sbs_env_section_parse(struct SbsParser *parser)
+SbsEnvSection* sbs_env_section_parse(SbsParser *parser)
 {
-    struct SbsEnvSection *env = fl_malloc(sizeof(struct SbsEnvSection));
+    SbsEnvSection *env = fl_malloc(sizeof(SbsEnvSection));
 
     // Consume 'env'
     sbs_parser_consume(parser, SBS_TOKEN_ENV);
     
     // Consume IDENTIFIER
-    const struct SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     env->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
@@ -60,7 +60,7 @@ struct SbsEnvSection* sbs_env_section_parse(struct SbsParser *parser)
 
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        const struct SbsToken *token = sbs_parser_peek(parser);
+        const SbsToken *token = sbs_parser_peek(parser);
 
         if (fl_slice_equals_sequence(&token->value, (FlByte*)"args", 4))
         {

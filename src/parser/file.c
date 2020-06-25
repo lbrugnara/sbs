@@ -66,7 +66,7 @@ static void merge_hashtable(FlHashtable *dest, FlHashtable *src)
  *  void - This function does not return a value
  *
  */
-static void merge_into_file(struct SbsFile *dest_file, struct SbsFile *src_file)
+static void merge_into_file(SbsFile *dest_file, SbsFile *src_file)
 {
     if (dest_file == NULL || src_file == NULL)
         return;
@@ -92,7 +92,7 @@ static void merge_into_file(struct SbsFile *dest_file, struct SbsFile *src_file)
  *  *bool* - *true* on success, otherwise *false*
  *
  */
-static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *file)
+static bool parse_include_statement(SbsParser *parser, SbsFile *file)
 {
     sbs_parser_consume(parser, SBS_TOKEN_INCLUDE);
     char **includes = sbs_common_parse_string_array(parser);
@@ -128,7 +128,7 @@ static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *fi
         char *filename = fl_cstring_vdup("%s%s", current_dir, includes[i]);
 
         // Parse the included file
-         struct SbsFile *included_file = sbs_file_parse(filename);
+         SbsFile *included_file = sbs_file_parse(filename);
 
         // Merge the included build file into our main build file
         merge_into_file(file, included_file);
@@ -159,12 +159,12 @@ static bool parse_include_statement(struct SbsParser *parser, struct SbsFile *fi
  *  *bool* - If the parsing process is successful, this function returns *true*. Otherwise returns *false*.
  *
  */
-static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
+static bool parse_file(SbsParser *parser, SbsFile *file)
 {
     bool success = true;
     while (success && sbs_parser_has_input(parser))
     {
-        const struct SbsToken *token = sbs_parser_peek(parser);
+        const SbsToken *token = sbs_parser_peek(parser);
 
         if (token->type == SBS_TOKEN_INCLUDE)
         {
@@ -176,11 +176,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_ENV)
         {
-            const struct SbsEnvSection *env = sbs_env_section_parse(parser);
+            const SbsEnvSection *env = sbs_env_section_parse(parser);
             if (fl_hashtable_has_key(file->envs, env->name))
             {
                 printf("Env %s cannot be redefined\n", env->name);
-                sbs_env_section_free((struct SbsEnvSection*)env);
+                sbs_env_section_free((SbsEnvSection*)env);
                 success = false;
                 break;
             }
@@ -188,11 +188,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_COMPILE || token->type == SBS_TOKEN_ARCHIVE || token->type == SBS_TOKEN_SHARED || token->type == SBS_TOKEN_EXECUTABLE)
         {
-            const struct SbsTargetSection *target = sbs_target_section_parse(parser);
+            const SbsTargetSection *target = sbs_target_section_parse(parser);
             if (fl_hashtable_has_key(file->targets, target->name))
             {
                 printf("Target %s cannot be redefined\n", target->name);
-                sbs_target_section_free((struct SbsTargetSection*)target);
+                sbs_target_section_free((SbsTargetSection*)target);
                 success = false;
                 break;
             }
@@ -200,11 +200,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_TOOLCHAIN)
         {
-            const struct SbsToolchainSection *toolchain = sbs_toolchain_section_parse(parser);
+            const SbsToolchainSection *toolchain = sbs_toolchain_section_parse(parser);
             if (fl_hashtable_has_key(file->toolchains, toolchain->name))
             {
                 printf("Toolchain %s cannot be redefined\n", toolchain->name);
-                sbs_toolchain_section_free((struct SbsToolchainSection*)toolchain);
+                sbs_toolchain_section_free((SbsToolchainSection*)toolchain);
                 success = false;
                 break;
             }
@@ -212,11 +212,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_CONFIG)
         {
-            const struct SbsConfigSection *configuration = sbs_config_section_parse(parser);
+            const SbsConfigSection *configuration = sbs_config_section_parse(parser);
             if (fl_hashtable_has_key(file->configurations, configuration->name))
             {
                 printf("Configuration %s cannot be redefined\n", configuration->name);
-                sbs_config_section_free((struct SbsConfigSection*)configuration);
+                sbs_config_section_free((SbsConfigSection*)configuration);
                 success = false;
                 break;
             }
@@ -224,11 +224,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_ACTION)
         {
-            const struct SbsActionSection *action = sbs_action_section_parse(parser);
+            const SbsActionSection *action = sbs_action_section_parse(parser);
             if (fl_hashtable_has_key(file->actions, action->name))
             {
                 printf("Action %s cannot be redefined\n", action->name);
-                sbs_action_section_free((struct SbsActionSection*)action);
+                sbs_action_section_free((SbsActionSection*)action);
                 success = false;
                 break;
             }
@@ -236,11 +236,11 @@ static bool parse_file(struct SbsParser *parser, struct SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_PRESET)
         {
-            const struct SbsPresetSection *preset = sbs_preset_section_parse(parser);
+            const SbsPresetSection *preset = sbs_preset_section_parse(parser);
             if (fl_hashtable_has_key(file->presets, preset->name))
             {
                 printf("Preset %s cannot be redefined\n", preset->name);
-                sbs_preset_section_free((struct SbsPresetSection*)preset);
+                sbs_preset_section_free((SbsPresetSection*)preset);
                 success = false;
                 break;
             }
@@ -341,10 +341,10 @@ static void map_init_toolchain(FlHashtable **toolchains)
  *  filename - Build file path
  *
  * Returns:
- *  struct SbsFile* - Parsed build file or NULL on error
+ *  SbsFile* - Parsed build file or NULL on error
  *
  */
-struct SbsFile* sbs_file_parse(const char *filename)
+SbsFile* sbs_file_parse(const char *filename)
 {
     const char *source = (const char*)fl_io_file_read_all_text(filename);
 
@@ -352,7 +352,7 @@ struct SbsFile* sbs_file_parse(const char *filename)
         return NULL;
 
     // Create the SbsFile object
-    struct SbsFile *file = fl_malloc(sizeof(struct SbsFile));
+    SbsFile *file = fl_malloc(sizeof(SbsFile));
     file->filename = fl_cstring_replace(filename, "\\", "/");
     map_init_action(&file->actions);
     map_init_config(&file->configurations);
@@ -361,8 +361,8 @@ struct SbsFile* sbs_file_parse(const char *filename)
     map_init_target(&file->targets);
     map_init_toolchain(&file->toolchains);
 
-    struct SbsLexer lexer = sbs_lexer_new(source, strlen(source));
-    struct SbsParser parser = {
+    SbsLexer lexer = sbs_lexer_new(source, strlen(source));
+    SbsParser parser = {
         // TODO: We can use a buffer here and use the sbs_lexer_next function
         .tokens = sbs_lexer_tokenize(&lexer),
         .index = 0,
@@ -375,7 +375,7 @@ struct SbsFile* sbs_file_parse(const char *filename)
         file = NULL;
     }
 
-    fl_array_free((struct SbsToken*)parser.tokens);
+    fl_array_free((SbsToken*)parser.tokens);
     // The parse function dups the strings, so it is safe to release the memory
     // used by the source
     fl_cstring_free((char*)source);
@@ -393,7 +393,7 @@ struct SbsFile* sbs_file_parse(const char *filename)
  * Returns:
  *  void - This function does not return a value
  */
-void sbs_file_free(struct SbsFile *file)
+void sbs_file_free(SbsFile *file)
 {
     if (file->filename)
         fl_cstring_free(file->filename);
