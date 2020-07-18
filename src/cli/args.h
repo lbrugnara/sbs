@@ -77,11 +77,15 @@ do { \
     } \
 
 #define flag_string(lname, sname, strptr) \
-    else if (sbs_args_is_flag((lname), (sname), sbs_arg) && !sbs_args_is_string(sbs_arg, (strptr))) \
+    else if (sbs_args_is_flag((lname), (sname), sbs_arg)) \
     { \
-        if (sbs_print_err) \
-            sbs_print_err("Flag '%s' expects a string value, use '%s=...'?", sbs_arg, sbs_arg); \
-        if (sbs_resultptr) *sbs_resultptr = SBS_ARGS_ERROR; \
+        if (!sbs_args_is_string(sbs_arg, (strptr))) \
+        { \
+            if (sbs_print_err) \
+                sbs_print_err("Flag '%s' expects a string value, use '%s=...'?", sbs_arg, sbs_arg); \
+            if (sbs_resultptr)  \
+                *sbs_resultptr = SBS_ARGS_ERROR; \
+        } \
     }
 
 #define sbs_args_is_command(module_name, str) flm_cstring_equals((module_name), (str))

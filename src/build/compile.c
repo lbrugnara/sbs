@@ -16,7 +16,7 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
     if (!visited_files)
     {
         created_visited_files = true;
-        visited_files = fl_vector_new(sizeof(char*), NULL);
+        visited_files = fl_vector_new();
     }
 
     // We use the current file's directory to process the includes
@@ -61,13 +61,13 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
             bool need_to_visit = true;
             for (size_t i=0; need_to_visit && i < fl_vector_length(visited_files); i++)
             {
-                if (flm_cstring_equals(file, fl_vector_get(visited_files, i)))
+                if (flm_cstring_equals(file, *(char**) fl_vector_ref_get(visited_files, i)))
                     need_to_visit = false;
             }
 
             if (need_to_visit)
             {
-                fl_vector_add(visited_files, file);
+                fl_vector_add(visited_files, &file);
                 resolve_c_file_dependencies(file, resolved_files, include_folders, visited_files);
             }
 
@@ -95,13 +95,13 @@ static void resolve_c_file_dependencies(const char *target_file, const char ***r
                     bool need_to_visit = true;
                     for (size_t i=0; need_to_visit && i < fl_vector_length(visited_files); i++)
                     {
-                        if (flm_cstring_equals(file, fl_vector_get(visited_files, i)))
+                        if (flm_cstring_equals(file, *(char**) fl_vector_ref_get(visited_files, i)))
                             need_to_visit = false;
                     }
 
                     if (need_to_visit)
                     {
-                        fl_vector_add(visited_files, file);
+                        fl_vector_add(visited_files, &file);
                         resolve_c_file_dependencies(file, resolved_files, include_folders, visited_files);
                     }
 

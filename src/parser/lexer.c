@@ -148,11 +148,7 @@ static inline void remove_ws_and_comments(SbsLexer *lexer)
 
 SbsToken* sbs_lexer_tokenize(SbsLexer *lexer)
 {
-    FlVector *tokens = fl_vector_new_args((struct FlVectorArgs) {
-        .writer = fl_container_writer,
-        .element_size = sizeof(SbsToken),
-        .capacity = 1000
-    });
+    FlVector *tokens = flm_vector_new_with(.element_size = sizeof(SbsToken), .capacity = 1000);
 
     while (has_input(lexer))
     {

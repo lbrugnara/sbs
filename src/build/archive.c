@@ -62,7 +62,7 @@ char** sbs_build_target_archive(SbsBuild *build)
 
     // This vector will keep track of the objects that are needed to build the archive
     size_t n_objects = fl_array_length(target_archive->objects);
-    FlVector *archive_objects = fl_vector_new(n_objects, fl_container_cleaner_pointer);    
+    FlVector *archive_objects = flm_vector_new_with(.capacity = n_objects, .cleaner = fl_container_cleaner_pointer);    
 
     // We iterate through all the archive's objects where we can find two type of resources:
     //  1- An identifier that represents another target, we need to build that target and use its output
@@ -108,7 +108,7 @@ char** sbs_build_target_archive(SbsBuild *build)
                 if (archive_timestamp < obj_timestamp)
                     needs_archive = true;
 
-                fl_vector_add(archive_objects, obj);
+                fl_vector_add(archive_objects, &obj);
             }
 
             fl_array_free(target_objects);
@@ -124,7 +124,8 @@ char** sbs_build_target_archive(SbsBuild *build)
             if (archive_timestamp < obj_timestamp)
                 needs_archive = true;
 
-            fl_vector_add(archive_objects, fl_cstring_dup(target_archive->objects[i].value));
+            char *object_file = fl_cstring_dup(target_archive->objects[i].value);
+            fl_vector_add(archive_objects, &object_file);
         }        
     }
 
@@ -139,7 +140,7 @@ char** sbs_build_target_archive(SbsBuild *build)
             char *command = fl_cstring_vdup("%s %s", build->toolchain->archiver.bin, archive_flags);
 
             for (size_t i=0; i < fl_vector_length(archive_objects); i++)
-                fl_cstring_append(fl_cstring_append(&command, " "), fl_vector_get(archive_objects, i));
+                fl_cstring_append(fl_cstring_append(&command, " "), *(char**) fl_vector_ref_get(archive_objects, i));
 
             // Exec
             success = sbs_executor_run_command(build->executor, command) && success;
