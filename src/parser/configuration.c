@@ -1,103 +1,75 @@
 #include <fllib.h>
 #include "configuration.h"
-#include "common.h"
+#include "helpers.h"
 #include "parser.h"
+#include "for.h"
 #include "../common/common.h"
 
-void sbs_config_entry_free(struct SbsConfigNode *config)
+void sbs_config_entry_free(struct SbsNodeConfig *config)
 {
     if (config->compile.flags)
-        fl_array_free_each(config->compile.flags, sbs_common_free_string);
+        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (config->compile.extension)
         fl_cstring_free(config->compile.extension);
 
 
     if (config->archive.flags)
-        fl_array_free_each(config->archive.flags, sbs_common_free_string);
+        fl_array_free_each_pointer(config->archive.flags, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (config->archive.extension)
         fl_cstring_free(config->archive.extension);
 
 
     if (config->shared.flags)
-        fl_array_free_each(config->shared.flags, sbs_common_free_string);
+        fl_array_free_each_pointer(config->shared.flags, (FlArrayFreeElementFunc) fl_cstring_free);
     
     if (config->shared.extension)
         fl_cstring_free(config->shared.extension);
 
 
     if (config->executable.flags)
-        fl_array_free_each(config->executable.flags, sbs_common_free_string);
+        fl_array_free_each_pointer(config->executable.flags, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (config->executable.extension)
         fl_cstring_free(config->executable.extension);
 
+    if (config->for_clause)
+        sbs_section_for_free(config->for_clause);
 
     fl_free(config);
 }
 
 
-void sbs_config_section_free(SbsConfigSection *configuration)
+void sbs_section_config_free(SbsSectionConfig *configuration)
 {
     fl_cstring_free(configuration->name);
 
     if (configuration->extends)
-        fl_array_free_each(configuration->extends, sbs_common_free_string);
+        fl_array_free_each_pointer(configuration->extends, (FlArrayFreeElementFunc) fl_cstring_free);
 
-    if (configuration->nodes)
-    {
-        // We share the same struct SbsConfigNode between multiple environments, so we nullify 
-        // duplicates, release the objects, and finally release the memory used by the array returned
-        // by fl_hashtable_values
-        struct SbsConfigNode **configurations = fl_hashtable_values(configuration->nodes);
-
-        size_t count = fl_array_length(configurations);
-        for (size_t i=0; i < count; i++)
-        {
-            for (size_t j=0; j < count; j++)
-            {
-                if (i == j)
-                    continue;
-
-                if (configurations[i] == configurations[j])
-                    configurations[j] = NULL;
-            }
-        }
-
-        for (size_t i=0; i < count; i++)
-        {
-            if (configurations[i] == NULL)
-                continue;
-
-            sbs_config_entry_free(configurations[i]);
-        }
-
-        fl_array_free(configurations);
-
-        // Delete the hashtable including the keys (we already deleted the values)
-        fl_hashtable_free(configuration->nodes);
-    }
+    if (configuration->entries)
+        fl_array_free_each_pointer(configuration->entries, (FlArrayFreeElementFunc) sbs_config_entry_free);
 
     fl_free(configuration);
 }
 
-static void parse_compile_block(SbsParser *parser, SbsConfigCompileNode *compile)
+static void parse_compile_block(SbsParser *parser, SbsNodeConfigCompile *compile)
 {
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (sbs_tok_eq(&token->value, "flags"))
+        if (sbs_token_equals(token, "flags"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->flags = sbs_common_parse_string_array(parser);
+            compile->flags = sbs_parse_string_array(parser);
         }
-        else if (sbs_tok_eq(&token->value, "extension"))
+        else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->extension = sbs_common_parse_string(parser);
+            compile->extension = sbs_parse_string(parser);
         }
         else
         {
@@ -108,22 +80,22 @@ static void parse_compile_block(SbsParser *parser, SbsConfigCompileNode *compile
     }
 }
 
-static void parse_archive_block(SbsParser *parser, SbsConfigArchiveNode *archive)
+static void parse_archive_block(SbsParser *parser, SbsNodeConfigArchive *archive)
 {
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (sbs_tok_eq(&token->value, "flags"))
+        if (sbs_token_equals(token, "flags"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            archive->flags = sbs_common_parse_string_array(parser);
+            archive->flags = sbs_parse_string_array(parser);
         }
-        else if (sbs_tok_eq(&token->value, "extension"))
+        else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            archive->extension = sbs_common_parse_string(parser);
+            archive->extension = sbs_parse_string(parser);
         }
         else
         {
@@ -134,22 +106,22 @@ static void parse_archive_block(SbsParser *parser, SbsConfigArchiveNode *archive
     }
 }
 
-static void parse_shared_block(SbsParser *parser, SbsConfigSharedNode *shared)
+static void parse_shared_block(SbsParser *parser, SbsNodeConfigShared *shared)
 {
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (sbs_tok_eq(&token->value, "flags"))
+        if (sbs_token_equals(token, "flags"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            shared->flags = sbs_common_parse_string_array(parser);
+            shared->flags = sbs_parse_string_array(parser);
         }
-        else if (sbs_tok_eq(&token->value, "extension"))
+        else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            shared->extension = sbs_common_parse_string(parser);
+            shared->extension = sbs_parse_string(parser);
         }
         else
         {
@@ -160,22 +132,22 @@ static void parse_shared_block(SbsParser *parser, SbsConfigSharedNode *shared)
     }
 }
 
-static void parse_executable_block(SbsParser *parser, SbsConfigExecutableNode *executable)
+static void parse_executable_block(SbsParser *parser, SbsNodeConfigExecutable *executable)
 {
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        if (sbs_tok_eq(&token->value, "flags"))
+        if (sbs_token_equals(token, "flags"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->flags = sbs_common_parse_string_array(parser);
+            executable->flags = sbs_parse_string_array(parser);
         }
-        else if (sbs_tok_eq(&token->value, "extension"))
+        else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->extension = sbs_common_parse_string(parser);
+            executable->extension = sbs_parse_string(parser);
         }
         else
         {
@@ -186,13 +158,13 @@ static void parse_executable_block(SbsParser *parser, SbsConfigExecutableNode *e
     }
 }
 
-static void parse_config_body(SbsParser *parser, struct SbsConfigNode *configuration)
+static void parse_config_body(SbsParser *parser, struct SbsNodeConfig *configuration)
 {
     const SbsToken *token = NULL;
 
     while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_FOR)
     {
-        if (sbs_tok_eq(&token->value, "compile"))
+        if (sbs_token_equals(token, "compile"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_COMPILE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -200,7 +172,7 @@ static void parse_config_body(SbsParser *parser, struct SbsConfigNode *configura
             parse_compile_block(parser, &configuration->compile);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
-        else if (sbs_tok_eq(&token->value, "archive"))
+        else if (sbs_token_equals(token, "archive"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_ARCHIVE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -208,7 +180,7 @@ static void parse_config_body(SbsParser *parser, struct SbsConfigNode *configura
             parse_archive_block(parser, &configuration->archive);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
-        else if (sbs_tok_eq(&token->value, "shared"))
+        else if (sbs_token_equals(token, "shared"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_SHARED);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -216,7 +188,7 @@ static void parse_config_body(SbsParser *parser, struct SbsConfigNode *configura
             parse_shared_block(parser, &configuration->shared);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
-        else if (sbs_tok_eq(&token->value, "executable"))
+        else if (sbs_token_equals(token, "executable"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_EXECUTABLE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -255,24 +227,14 @@ static void parse_config_body(SbsParser *parser, struct SbsConfigNode *configura
  *  parser - Parser object
  *
  * Returns:
- *  SbsConfigSection* - The parsed *config* block
+ *  SbsSectionConfig* - The parsed *config* block
  *
  */
-SbsConfigSection* sbs_config_section_parse(SbsParser *parser)
+SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
 {
-    SbsConfigSection *configuration = fl_malloc(sizeof(SbsConfigSection));
+    SbsSectionConfig *configuration = fl_malloc(sizeof(SbsSectionConfig));
 
-    configuration->nodes = fl_hashtable_new_args((struct FlHashtableArgs) {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer
-    });
-
-    struct SbsConfigNode *base_config_entry = fl_malloc(sizeof(struct SbsConfigNode));
-
-    // Use the special key #base for the default config
-    fl_hashtable_add(configuration->nodes, SBS_BASE_OBJECT_KEY, base_config_entry);
+    configuration->entries = fl_array_new(sizeof(SbsNodeConfig*), 0);
 
     // Consume 'configuration'
     sbs_parser_consume(parser, SBS_TOKEN_CONFIG);
@@ -283,7 +245,7 @@ SbsConfigSection* sbs_config_section_parse(SbsParser *parser)
     configuration->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_EXTENDS)
-        configuration->extends = sbs_common_parse_extends_declaration(parser);
+        configuration->extends = sbs_parse_extends_declaration(parser);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
@@ -291,32 +253,22 @@ SbsConfigSection* sbs_config_section_parse(SbsParser *parser)
     {
         const SbsToken *token = sbs_parser_peek(parser);
 
+        struct SbsNodeConfig *config_node = fl_malloc(sizeof(struct SbsNodeConfig));
+        configuration->entries = fl_array_append(configuration->entries, &config_node);
+
         if (token->type == SBS_TOKEN_FOR)
         {
             // Parse the for declaration
-            char **envs = sbs_common_parse_for_declaration(parser);
+            config_node->for_clause = sbs_section_for_parse(parser);
 
             // Parse the configuration info
-            struct SbsConfigNode *configuration_info = fl_malloc(sizeof(struct SbsConfigNode));
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-            parse_config_body(parser, configuration_info);
+            parse_config_body(parser, config_node);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
-            
-            for (size_t i=0; i < fl_array_length(envs); i++)
-            {
-                char *env = envs[i];
-
-                if (flm_cstring_equals(SBS_BASE_OBJECT_KEY, env))
-                    flm_vexit(ERR_FATAL, SBS_BASE_OBJECT_KEY " is a reserved keyword and cannot be used as an environment name (in line %ld, column %ld)\n", token->line, token->col);
-
-                fl_hashtable_add(configuration->nodes, env, configuration_info);
-            }
-
-            fl_array_free_each(envs, sbs_common_free_string);
         }
         else
         {
-            parse_config_body(parser, base_config_entry);
+            parse_config_body(parser, config_node);
         }        
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

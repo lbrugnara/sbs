@@ -3,7 +3,7 @@ compile sbs-objects {
     includes: [
         "../fllib/include"
     ],
-    output_dir: "obj/",
+    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     sources: [
         "src/.*[.]c$"
     ]
@@ -12,17 +12,15 @@ compile sbs-objects {
 # This target creates the sbs executable
 executable sbs {
     output_name: "sbs",
-    output_dir: "build/",
-    objects: [
-        sbs-objects
-    ],
+    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
+    objects: [ sbs-objects ],
 
-    for win-cmd {
-        objects: [ "./lib/fllib/win/${SBS_CONFIG_NAME}/libfl.lib" ]
+    for env(win-cmd) {
+        objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.lib" ]
     }
 
-    for linux-bash {
-        objects: [ "./lib/fllib/linux/${SBS_CONFIG_NAME}/libfl.a" ],
+    for env(linux-bash) {
+        objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.a" ]
         libraries: [
             { name: "m" },
             { name: "pthread" }
@@ -35,7 +33,7 @@ compile sbs-tests-objects {
     includes: [
         "../fllib/include"
     ],
-    output_dir: "obj/",
+    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     sources: [
         "tests/.*[.]c$"
     ]
@@ -44,21 +42,11 @@ compile sbs-tests-objects {
 # This target creates the sbs executable
 executable sbs-tests {
     output_name: "tests",
-    output_dir: "build/",
-    objects: [
-        sbs-objects,
-        sbs-tests-objects
-    ],
-    defines: [
-        "SBS_TESTS"
-    ]
+    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
+    objects: [ sbs-objects, sbs-tests-objects ],
+    defines: [ "SBS_TESTS" ]
 
-    for win-cmd {
-        objects: [ "./lib/fllib/win/${SBS_CONFIG_NAME}/libfl.lib" ]
-    }
-
-    for linux-bash {
-        objects: [ "./lib/fllib/linux/${SBS_CONFIG_NAME}/libfl.a" ],
+    for env(linux-bash) {
         libraries: [
             { name: "m" },
             { name: "pthread" }

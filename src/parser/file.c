@@ -2,7 +2,7 @@
 #include <fllib.h>
 
 #include "action.h"
-#include "common.h"
+#include "helpers.h"
 #include "configuration.h"
 #include "environment.h"
 #include "preset.h"
@@ -12,6 +12,7 @@
 #include "parser.h"
 #include "file.h"
 
+#include "../io.h"
 #include "../common/common.h"
 
 
@@ -51,7 +52,7 @@ static void merge_hashtable(FlHashtable *dest, FlHashtable *src)
     // It is ok to free the keys because of 2 reasons:
     // 1- We removed the entries from *src* WITHOUT cleaning the resources (fl_hashtable_remove with clean_key = false as 3rd parameter)
     // 2- The "dest" hashtable uses the fl_container_allocator_string therefore it creates copies of the keys on fl_hashtable_add
-    fl_array_free_each(keys, sbs_common_free_string);
+    fl_array_free_each_pointer(keys, (FlArrayFreeElementFunc) fl_cstring_free);
 }
 
 /*
@@ -95,7 +96,7 @@ static void merge_into_file(SbsFile *dest_file, SbsFile *src_file)
 static bool parse_include_statement(SbsParser *parser, SbsFile *file)
 {
     sbs_parser_consume(parser, SBS_TOKEN_INCLUDE);
-    char **includes = sbs_common_parse_string_array(parser);
+    char **includes = sbs_parse_string_array(parser);
 
     // Empty array, leave. TODO: We should warning on verbosity output
     if (!includes)
@@ -105,17 +106,17 @@ static bool parse_include_statement(SbsParser *parser, SbsFile *file)
     char *current_dir = NULL;
     {
         // Remove the filename to get the current directory
-        FlVector *parts = fl_cstring_split_by(file->filename, "/");
+        FlVector *parts = fl_cstring_split_by(file->filename, FL_IO_DIR_SEPARATOR);
         fl_vector_pop(parts, NULL);
 
         if (fl_vector_length(parts) > 0)
         {
-            current_dir = fl_cstring_join(parts, "/");
-            fl_cstring_append(&current_dir, "/");
+            current_dir = fl_cstring_join(parts, FL_IO_DIR_SEPARATOR);
+            fl_cstring_append(&current_dir, FL_IO_DIR_SEPARATOR);
         }
         else
         {
-            current_dir = fl_cstring_dup("./");
+            current_dir = fl_cstring_vdup(".%s", FL_IO_DIR_SEPARATOR);
         }
 
         fl_vector_free(parts);
@@ -124,8 +125,9 @@ static bool parse_include_statement(SbsParser *parser, SbsFile *file)
     // Iterate over the included files to parse them
     for (size_t i=0; i < fl_array_length(includes); i++)
     {
+        const char *include_filename = sbs_io_to_host_path(sbs_host_os(), includes[i]);
         // Get the filename
-        char *filename = fl_cstring_vdup("%s%s", current_dir, includes[i]);
+        char *filename = fl_cstring_vdup("%s%s", current_dir, include_filename);
 
         // Parse the included file
          SbsFile *included_file = sbs_file_parse(filename);
@@ -138,11 +140,12 @@ static bool parse_include_statement(SbsParser *parser, SbsFile *file)
 
         // Release the filename
         fl_cstring_free(filename);
+        fl_cstring_free(include_filename);
     }
 
     // Release the memory used by our tmp variables
     fl_cstring_free(current_dir);
-    fl_array_free_each(includes, sbs_common_free_string);
+    fl_array_free_each_pointer(includes, (FlArrayFreeElementFunc) fl_cstring_free);
 
     return true;
 }
@@ -176,11 +179,11 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_ENV)
         {
-            const SbsEnvSection *env = sbs_env_section_parse(parser);
+            const SbsSectionEnv *env = sbs_section_env_parse(parser);
             if (fl_hashtable_has_key(file->envs, env->name))
             {
                 printf("Env %s cannot be redefined\n", env->name);
-                sbs_env_section_free((SbsEnvSection*)env);
+                sbs_section_env_free((SbsSectionEnv*)env);
                 success = false;
                 break;
             }
@@ -188,11 +191,11 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_COMPILE || token->type == SBS_TOKEN_ARCHIVE || token->type == SBS_TOKEN_SHARED || token->type == SBS_TOKEN_EXECUTABLE)
         {
-            const SbsTargetSection *target = sbs_target_section_parse(parser);
+            const SbsAbstractSectionTarget *target = sbs_section_target_parse(parser);
             if (fl_hashtable_has_key(file->targets, target->name))
             {
                 printf("Target %s cannot be redefined\n", target->name);
-                sbs_target_section_free((SbsTargetSection*)target);
+                sbs_section_target_free((SbsAbstractSectionTarget*)target);
                 success = false;
                 break;
             }
@@ -200,11 +203,11 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_TOOLCHAIN)
         {
-            const SbsToolchainSection *toolchain = sbs_toolchain_section_parse(parser);
+            const SbsSectionToolchain *toolchain = sbs_section_toolchain_parse(parser);
             if (fl_hashtable_has_key(file->toolchains, toolchain->name))
             {
                 printf("Toolchain %s cannot be redefined\n", toolchain->name);
-                sbs_toolchain_section_free((SbsToolchainSection*)toolchain);
+                sbs_section_toolchain_free((SbsSectionToolchain*)toolchain);
                 success = false;
                 break;
             }
@@ -212,11 +215,11 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_CONFIG)
         {
-            const SbsConfigSection *configuration = sbs_config_section_parse(parser);
+            const SbsSectionConfig *configuration = sbs_section_config_parse(parser);
             if (fl_hashtable_has_key(file->configurations, configuration->name))
             {
                 printf("Configuration %s cannot be redefined\n", configuration->name);
-                sbs_config_section_free((SbsConfigSection*)configuration);
+                sbs_section_config_free((SbsSectionConfig*)configuration);
                 success = false;
                 break;
             }
@@ -224,11 +227,11 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_ACTION)
         {
-            const SbsActionSection *action = sbs_action_section_parse(parser);
+            const SbsSectionAction *action = sbs_section_action_parse(parser);
             if (fl_hashtable_has_key(file->actions, action->name))
             {
                 printf("Action %s cannot be redefined\n", action->name);
-                sbs_action_section_free((SbsActionSection*)action);
+                sbs_section_action_free((SbsSectionAction*)action);
                 success = false;
                 break;
             }
@@ -236,11 +239,11 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_PRESET)
         {
-            const SbsPresetSection *preset = sbs_preset_section_parse(parser);
+            const SbsSectionPreset *preset = sbs_section_preset_parse(parser);
             if (fl_hashtable_has_key(file->presets, preset->name))
             {
                 printf("Preset %s cannot be redefined\n", preset->name);
-                sbs_preset_section_free((SbsPresetSection*)preset);
+                sbs_section_preset_free((SbsSectionPreset*)preset);
                 success = false;
                 break;
             }
@@ -262,7 +265,7 @@ static void map_init_env(FlHashtable **envs)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_env_section_free
+        .value_cleaner = (void(*)(void*))sbs_section_env_free
     };
     
     *envs = fl_hashtable_new_args(new_args);
@@ -275,7 +278,7 @@ static void map_init_action(FlHashtable **actions)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_action_section_free
+        .value_cleaner = (void(*)(void*))sbs_section_action_free
     };
     
     *actions = fl_hashtable_new_args(new_args);
@@ -288,7 +291,7 @@ static void map_init_config(FlHashtable **config_map)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_config_section_free
+        .value_cleaner = (void(*)(void*))sbs_section_config_free
     };
     
     *config_map = fl_hashtable_new_args(new_args);
@@ -301,7 +304,7 @@ static void map_init_preset(FlHashtable **presets)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_preset_section_free
+        .value_cleaner = (void(*)(void*))sbs_section_preset_free
     };
     
     *presets = fl_hashtable_new_args(new_args);
@@ -314,7 +317,7 @@ static void map_init_target(FlHashtable **targets)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_target_section_free
+        .value_cleaner = (void(*)(void*))sbs_section_target_free
     };
     
     *targets = fl_hashtable_new_args(new_args);
@@ -327,7 +330,7 @@ static void map_init_toolchain(FlHashtable **toolchains)
         .key_allocator = fl_container_allocator_string,
         .key_comparer = fl_container_equals_string,
         .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_toolchain_section_free
+        .value_cleaner = (void(*)(void*))sbs_section_toolchain_free
     };
     
     *toolchains = fl_hashtable_new_args(new_args);
@@ -353,7 +356,7 @@ SbsFile* sbs_file_parse(const char *filename)
 
     // Create the SbsFile object
     SbsFile *file = fl_malloc(sizeof(SbsFile));
-    file->filename = fl_cstring_replace(filename, "\\", "/");
+    file->filename = fl_cstring_dup(filename);
     map_init_action(&file->actions);
     map_init_config(&file->configurations);
     map_init_env(&file->envs);

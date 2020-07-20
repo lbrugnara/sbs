@@ -4,80 +4,71 @@
 #include "../parser/target.h"
 #include "../parser/action.h"
 
-static void merge_base_target(const SbsFile *file, const char *env_name, SbsTarget *extend, const SbsTargetNode *source);
-static void merge_compile_target(SbsTargetCompile *extend, const SbsTargetCompileNode *source, const SbsTarget *parent);
-static void merge_archive_target(SbsTargetArchive *extend, const SbsTargetArchiveNode *source);
-static void merge_shared_target(SbsTargetShared *extend, const SbsTargetSharedNode *source);
-static void merge_executable_target(SbsTargetExecutable *extend, const SbsTargetExecutableNode *source);
+static void merge_base_target(SbsContext *context, SbsTarget *extend, const SbsSectionTarget *source);
+static void merge_compile_target(SbsTargetCompile *extend, const SbsSectionCompile *source, const SbsTarget *parent);
+static void merge_archive_target(SbsTargetArchive *extend, const SbsSectionArchive *source);
+static void merge_shared_target(SbsTargetShared *extend, const SbsSectionShared *source);
+static void merge_executable_target(SbsTargetExecutable *extend, const SbsSectionExecutable *source);
 
-SbsTarget* sbs_target_resolve(const SbsFile *file, const char *target_name, const char *env_name, const SbsTarget *parent)
+SbsTarget* sbs_target_resolve(SbsContext *context, const char *target_name, const SbsTarget *parent)
 {    
-    const SbsTargetSection *target_section = fl_hashtable_get(file->targets, target_name);
+    const SbsAbstractSectionTarget *abs_target_section = fl_hashtable_get(context->file->targets, target_name);
 
-    if (!target_section)
+    if (!abs_target_section)
         return NULL;
 
-    SbsTarget *target_obj = NULL;
-    switch (target_section->type)
+    SbsTarget *target = NULL;
+    switch (abs_target_section->type)
     {
         case SBS_TARGET_COMPILE:
-            target_obj = fl_malloc(sizeof(SbsTargetCompile));
+            target = fl_malloc(sizeof(SbsTargetCompile));
             break;
         case SBS_TARGET_ARCHIVE:
-            target_obj = fl_malloc(sizeof(SbsTargetArchive));
+            target = fl_malloc(sizeof(SbsTargetArchive));
             break;
         case SBS_TARGET_SHARED:
-            target_obj = fl_malloc(sizeof(SbsTargetShared));
+            target = fl_malloc(sizeof(SbsTargetShared));
             break;
         case SBS_TARGET_EXECUTABLE:
-            target_obj = fl_malloc(sizeof(SbsTargetExecutable));
+            target = fl_malloc(sizeof(SbsTargetExecutable));
             break;
         default:
             return NULL;
     }
 
-    target_obj->name = fl_cstring_dup(target_section->name);
-    target_obj->type = target_section->type;
+    target->name = fl_cstring_dup(abs_target_section->name);
+    target->type = abs_target_section->type;
+    
 
-    FlList *hierarchy = fl_list_new();
-
-    // Using prepend we will keep the list ordered
-    if (fl_hashtable_has_key(target_section->entries, env_name))
-        fl_list_prepend(hierarchy, fl_hashtable_get(target_section->entries, env_name));
-
-    fl_list_prepend(hierarchy, fl_hashtable_get(target_section->entries, SBS_BASE_OBJECT_KEY));
-
-    struct FlListNode *node = fl_list_head(hierarchy);
-    while (node)
+    for(size_t i=0; i < fl_array_length(abs_target_section->entries); i++)
     {
-        const SbsTargetNode *ancestor = (const SbsTargetNode*)node->value;
-        
-        merge_base_target(file, env_name, target_obj, ancestor);
+        SbsSectionTarget *target_section = abs_target_section->entries[i];
 
-        switch (target_section->type)
+        if (target_section->for_clause && !sbs_for_node_eval(target_section->for_clause->condition, context->symbols))
+            continue;
+
+        merge_base_target(context, target, target_section);
+
+        switch (abs_target_section->type)
         {
             case SBS_TARGET_COMPILE:
-                merge_compile_target((SbsTargetCompile*)target_obj, (SbsTargetCompileNode*)node->value, parent);
+                merge_compile_target((SbsTargetCompile*) target, (SbsSectionCompile*) target_section, parent);
                 break;
             case SBS_TARGET_ARCHIVE:
-                merge_archive_target((SbsTargetArchive*)target_obj, (SbsTargetArchiveNode*)node->value);
+                merge_archive_target((SbsTargetArchive*) target, (SbsSectionArchive*) target_section);
                 break;
             case SBS_TARGET_SHARED:
-                merge_shared_target((SbsTargetShared*)target_obj, (SbsTargetSharedNode*)node->value);
+                merge_shared_target((SbsTargetShared*) target, (SbsSectionShared*) target_section);
                 break;
             case SBS_TARGET_EXECUTABLE:
-                merge_executable_target((SbsTargetExecutable*)target_obj, (SbsTargetExecutableNode*)node->value);
+                merge_executable_target((SbsTargetExecutable*) target, (SbsSectionExecutable*) target_section);
                 break;
             default:
                 return NULL;
         }
-
-        node = node->next;
     }
 
-    fl_list_free(hierarchy);
-
-    return target_obj;
+    return target;
 }
 
 
@@ -100,12 +91,11 @@ void sbs_target_free(SbsTarget *target)
     if (target->name)
         fl_cstring_free(target->name);
 
-    //sbs_actions_node_free(&target->actions);
     if (target->actions.before)
-        sbs_action_free_all(target->actions.before);
+        fl_array_free_each(target->actions.before, (FlArrayFreeElementFunc) sbs_common_free_string_or_id);
 
     if (target->actions.after)
-        sbs_action_free_all(target->actions.after);
+        fl_array_free_each(target->actions.after, (FlArrayFreeElementFunc) sbs_common_free_string_or_id);
 
     if (target->output_dir)
         fl_cstring_free(target->output_dir);
@@ -117,13 +107,13 @@ void sbs_target_free(SbsTarget *target)
             SbsTargetCompile *compile = (SbsTargetCompile*)target;
             
             if (compile->sources)
-                fl_array_free_each(compile->sources, sbs_common_free_string);
+                fl_array_free_each_pointer(compile->sources, (FlArrayFreeElementFunc) fl_cstring_free);
 
             if (compile->includes)
-                fl_array_free_each(compile->includes, sbs_common_free_string);
+                fl_array_free_each_pointer(compile->includes, (FlArrayFreeElementFunc) fl_cstring_free);
 
             if (compile->defines)
-                fl_array_free_each(compile->defines, sbs_common_free_string);
+                fl_array_free_each_pointer(compile->defines, (FlArrayFreeElementFunc) fl_cstring_free);
 
             break;
         }
@@ -165,7 +155,7 @@ void sbs_target_free(SbsTarget *target)
                 fl_cstring_free(executable->output_name);
 
             if (executable->defines)
-                fl_array_free_each(executable->defines, sbs_common_free_string);
+                fl_array_free_each_pointer(executable->defines, (FlArrayFreeElementFunc) fl_cstring_free);
 
             break;
         }
@@ -174,30 +164,19 @@ void sbs_target_free(SbsTarget *target)
     fl_free(target);
 }
 
-static void merge_base_target(const SbsFile *file, const char *env_name, SbsTarget *extend, const SbsTargetNode *source)
+static void merge_base_target(SbsContext *context, SbsTarget *extend, const SbsSectionTarget *source)
 {
     extend->output_dir = sbs_common_set_string(extend->output_dir, source->output_dir);
 
-    SbsAction **before_actions = sbs_action_resolve_all(file, source->actions.before, env_name);
-    if (before_actions)
-    {
-        extend->actions.before = sbs_common_extend_array(extend->actions.before, before_actions);
-        fl_array_free(before_actions);
-    }
-
-    SbsAction **after_actions = sbs_action_resolve_all(file, source->actions.after, env_name);
-    if (after_actions)
-    {
-        extend->actions.after = sbs_common_extend_array(extend->actions.after, after_actions);
-        fl_array_free(after_actions);
-    }
+    extend->actions.before = sbs_common_extend_array_copy(extend->actions.before, source->actions.before, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
+    extend->actions.after = sbs_common_extend_array_copy(extend->actions.after, source->actions.after, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
 }
 
-static void merge_compile_target(SbsTargetCompile *extend, const SbsTargetCompileNode *source, const SbsTarget *parent)
+static void merge_compile_target(SbsTargetCompile *extend, const SbsSectionCompile *source, const SbsTarget *parent)
 {
-    extend->includes = sbs_common_extend_array_copy_pointers(extend->includes, source->includes, sbs_common_copy_string);
-    extend->sources = sbs_common_extend_array_copy_pointers(extend->sources, source->sources, sbs_common_copy_string);
-    extend->defines = sbs_common_extend_array_copy_pointers(extend->defines, source->defines, sbs_common_copy_string);
+    extend->includes = sbs_common_extend_array_copy(extend->includes, source->includes, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    extend->sources = sbs_common_extend_array_copy(extend->sources, source->sources, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    extend->defines = sbs_common_extend_array_copy(extend->defines, source->defines, (SbsArrayCopyElementFn) sbs_common_copy_string);
 
     if (parent == NULL)
         return;
@@ -205,44 +184,45 @@ static void merge_compile_target(SbsTargetCompile *extend, const SbsTargetCompil
     if (parent->type == SBS_TARGET_EXECUTABLE)
     {
         SbsTargetExecutable *executable = (SbsTargetExecutable*) parent;
-        extend->defines = sbs_common_extend_array_copy_pointers(extend->defines, executable->defines, sbs_common_copy_string);
+        extend->defines = sbs_common_extend_array_copy(extend->defines, executable->defines, (SbsArrayCopyElementFn) sbs_common_copy_string);
     }
 }
 
-static void merge_archive_target(SbsTargetArchive *extend, const SbsTargetArchiveNode *source)
+static void merge_archive_target(SbsTargetArchive *extend, const SbsSectionArchive *source)
 {
     extend->output_name = sbs_common_set_string(extend->output_name, source->output_name);
-    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, sbs_common_copy_string_or_id);
+    extend->objects = sbs_common_extend_array_copy(extend->objects, source->objects, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
 }
 
-static void merge_shared_target(SbsTargetShared *extend, const SbsTargetSharedNode *source)
+static void merge_shared_target(SbsTargetShared *extend, const SbsSectionShared *source)
 {
     extend->output_name = sbs_common_set_string(extend->output_name, source->output_name);
-    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, sbs_common_copy_string_or_id);
+    extend->objects = sbs_common_extend_array_copy(extend->objects, source->objects, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
 }
 
-static void convert_library_node_to_library(void *dest, const void *src, size_t elem_size)
+static void convert_library_node_to_library(SbsPropertyLibrary *dest, const SbsPropertyLibrary *src_obj)
 {
-    if (!src || !dest)
+    if (!dest)
         return;
-
-    SbsTargetLibraryNode *src_obj = (SbsTargetLibraryNode*)src;
 
     if (!src_obj)
+    {
+        memset(dest, 0, sizeof(SbsPropertyLibrary));
         return;
+    }
 
     SbsTargetLibrary copy = {
         .name = src_obj->name ? fl_cstring_dup(src_obj->name) : NULL,
         .path = src_obj->path ? fl_cstring_dup(src_obj->path) : NULL
     };
 
-    memcpy(dest, &copy, elem_size);
+    memcpy(dest, &copy, sizeof(SbsPropertyLibrary));
 }
 
-static void merge_executable_target(SbsTargetExecutable *extend, const SbsTargetExecutableNode *source)
+static void merge_executable_target(SbsTargetExecutable *extend, const SbsSectionExecutable *source)
 {
     extend->output_name = sbs_common_set_string(extend->output_name, source->output_name);
-    extend->objects = sbs_common_extend_array_copy_pointers(extend->objects, source->objects, sbs_common_copy_string_or_id);
-    extend->libraries = sbs_common_extend_array_copy_pointers(extend->libraries, source->libraries, convert_library_node_to_library);
-    extend->defines = sbs_common_extend_array_copy_pointers(extend->defines, source->defines, sbs_common_copy_string);
+    extend->objects = sbs_common_extend_array_copy(extend->objects, source->objects, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
+    extend->libraries = sbs_common_extend_array_copy(extend->libraries, source->libraries, (SbsArrayCopyElementFn) convert_library_node_to_library);
+    extend->defines = sbs_common_extend_array_copy(extend->defines, source->defines, (SbsArrayCopyElementFn) sbs_common_copy_string);
 }

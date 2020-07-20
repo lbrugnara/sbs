@@ -1,12 +1,12 @@
 #include <fllib.h>
 #include "action.h"
-#include "common.h"
+#include "helpers.h"
 #include "parser.h"
 #include "../common/common.h"
 
-static void action_node_free(void *value);
+static void action_node_free(SbsNodeAction *action_node);
 
-static void parse_action_body(SbsParser *parser, SbsActionNode *current_node)
+static void parse_action_body(SbsParser *parser, SbsNodeAction *current_node)
 {
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_FOR)
@@ -16,14 +16,14 @@ static void parse_action_body(SbsParser *parser, SbsActionNode *current_node)
             size_t size = fl_array_length(current_node->commands);
             current_node->commands = fl_array_resize(current_node->commands, size + 1);
             current_node->commands[size].type = SBS_STRING;
-            current_node->commands[size].value = sbs_common_parse_command_string(parser);
+            current_node->commands[size].value = sbs_parse_command_string(parser);
         }
         else if (token->type == SBS_TOKEN_IDENTIFIER)
         {
             size_t size = fl_array_length(current_node->commands);
             current_node->commands = fl_array_resize(current_node->commands, size + 1);
             current_node->commands[size].type = SBS_IDENTIFIER;
-            current_node->commands[size].value = sbs_common_parse_identifier(parser);
+            current_node->commands[size].value = sbs_parse_identifier(parser);
         }
         else
         {
@@ -34,7 +34,7 @@ static void parse_action_body(SbsParser *parser, SbsActionNode *current_node)
 }
 
 /*
- * Function: sbs_action_section_parse
+ * Function: sbs_section_action_parse
  *  Parses an *action* block which supports the following elements withing its body:
  *      - A string: It is processed as a command to execute when the action is invoked
  *      - An identifier: The name of an existant action
@@ -45,89 +45,74 @@ static void parse_action_body(SbsParser *parser, SbsActionNode *current_node)
  *  parser - Parser object
  *
  * Returns:
- *  SbsActionSection* - The parsed *action* block
+ *  SbsSectionAction* - The parsed *action* block
  *
  */
-SbsActionSection* sbs_action_section_parse(SbsParser *parser)
+SbsSectionAction* sbs_section_action_parse(SbsParser *parser)
 {
-    SbsActionSection *action_section = fl_malloc(sizeof(SbsActionSection));
-
     // Consume 'action'
     sbs_parser_consume(parser, SBS_TOKEN_ACTION);
     
     // Consume IDENTIFIER
     const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
+    SbsSectionAction *action_section = fl_malloc(sizeof(SbsSectionAction));
     action_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
+    action_section->nodes = fl_array_new(sizeof(SbsNodeAction*), 0);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-
-    FlVector *action_nodes = flm_vector_new_with(.element_size = sizeof(SbsActionNode));
 
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
+        SbsNodeAction *action_node = fl_malloc(sizeof(SbsNodeAction));
+        action_node->commands = fl_array_new(sizeof(SbsStringOrId), 0);
+
+        action_section->nodes = fl_array_append(action_section->nodes, &action_node);
+        
         if (token->type == SBS_TOKEN_FOR)
         {
-            // We "reset" the current node to parse the for declaration
-            SbsActionNode current_node = { 
-                .commands = fl_array_new(sizeof(SbsStringOrId), 0),
-                .for_envs = sbs_common_parse_for_declaration(parser)
-            };
+            action_node->for_clause = sbs_section_for_parse(parser);
 
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-            parse_action_body(parser, &current_node);
+            parse_action_body(parser, action_node);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
-
-            fl_vector_add(action_nodes, &current_node);
         }
         else
         {
-            SbsActionNode current_node = { 
-                .commands = fl_array_new(sizeof(SbsStringOrId), 0),
-                .for_envs = NULL
-            };
-
-            parse_action_body(parser, &current_node);
-
-            fl_vector_add(action_nodes, &current_node);
+            parse_action_body(parser, action_node);
         }
-
-       sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
+        sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
 
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-    action_section->nodes = fl_vector_to_array(action_nodes);
-    fl_vector_free(action_nodes);
-
     return action_section;
 }
 
-static void action_node_free(void *value)
+static void action_node_free(SbsNodeAction *action_node)
 {
-    SbsActionNode *command = (SbsActionNode*)value;
+    if (action_node->commands)
+        fl_array_free_each(action_node->commands, sbs_common_free_string_or_id);
 
-    if (command->commands)
-        fl_array_free_each(command->commands, sbs_common_free_string_or_id);
-    if (command->for_envs)
-        fl_array_free_each(command->for_envs, sbs_common_free_string);
+    if (action_node->for_clause)
+        sbs_section_for_free(action_node->for_clause);
 
-    // no need to free "command" as it is a struct value
+    fl_free(action_node);
 }
 
-void sbs_action_section_free(SbsActionSection *action)
+void sbs_section_action_free(SbsSectionAction *action_section)
 {
-    fl_cstring_free(action->name);
+    fl_cstring_free(action_section->name);
 
-    if (action->nodes)
-        fl_array_free_each(action->nodes, action_node_free);
+    if (action_section->nodes)
+        fl_array_free_each_pointer(action_section->nodes, (FlArrayFreeElementFunc) action_node_free);
 
-    fl_free(action);
+    fl_free(action_section);
 }
 
 /*
- * Function: sbs_actions_node_parse
+ * Function: sbs_property_actions_parse
  *  Parses an *actions* block that supports the following properties:
  *      - before: An array of strings or ids that identify actions to be run before a specific moment
  *      - after: An array of strings or ids that identify actions to be run after a specific moment
@@ -136,16 +121,16 @@ void sbs_action_section_free(SbsActionSection *action)
  *  parser - Parser object
  *
  * Returns:
- *  SbsActionsNode - Parsed *actions* block
+ *  SbsPropertyActions - Parsed *actions* block
  *
  */
-SbsActionsNode sbs_actions_node_parse(SbsParser *parser)
+SbsPropertyActions sbs_property_actions_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
     sbs_parser_consume(parser, SBS_TOKEN_COLON);
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-    SbsActionsNode actions = {0};
+    SbsPropertyActions actions = {0};
     const SbsToken *token = NULL;
 
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
@@ -154,13 +139,13 @@ SbsActionsNode sbs_actions_node_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            actions.before = sbs_common_parse_command_string_or_id_array(parser);
+            actions.before = sbs_parse_command_string_or_id_array(parser);
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"after", 5))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            actions.after = sbs_common_parse_command_string_or_id_array(parser);
+            actions.after = sbs_parse_command_string_or_id_array(parser);
         }
         else
         {
@@ -175,7 +160,7 @@ SbsActionsNode sbs_actions_node_parse(SbsParser *parser)
     return actions;
 }
 
-void sbs_actions_node_free(SbsActionsNode *actions)
+void sbs_property_actions_free(SbsPropertyActions *actions)
 {
     if (actions->before)
         fl_array_free_each(actions->before, sbs_common_free_string_or_id);

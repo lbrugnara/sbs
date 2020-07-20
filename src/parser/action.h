@@ -1,11 +1,12 @@
 #ifndef SBS_PARSER_ACTION_H
 #define SBS_PARSER_ACTION_H
 
-#include "common.h"
+#include "helpers.h"
 #include "parser.h"
+#include "for.h"
 
 /*
- * Type: SbsActionNode
+ * Type: SbsNodeAction
  * 	Represents the commands that belongs to an action section, including
  *  those that are within a for statement
  * 
@@ -13,17 +14,17 @@
  * typedef struct
  * {
  * 		char **commands;
- * 		char **for_envs;
- * } SbsActionNode;
+ * 		SbsSectionFor *for_clause;
+ * } SbsNodeAction;
  * 
  */
-typedef struct {
+typedef struct SbsNodeAction {
     SbsStringOrId *commands;
-    char **for_envs;
-} SbsActionNode;
+    SbsSectionFor *for_clause;
+} SbsNodeAction;
 
 /*
- * Type: SbsActionSection
+ * Type: SbsSectionAction
  * 	Represents an action block. Keeps track of its content
  *  through the ordered *FlArray* property *nodes*
  * 
@@ -31,17 +32,17 @@ typedef struct {
  * typedef struct
  * {
  * 		const char *name;
- * 		SbsActionNode *nodes;
- * } SbsActionSection;
+ * 		SbsNodeAction *nodes;
+ * } SbsSectionAction;
  * 
  */
-typedef struct {
+typedef struct SbsSectionAction {
     const char *name;
-    SbsActionNode *nodes;
-} SbsActionSection;
+    SbsNodeAction **nodes;
+} SbsSectionAction;
 
 /*
- * Type: SbsActionsNode
+ * Type: SbsPropertyActions
  * 	Represents an "actions" property that is an object that
  *  contains both a *before* and an *after* properties that can
  *  hold action identifiers or command strings
@@ -51,17 +52,17 @@ typedef struct {
  * {
  * 		SbsStringOrId *before;
  * 		SbsStringOrId *after;
- * } SbsActionsNode;
+ * } SbsPropertyActions;
  * 
  */
-typedef struct {
+typedef struct SbsPropertyActions {
     SbsStringOrId *before;
     SbsStringOrId *after;
-} SbsActionsNode;
+} SbsPropertyActions;
 
-SbsActionSection* sbs_action_section_parse(SbsParser *parser);
-void sbs_action_section_free(SbsActionSection *action);
-SbsActionsNode sbs_actions_node_parse(SbsParser *parser);
-void sbs_actions_node_free(SbsActionsNode *actions);
+SbsSectionAction* sbs_section_action_parse(SbsParser *parser);
+void sbs_section_action_free(SbsSectionAction *action);
+SbsPropertyActions sbs_property_actions_parse(SbsParser *parser);
+void sbs_property_actions_free(SbsPropertyActions *actions);
 
 #endif /* SBS_PARSER_ACTION_H */

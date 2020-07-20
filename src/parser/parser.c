@@ -1,9 +1,45 @@
+#include <stdio.h>
 #include <fllib.h>
 #include "file.h"
 #include "lexer.h"
 #include "parser.h"
 
 extern const char *token_type_string[];
+
+void sbs_parser_warning(SbsParser *parser, const SbsToken *token, const char *message)
+{
+    fprintf(stderr, "Token %s %.*s in line %u, column %u %s\n",
+        token_type_string[token->type],
+        (int) token->value.length,
+        token->value.sequence,
+        token->line, 
+        token->col,
+        message);
+}
+
+void sbs_parser_sync(SbsParser *parser, SbsTokenType *types, size_t length)
+{
+    do 
+    {
+        const SbsToken *token = sbs_parser_peek(parser);
+
+        bool end = false;
+        for (size_t i=0; i < length; i++)
+        {
+            if (types[i] == token->type)
+            {
+                end = true;
+                break;
+            }
+        }
+
+        if (end)
+            break;
+
+        sbs_parser_consume(parser, token->type);        
+    }
+    while (true);
+}
 
 void sbs_parser_error(const SbsToken *token, const char *message)
 {

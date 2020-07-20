@@ -2,6 +2,7 @@
 #include "args.h"
 #include "cli.h"
 #include "cmdbuild.h"
+#include "../io.h"
 #include "../common/result.h"
 #include "../build/build.h"
 #include "../parser/file.h"
@@ -56,11 +57,9 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
         return SBS_RES_WRONG_ARGS;
     }
 
-    SbsBuildArguments args = { 0 };
-
-    // A boolean to pass to the sbs_parse_args macro to save the parsing result
+    char *build_file_path = NULL;
+    SbsContextArgs args = { 0 };
     SbsArgsResult parsed_args = SBS_ARGS_OK;
-
     // args+2: skip program name and "build" argument
     sbs_parse_args(argv+2, {
         use_retval(&parsed_args);
@@ -72,7 +71,8 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
             flag_string("--toolchain", "-tc", &args.toolchain)
             flag_string("--config", "-c", &args.config)
             flag_string("--target", "-t", &args.target)
-            flag_string("--file", "-f", &args.file)
+            flag_string("--file", "-f", &build_file_path)
+            flag_without_value("--script-mode", "-s", &args.script_mode)
         );
     });
 
@@ -96,30 +96,33 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
     }
 
     // If present the file argument, make sure the filename is valid
-    if (args.file && strlen(args.file) == 0)
+    if (build_file_path != NULL && strlen(build_file_path) == 0)
     {
         sbs_cli_print_error("File name cannot be empty");
         return SBS_RES_INVALID_FILE;
     }
 
-    // If the help flag is present, show the help message and leave
-    if (args.file && !fl_io_file_exists(args.file))
+    // Convert the file path to an absolute path
+    char *file_abspath = sbs_io_realpath((build_file_path ? build_file_path : ".sbs/build.sbs"));
+
+    if (file_abspath == NULL || !fl_io_file_exists(file_abspath))
     {
-        const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, args.file);
+        const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, file_abspath);
         sbs_cli_print_error("%s", error);
         fl_cstring_free(error);
         return SBS_RES_INVALID_FILE;
     }
     
     // Parse the build file to get all the resources
-    SbsFile *file = sbs_file_parse(args.file ? args.file : ".sbs/build.sbs");
+    SbsFile *file = sbs_file_parse(file_abspath);
+    fl_cstring_free(file_abspath);
 
     // If the preset argument is present, make sure it exists
     if (args.preset != NULL && !fl_hashtable_has_key(file->presets, args.preset))
         return SBS_RES_INVALID_PRESET;
     
     // Run the build process and leave
-    SbsResult result = sbs_build_run(file, args);
+    SbsResult result = sbs_build_run(file, &args);
 
     sbs_file_free(file);
 

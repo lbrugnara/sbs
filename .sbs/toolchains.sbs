@@ -9,7 +9,7 @@ toolchain clang {
     }    
 
     # Windows specifics
-    for win-cmd {
+    for env(win-cmd) {
         # We use LLVM's archiver
         archiver: {
             bin: "llvm-lib.exe"
@@ -23,7 +23,7 @@ toolchain clang {
     },
 
     # Linux specifics
-    for linux-bash {
+    for env(linux-bash) {
         archiver: {
             bin: "ar"
         },
@@ -46,7 +46,7 @@ toolchain gcc {
     }    
 
     # Linux specifics
-    for linux-bash {
+    for env(linux-bash) {
         archiver: {
             bin: "ar"
         },

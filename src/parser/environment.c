@@ -1,18 +1,25 @@
 #include "environment.h"
-#include "common.h"
+#include "helpers.h"
 #include "parser.h"
+#include "variable.h"
 #include "../common/common.h"
 
-void sbs_env_section_free(SbsEnvSection *env)
+void sbs_section_env_free(SbsSectionEnv *env)
 {
     if (!env)
         return;
+
+    if (env->os)
+        sbs_common_free_variable(env->os);
+
+    if (env->arch)
+        fl_array_free_each_pointer(env->arch, (FlArrayFreeElementFunc) sbs_common_free_variable);
 
     if (env->name)
         fl_cstring_free(env->name);
 
     if (env->variables)
-        fl_array_free_each(env->variables, sbs_common_free_string);
+        fl_array_free_each_pointer(env->variables, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (env->type)
         fl_cstring_free(env->type);
@@ -21,32 +28,32 @@ void sbs_env_section_free(SbsEnvSection *env)
         fl_cstring_free(env->terminal);
 
     if (env->args)
-        fl_array_free_each(env->args, sbs_common_free_string);
+        fl_array_free_each_pointer(env->args, (FlArrayFreeElementFunc) fl_cstring_free);
 
-    sbs_actions_node_free(&env->actions);
+    sbs_property_actions_free(&env->actions);
 
     free(env);
 }
 
 /*
- * Function: sbs_env_section_parse
+ * Function: sbs_section_env_parse
  *  Parses an *env* block which supports the following properties:
  *      - args: array of strings that represents the *argv* of the shell to be used
  *      - type: The type property allows 3 predefined identifiers: bash, cmd, powershell.
  *      - terminal: The path to an executable shell
  *      - variables: Array of strings with the form of "key=value"
- *      - actions: <SbsActionsNode> object with commands to be run before and after the build process
+ *      - actions: <SbsPropertyActions> object with commands to be run before and after the build process
  *
  * Parameters:
  *  parser - Parser object
  *
  * Returns:
- *  static SbsEnvSection* - The parsed *env* block
+ *  static SbsSectionEnv* - The parsed *env* block
  *
  */
-SbsEnvSection* sbs_env_section_parse(SbsParser *parser)
+SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
 {
-    SbsEnvSection *env = fl_malloc(sizeof(SbsEnvSection));
+    SbsSectionEnv *env = fl_malloc(sizeof(SbsSectionEnv));
 
     // Consume 'env'
     sbs_parser_consume(parser, SBS_TOKEN_ENV);
@@ -62,11 +69,11 @@ SbsEnvSection* sbs_env_section_parse(SbsParser *parser)
     {
         const SbsToken *token = sbs_parser_peek(parser);
 
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"args", 4))
+        if (sbs_token_equals(token, "args"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->args = sbs_common_parse_string_array(parser);
+            env->args = sbs_parse_string_array(parser);
             if (env->args)
             {
                 // argv[argc] must be NULL, so we make room for it
@@ -76,27 +83,49 @@ SbsEnvSection* sbs_env_section_parse(SbsParser *parser)
                 env->args[length] = NULL;
             }
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"type", 4))
+        else if (sbs_token_equals(token, "type"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->type = sbs_common_parse_identifier(parser);
+            env->type = sbs_parse_identifier(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"terminal", 8))
+        else if (sbs_token_equals(token, "terminal"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->terminal = sbs_common_parse_string(parser);
+            env->terminal = sbs_parse_string(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"variables", 9))
+        else if (sbs_token_equals(token, "variables"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->variables = sbs_common_parse_string_array(parser);
+            env->variables = sbs_parse_string_array(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
+        else if (sbs_token_equals(token, "actions"))
         {
-            env->actions = sbs_actions_node_parse(parser);
+            env->actions = sbs_property_actions_parse(parser);
+        }
+        else if (sbs_token_equals(token, "os"))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            env->os = sbs_parse_variable(parser);
+        }
+        else if (sbs_token_equals(token, "arch"))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+
+            if (sbs_parser_peek(parser)->type == SBS_TOKEN_LBRACKET)
+            {
+                env->arch = sbs_parse_variable_array(parser);
+            }
+            else
+            {
+                SbsVariable *variable = sbs_parse_variable(parser);
+                env->arch = fl_array_new(sizeof(SbsVariable*), 1);
+                env->arch[0] = variable;
+            }
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

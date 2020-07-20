@@ -2,29 +2,31 @@
 #define SBS_OBJECT_CONFIGURATION_H
 
 #include <fllib.h>
+#include "../context.h"
 #include "../parser/file.h"
+#include "../parser/for.h"
 
-typedef struct {
+typedef struct SbsConfigCompile {
     char *extension;
     char **flags;
 } SbsConfigCompile;
 
-typedef struct {
+typedef struct SbsConfigArchive {
     char *extension;
     char **flags;
 } SbsConfigArchive;
 
-typedef struct {
+typedef struct SbsConfigShared {
     char *extension;
     char **flags;
 } SbsConfigShared;
 
-typedef struct {
+typedef struct SbsConfigExecutable {
     char *extension;
     char **flags;
 } SbsConfigExecutable;
 
-typedef struct {
+typedef struct SbsConfiguration {
     char *name;
     SbsConfigCompile compile;
     SbsConfigArchive archive;
@@ -32,7 +34,7 @@ typedef struct {
     SbsConfigExecutable executable;
 } SbsConfiguration;
 
-SbsConfiguration* sbs_config_resolve(const SbsFile *file, const char *config_name, const char *env_name);
+SbsConfiguration* sbs_config_resolve(SbsContext *context, const char *config_name);
 void sbs_config_free(SbsConfiguration *config);
 
 #endif /* SBS_OBJECT_CONFIGURATION_H */

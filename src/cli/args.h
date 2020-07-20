@@ -3,7 +3,7 @@
 #include <fllib/Std.h>
 #include <fllib/Cstring.h>
 
-typedef enum {
+typedef enum SbsArgsResult {
     SBS_ARGS_OK,
     SBS_ARGS_HELP,
     SBS_ARGS_ERROR
@@ -88,10 +88,28 @@ do { \
         } \
     }
 
+#define flag_bool(lname, sname, boolptr) \
+    else if (sbs_args_is_flag((lname), (sname), sbs_arg)) \
+    { \
+        if (!sbs_args_is_bool(sbs_arg, (boolptr))) \
+        { \
+            if (sbs_print_err) \
+                sbs_print_err("Flag '%s' expects a string value, use '%s=...'?", sbs_arg, sbs_arg); \
+            if (sbs_resultptr)  \
+                *sbs_resultptr = SBS_ARGS_ERROR; \
+        } \
+    }
+
+#define flag_without_value(lname, sname, boolptr) \
+    else if (sbs_args_is_flag((lname), (sname), sbs_arg)) \
+    { \
+        *(boolptr) = true; \
+    }
+
 #define sbs_args_is_command(module_name, str) flm_cstring_equals((module_name), (str))
 
 bool sbs_args_is_flag(const char *longname, const char *shortname, const char *arg);
-bool sbs_args_is_string(const char *arg, const char **option);
+bool sbs_args_is_string(const char *arg, char **option);
 bool sbs_args_is_bool(const char *arg, bool *option);
 
 #endif /* SBS_ARGS_H */

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <fllib.h>
 #include "executor.h"
+#include "objects/environment.h"
 
 extern char** environ;
 
@@ -14,7 +15,8 @@ enum SbsExecutorType {
 
 struct SbsExecutor {
     enum SbsExecutorType type;
-    SbsEnv *env;
+    const char *typestr;
+    bool script_mode;
 };
 
 typedef struct {
@@ -56,12 +58,9 @@ struct SbsCommandDriver {
     }
 ;
 
-SbsExecutor* sbs_executor_new(SbsEnv *env)
+SbsExecutor* sbs_executor_new(char *typestr, char **args, char **variables, char *terminal)
 {
-    if (env == NULL)
-        return NULL;
-
-    enum SbsExecutorType type = env->type && !flm_cstring_equals("system", env->type) ? SBS_EXEC_CUSTOM : SBS_EXEC_SYSTEM;
+    enum SbsExecutorType type = typestr && !flm_cstring_equals("system", typestr) ? SBS_EXEC_CUSTOM : SBS_EXEC_SYSTEM;
 
     SbsExecutor *executor = NULL;
 
@@ -70,7 +69,7 @@ SbsExecutor* sbs_executor_new(SbsEnv *env)
         SbsCustomExecutor *cexec = fl_malloc(sizeof(SbsCustomExecutor));
         
         char **envp = NULL;
-        if (env->variables)
+        if (variables)
         {
             // Make room for the current environment variables
             size_t env_req_length = 0;
@@ -79,7 +78,7 @@ SbsExecutor* sbs_executor_new(SbsEnv *env)
                 env_req_length++;            
 
             // Make room for the custom environment variables
-            env_req_length += fl_array_length(env->variables);
+            env_req_length += fl_array_length(variables);
 
             // Make room for the last NULL
             env_req_length++;
@@ -91,18 +90,18 @@ SbsExecutor* sbs_executor_new(SbsEnv *env)
             while(*curenv)
                 envp[i++] = *curenv++;
 
-            for (size_t j=0; j < fl_array_length(env->variables); j++)
-                envp[i++] = env->variables[j];
+            for (size_t j=0; j < fl_array_length(variables); j++)
+                envp[i++] = variables[j];
 
             envp[i] = NULL;
         }
 
-        bool is_bash = flm_cstring_equals_n(env->type, "bash", 4);
+        bool is_bash = flm_cstring_equals_n(typestr, "bash", 4);
         char **argv = NULL;
-        if (env->args || is_bash)
+        if (args || is_bash)
         {
 
-            size_t env_args_length = env->args ? fl_array_length(env->args) : 0;
+            size_t env_args_length = args ? fl_array_length(args) : 0;
             size_t argv_req_length = env_args_length;
 
             if (is_bash)
@@ -119,12 +118,12 @@ SbsExecutor* sbs_executor_new(SbsEnv *env)
 
             if (env_args_length > 0)
                 for (size_t j=0; j < env_args_length; j++)
-                    argv[i++] = env->args[j];
+                    argv[i++] = args[j];
 
             argv[i] = NULL;
         }
 
-        cexec->process = fl_process_create(env->terminal ? env->terminal : env->type, argv, envp, fl_process_pipe_new(), fl_process_pipe_new(), NULL);
+        cexec->process = fl_process_create(terminal ? terminal : typestr, argv, envp, fl_process_pipe_new(), fl_process_pipe_new(), NULL);
 
         if (!cexec->process)
             return NULL;
@@ -135,23 +134,33 @@ SbsExecutor* sbs_executor_new(SbsEnv *env)
     {
         executor = fl_malloc(sizeof(SbsExecutor));
 
-        if (env->variables)
+        if (variables)
         {
-            for (size_t i=0; i < fl_array_length(env->variables); i++)
+            for (size_t i=0; i < fl_array_length(variables); i++)
             {
                 #ifdef _WIN32
-                _putenv(env->variables[i]);
+                _putenv(variables[i]);
                 #else
-                putenv(env->variables[i]);
+                putenv(variables[i]);
                 #endif
             }
         }
     }
     
-    executor->env = env;
+    executor->typestr = typestr;
     executor->type = type;
 
     return executor;
+}
+
+void sbs_executor_enable_script_mode(SbsExecutor *executor)
+{
+    executor->script_mode = true;
+}
+
+bool sbs_executor_is_script_mode(SbsExecutor *executor)
+{
+    return executor->script_mode;
 }
 
 static unsigned long djb2_hash(const char *key, size_t size)
@@ -166,6 +175,12 @@ static unsigned long djb2_hash(const char *key, size_t size)
 
 bool sbs_executor_run_command(const SbsExecutor *executor, const char *command)
 {
+    if (executor->script_mode)
+    {
+        printf("%s\n", command);
+        return true;
+    }
+
     if (executor->type == SBS_EXEC_SYSTEM)
     {
         printf("%s\n", command);
@@ -176,11 +191,11 @@ bool sbs_executor_run_command(const SbsExecutor *executor, const char *command)
     SbsCustomExecutor *custom_executor = (SbsCustomExecutor*)executor;
     struct SbsCommandDriver *driver = NULL;
 
-    if (flm_cstring_equals_n(custom_executor->base.env->type, "cmd", 3))
+    if (flm_cstring_equals_n(custom_executor->base.typestr, "cmd", 3))
         driver = &CmdCommandDriver;
-    else if (flm_cstring_equals_n(custom_executor->base.env->type, "bash", 4))
+    else if (flm_cstring_equals_n(custom_executor->base.typestr, "bash", 4))
         driver = &BashCommandDriver;
-    else if (flm_cstring_equals_n(custom_executor->base.env->type, "powershell", 10))
+    else if (flm_cstring_equals_n(custom_executor->base.typestr, "powershell", 10))
         driver = &PowershellCommandDriver;
     else
         return false;

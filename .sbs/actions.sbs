@@ -1,53 +1,48 @@
 action clean {
-    for win-cmd {
-        `if exist .\obj (rd /s /q .\obj)`,
-        `if exist .\build (rd /s /q .\build)`
+    for env(win-cmd) {
+        `if exist .\\obj\\${sbs.env}\\${sbs.arch} (rd /s /q .\\obj\\${sbs.env}\\${sbs.arch})`,
+        `if exist .\\build.\\${sbs.env}\\${sbs.arch} (rd /s /q .\\build.\\${sbs.env}\\${sbs.arch})`
     },
-    for linux-bash {
-        `/bin/rm -fr obj/ build/`
+    for env(linux-bash) {
+        `/bin/rm -fr obj/${sbs.env}/${sbs.arch} build/${sbs.env}/${sbs.arch}`
     }
 }
 
 action copy-fllib {
-    for win-cmd {
-        `if not exist .\include (md .\include)`,
-        `if exist ..\fllib\include\fllib.h (copy ..\fllib\include\fllib.h .\include\)`,
+    for env(win-cmd) {
+        `if not exist .\\include (md .\\include)`,
+        `if exist ..\\fllib\\include\\fllib.h (copy ..\\fllib\\include\\fllib.h .\\include\\)`,
 
-        `if not exist .\lib\fllib\win\${SBS_CONFIG_NAME} (md .\lib\fllib\win\${SBS_CONFIG_NAME})`
-        `if exist ..\fllib\build\${SBS_CONFIG_NAME}\libfl.lib (copy ..\fllib\build\${SBS_CONFIG_NAME}\libfl.lib .\lib\fllib\win\${SBS_CONFIG_NAME})`,
+        `if not exist .\\lib\\fllib\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config} (md .\\lib\\fllib\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config})`
+        `if exist ..\\fllib\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\libfl.lib (copy ..\\fllib\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\libfl.lib .\\lib\\fllib\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\)`,
     }
 
-    for linux-bash {
+    for env(linux-bash) {
         `mkdir -p ./include`
         `if [ -f "../fllib/include/fllib.h" ]; then cp ../fllib/include/fllib.h ./include/ ; fi`
 
-        `mkdir -p ./lib/fllib/linux/${SBS_CONFIG_NAME}`
-        `if [ -f "../fllib/build/${SBS_CONFIG_NAME}/libfl.a" ]; then cp ../fllib/build/${SBS_CONFIG_NAME}/libfl.a ./lib/fllib/linux/${SBS_CONFIG_NAME} ; fi`
+        `mkdir -p ./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}`
+        `if [ -f "../fllib/build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.a" ]; then \
+            cp  ../fllib/build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.a            \
+                ./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/ ;                    \
+        fi`
     }
 }
 
 action install {
-    for win-cmd {
-        `if exist .\build\clang-debug\sbs.exe (                 \
-            copy .\build\clang-debug\sbs.exe ..\fllib\ &        \
-            copy .\build\clang-debug\sbs.exe ..\zenit\ &        \
-            copy .\build\clang-debug\sbs.exe ..\gkit\           \
-        ) else if exist .\build\clang-release\sbs.exe (         \
-            copy .\build\clang-release\sbs.exe ..\fllib\ &      \
-            copy .\build\clang-release\sbs.exe ..\zenit\ &      \
-            copy .\build\clang-release\sbs.exe ..\gkit\         \
+    for env(win-cmd) {
+        `if exist .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe (                      \
+            copy .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\fllib\\ &           \
+            copy .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\zenit\\ &           \
+            copy .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\gkit\\              \
         )`
     }
 
-    for linux-bash {
-        `if [ -f "build/clang-debug/sbs" ]; then            \
-            cp build/clang-debug/sbs ../fllib/sbs;          \
-            cp build/clang-debug/sbs ../zenit/sbs;          \
-            cp build/clang-debug/sbs ../gkit/sbs;           \
-        elif [ -f "build/clang-release/sbs" ]; then         \
-            cp build/clang-release/sbs ../fllib/sbs;        \
-            cp build/clang-release/sbs ../zenit/sbs;        \
-            cp build/clang-release/sbs ../gkit/sbs;         \
+    for env(linux-bash) {
+        `if [ -f "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs" ]; then            \
+            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../fllib/sbs;          \
+            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../zenit/sbs;          \
+            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../gkit/sbs;           \
         fi`
     }
 }

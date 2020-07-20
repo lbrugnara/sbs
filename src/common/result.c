@@ -17,12 +17,17 @@ static char *reason[] = {
     [SBS_RES_INVALID_TARGET] =          "The target '%s' does not exist\n",
     [SBS_RES_INVALID_FILE] =            "Build file '%s' does not exist\n",
 
+    [SBS_RES_MISMATCH_ENV] =            "There's no environment for the current OS and processor architecture\n",
+
     [SBS_RES_MISSING_ENV_ARG] =         "An environment name is required for this command to run\n",
     [SBS_RES_MISSING_TOOLCHAIN_ARG] =   "A toolchain name is required for this command to run\n",
     [SBS_RES_MISSING_CONFIG_ARG] =      "A configuration name is required for this command to run\n",
     [SBS_RES_MISSING_TARGET_ARG] =      "A target name is required for this command to run\n",
 
     [SBS_RES_EXECUTOR] =                "Couldn't start the environment's shell.\n",
+
+    [SBS_RES_UNK_OS] =                  "sbs is not supported on this operating system\n",
+    [SBS_RES_UNK_ARCH] =                "sbs does not support the current processor architecture\n",
 
     [SBS_RES_ACTION_FAILED] =           "An action has failed\n"
 };

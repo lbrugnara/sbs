@@ -1,15 +1,7 @@
 #include <fllib.h>
 #include "common.h"
-#include "../parser/common.h"
-
-void sbs_common_free_string(void *obj)
-{
-    if (!obj)
-        return;
-
-    char *str = *(char**)obj;
-    fl_cstring_free(str);
-}
+#include "../objects/action.h"
+#include "../parser/helpers.h"
 
 void sbs_common_free_string_or_id(void *obj)
 {
@@ -20,6 +12,27 @@ void sbs_common_free_string_or_id(void *obj)
 
     if (str->value)
         fl_cstring_free(str->value);
+}
+
+void sbs_common_free_variable(SbsVariable *variable)
+{
+    if (!variable)
+        return;
+
+    if (variable->name)
+        fl_cstring_free(variable->name);
+
+    if (variable->namespace)
+        fl_cstring_free(variable->namespace);
+
+    fl_free(variable);
+}
+
+char** sbs_common_append_string_free(char **dest, char *src)
+{
+    dest = fl_cstring_append(dest, src);
+    fl_cstring_free(src);
+    return dest;
 }
 
 FlArray* sbs_common_extend_array(FlArray *dest, FlArray *src)
@@ -33,7 +46,7 @@ FlArray* sbs_common_extend_array(FlArray *dest, FlArray *src)
     return fl_array_combine(dest, src);
 }
 
-FlArray* sbs_common_extend_array_copy_pointers(FlArray *dest, FlArray *src, void(*copy_func)(void*, const void*, size_t))
+FlArray* sbs_common_extend_array_copy(FlArray *dest, FlArray *src, SbsArrayCopyElementFn copy_fn)
 {
     if (!src)
         return dest;
@@ -51,45 +64,46 @@ FlArray* sbs_common_extend_array_copy_pointers(FlArray *dest, FlArray *src, void
         return NULL;    
 
     for (size_t i=0; i < src_size; i++, dest_size++)
-        copy_func((FlByte*)dest + dest_size * elem_size, (FlByte*)src + i * elem_size, elem_size);
+    {
+        copy_fn((FlByte*) dest + dest_size * elem_size, (FlByte*)src + i * elem_size);
+    }
 
     return dest;
 }
 
-void sbs_common_copy_string(void *dest, const void *src, size_t elem_size)
+void sbs_common_copy_string(char **dest, const char **src_str)
 {
-    if (!src || !dest)
+    if (!dest)
         return;
-
-    char **src_str = (char**)src;
 
     if (!src_str || !*src_str)
     {
-        memset(dest, 0, elem_size);
+        memset(dest, 0, sizeof(char*));
         return;
     }
 
     char *copy = fl_cstring_dup(*src_str);
 
-    memcpy(dest, &copy, elem_size);
+    memcpy(dest, &copy, sizeof(char*));
 }
 
-void sbs_common_copy_string_or_id(void *dest, const void *src, size_t elem_size)
+void sbs_common_copy_string_or_id(SbsStringOrId *dest, const SbsStringOrId *src_obj)
 {
-    if (!src || !dest)
+    if (!dest)
         return;
-
-    SbsStringOrId *src_obj = (SbsStringOrId*)src;
 
     if (!src_obj)
+    {
+        memset(dest, 0, sizeof(SbsStringOrId));
         return;
+    }
 
     SbsStringOrId copy = {
         .type = src_obj->type,
         .value = fl_cstring_dup(src_obj->value)
     };
 
-    memcpy(dest, &copy, elem_size);
+    memcpy(dest, &copy, sizeof(SbsStringOrId));
 }
 
 char* sbs_common_set_string(char *dest, const char *src)

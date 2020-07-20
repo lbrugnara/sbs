@@ -1,7 +1,7 @@
 #ifndef SBS_RESULT_H
 #define SBS_RESULT_H
 
-typedef enum {
+typedef enum SbsResult {
     SBS_RES_OK = 0,
     SBS_RES_ERROR,
     SBS_RES_WRONG_ARGS,
@@ -17,6 +17,8 @@ typedef enum {
     SBS_RES_INVALID_TARGET,
     SBS_RES_INVALID_FILE,
 
+    SBS_RES_MISMATCH_ENV,
+
     SBS_RES_MISSING_ENV_ARG,
     SBS_RES_MISSING_TOOLCHAIN_ARG,
     SBS_RES_MISSING_CONFIG_ARG,
@@ -25,6 +27,9 @@ typedef enum {
     SBS_RES_EXECUTOR,
     
     SBS_RES_ACTION_FAILED,
+
+    SBS_RES_UNK_OS,
+    SBS_RES_UNK_ARCH,
 
     //
     SBS_RES_END

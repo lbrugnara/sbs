@@ -20,15 +20,15 @@ config clang-config {
             "-finput-charset=UTF-8",
             "-fexec-charset=UTF-8",
             "-D_FORTIFY_SOURCE=2",
-            # ${INPUT_FILE} is a special variable that contains the source filename
-            "-c ${INPUT_FILE}",
-            # The ${OUTPUT_FILE} variable contains the output name for the compiled object
-            "-o ${OUTPUT_FILE}"
+            # ${sbs.input_file} is a special variable that contains the source filename
+            "-c ${sbs.input_file}",
+            # The ${sbs.output_file} variable contains the output name for the compiled object
+            "-o ${sbs.output_file}"
         ]
     },    
 
     # Specific overrides for linux envs
-    for linux-bash {
+    for env(linux-bash) {
         compile: {
             flags: [ "-fPIC" ]
         },
@@ -40,22 +40,22 @@ config clang-config {
             extension: ".so",
             flags: [ 
                 "-shared",
-                "-o ${OUTPUT_FILE}"
+                "-o ${sbs.output_file}"
             ]
         },
         executable: {
             extension: "",
-            flags: [ "-o ${OUTPUT_FILE}" ]
+            flags: [ "-o ${sbs.output_file}" ]
         }
     },
 
     # Specific overrides for Windows envs
-    for win-cmd {
+    for env(win-cmd) {
         archive: {
             extension: ".lib",
             flags: [
                 "/NOLOGO",
-                "/OUT:${OUTPUT_FILE}"
+                "/OUT:${sbs.output_file}"
             ]
         },
         shared: {
@@ -63,13 +63,13 @@ config clang-config {
             flags: [
                 "/NOLOGO",
                 "/DLL",
-                "/OUT:${OUTPUT_FILE}"
+                "/OUT:${sbs.output_file}"
             ]
         },
         executable: {
             extension: ".exe",
             flags: [
-                "/OUT:${OUTPUT_FILE}",
+                "/OUT:${sbs.output_file}",
                 "/DEFAULTLIB:libcmt.lib",
                 "/NOLOGO",
                 "/SUBSYSTEM:CONSOLE"
@@ -88,7 +88,7 @@ config clang-debug extends clang-config {
         ]
     }
 
-    for win-cmd {
+    for env(win-cmd) {
         shared: {
             flags: [
                 "/DEBUG:FULL"

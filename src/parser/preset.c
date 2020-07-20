@@ -1,20 +1,30 @@
 #include "preset.h"
-#include "common.h"
+#include "helpers.h"
 #include "parser.h"
 
-void sbs_preset_section_free(SbsPresetSection *preset)
+void sbs_section_preset_free(SbsSectionPreset *preset)
 {
     fl_cstring_free(preset->name);
-    fl_cstring_free(preset->env);
-    fl_cstring_free(preset->toolchain);
-    fl_cstring_free(preset->config);
-    fl_cstring_free(preset->target);
-    sbs_actions_node_free(&preset->actions);
+
+    if (preset->env)
+        fl_array_free_each_pointer(preset->env, (FlArrayFreeElementFunc) fl_cstring_free);
+
+    if (preset->toolchain)
+        fl_cstring_free(preset->toolchain);
+
+    if (preset->config)
+        fl_cstring_free(preset->config);
+
+    if (preset->target)
+        fl_cstring_free(preset->target);
+
+    sbs_property_actions_free(&preset->actions);
+
     fl_free(preset);
 }
 
 /*
- * Function: sbs_preset_section_parse
+ * Function: sbs_section_preset_parse
  *  Parses a *preset* block which supports the following properties:
  *      - env: Environment name
  *      - toolchain: Toolchain name
@@ -26,12 +36,12 @@ void sbs_preset_section_free(SbsPresetSection *preset)
  *  parser - Parser object
  *
  * Returns:
- *  SbsPresetSection* - Parsed *preset* block
+ *  SbsSectionPreset* - Parsed *preset* block
  *
  */
-SbsPresetSection* sbs_preset_section_parse(SbsParser *parser)
+SbsSectionPreset* sbs_section_preset_parse(SbsParser *parser)
 {
-    SbsPresetSection *preset = fl_malloc(sizeof(SbsPresetSection));
+    SbsSectionPreset *preset = fl_malloc(sizeof(SbsSectionPreset));
 
     // Consume the 'preset' token
     sbs_parser_consume(parser, SBS_TOKEN_PRESET);
@@ -53,29 +63,43 @@ SbsPresetSection* sbs_preset_section_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_ENV);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            preset->env = sbs_common_parse_identifier(parser);
+
+            if (sbs_parser_peek(parser)->type == SBS_TOKEN_LBRACKET)
+            {
+                preset->env = sbs_parse_identifier_array(parser);
+            }
+            else
+            {
+                preset->env = fl_array_new(sizeof(char**), 1);
+                preset->env[0] = sbs_parse_identifier(parser);
+            }            
         }
         else if (token->type == SBS_TOKEN_TOOLCHAIN)
         {
             sbs_parser_consume(parser, SBS_TOKEN_TOOLCHAIN);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            preset->toolchain = sbs_common_parse_identifier(parser);
+            preset->toolchain = sbs_parse_identifier(parser);
         }
         else if (token->type == SBS_TOKEN_CONFIG)
         {
             sbs_parser_consume(parser, SBS_TOKEN_CONFIG);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            preset->config = sbs_common_parse_identifier(parser);
+            preset->config = sbs_parse_identifier(parser);
         }
         else if (token->type == SBS_TOKEN_TARGET)
         {
             sbs_parser_consume(parser, SBS_TOKEN_TARGET);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            preset->target = sbs_common_parse_identifier(parser);
+            preset->target = sbs_parse_identifier(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
+        else if (sbs_token_equals(token, "actions"))
         {
-            preset->actions = sbs_actions_node_parse(parser);
+            preset->actions = sbs_property_actions_parse(parser);
+        }
+        else
+        {
+            sbs_parser_warning(parser, token, "is an unrecognized token");
+            sbs_parser_sync(parser, (SbsTokenType[]) { SBS_TOKEN_COMMA, SBS_TOKEN_RBRACE }, 2);
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

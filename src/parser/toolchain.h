@@ -4,36 +4,37 @@
 #include <fllib.h>
 #include "parser.h"
 #include "environment.h"
+#include "for.h"
 
-typedef struct {
+typedef struct SbsNodeToolchainCompiler {
     const char *bin;
     const char *include_dir_flag;
     const char *define_flag;
-} SbsToolchainCompilerNode;
+} SbsNodeToolchainCompiler;
 
-typedef struct {
+typedef struct SbsNodeToolchainArchiver {
     const char *bin;
-} SbsToolchainArchiverNode;
+} SbsNodeToolchainArchiver;
 
-typedef struct {
+typedef struct SbsNodeToolchainLinker {
     const char *bin;
     const char *lib_dir_flag;
     const char *lib_flag;
-} SbsToolchainLinkerNode;
+} SbsNodeToolchainLinker;
 
-typedef struct {
-    SbsToolchainCompilerNode compiler;
-    SbsToolchainLinkerNode linker;
-    SbsToolchainArchiverNode archiver;
-} SbsToolchainNode;
+typedef struct SbsNodeToolchain {
+    SbsNodeToolchainCompiler compiler;
+    SbsNodeToolchainLinker linker;
+    SbsNodeToolchainArchiver archiver;
+    SbsSectionFor *for_clause;
+} SbsNodeToolchain;
 
-typedef struct {
+typedef struct SbsSectionToolchain {
     const char *name;
-    /* FlHashtable<string, SbsToolchainNode> */
-    FlHashtable *nodes;
-} SbsToolchainSection;
+    SbsNodeToolchain **entries;
+} SbsSectionToolchain;
 
-SbsToolchainSection* sbs_toolchain_section_parse(SbsParser *parser);
-void sbs_toolchain_section_free(SbsToolchainSection *toolchain);
+SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser);
+void sbs_section_toolchain_free(SbsSectionToolchain *toolchain);
 
 #endif /* SBS_PARSER_TOOLCHAIN_H */

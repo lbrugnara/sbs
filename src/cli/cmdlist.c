@@ -7,8 +7,8 @@
 #include "../parser/file.h"
 
 struct SbsListArguments {
-    const char *file;
-    const char *resource;
+    char *file;
+    char *resource;
 };
 
 static const char *list_help =

@@ -2,23 +2,9 @@
 #include "action.h"
 #include "../parser/action.h"
 
-static inline bool is_for_env(const char *env_name, char **for_envs)
+SbsAction* sbs_action_resolve(SbsContext *context, const char *action_name)
 {
-    if (!for_envs)
-        return false;
-
-    for (size_t i=0; i < fl_array_length(for_envs); i++)
-    {
-        if (flm_cstring_equals(for_envs[i], env_name))
-            return true;
-    }
-
-    return false;
-}
-
-SbsAction* sbs_action_resolve(const SbsFile *file, const char *action_name, const char *env_name)
-{
-    SbsActionSection *action_section = fl_hashtable_get(file->actions, action_name);
+    SbsSectionAction *action_section = fl_hashtable_get(context->file->actions, action_name);
 
     if (!action_section)
         return NULL;
@@ -29,24 +15,23 @@ SbsAction* sbs_action_resolve(const SbsFile *file, const char *action_name, cons
 
     for (size_t i=0; i < fl_array_length(action_section->nodes); i++)
     {
-        SbsActionNode *ancestor = action_section->nodes + i;
+        SbsNodeAction *action_node = action_section->nodes[i];
 
-        for (size_t i=0; i < fl_array_length(ancestor->commands); i++)
+        if (action_node->for_clause && !sbs_for_node_eval(action_node->for_clause->condition, context->symbols))
+            continue;
+
+        for (size_t i=0; i < fl_array_length(action_node->commands); i++)
         {
-            if (ancestor->for_envs && !is_for_env(env_name, ancestor->for_envs))
-                continue;
-
-            SbsStringOrId command = ancestor->commands[i];
+            SbsStringOrId command = action_node->commands[i];
 
             if (command.type == SBS_STRING)
             {
-                size_t length = fl_array_length(action_object->commands);
-                action_object->commands = fl_array_resize(action_object->commands, length + 1);
-                action_object->commands[length] = fl_cstring_dup(command.value);
+                char *cmd = fl_cstring_dup(command.value);
+                action_object->commands = fl_array_append(action_object->commands, &cmd);
             }
             else
             {
-                SbsAction *ref_action = sbs_action_resolve(file, command.value, env_name);
+                SbsAction *ref_action = sbs_action_resolve(context, command.value);
                 
                 if (!ref_action)
                 {
@@ -54,15 +39,9 @@ SbsAction* sbs_action_resolve(const SbsFile *file, const char *action_name, cons
                     continue;
                 }
 
-                action_object->commands = sbs_common_extend_array(action_object->commands, ref_action->commands);
-                
-                // Just the array, the elements now belongs to action_object->commands
-                fl_array_free(ref_action->commands);
+                action_object->commands = sbs_common_extend_array_copy(action_object->commands, ref_action->commands, (SbsArrayCopyElementFn) sbs_common_copy_string);
 
-                if (ref_action->name)
-                    fl_cstring_free(ref_action->name);
-
-                fl_free(ref_action);
+                sbs_action_free(ref_action);
             }
         }
     }
@@ -74,13 +53,14 @@ void sbs_action_free(SbsAction *action)
 {
     if (action->name)
         fl_cstring_free(action->name);
+
     if (action->commands)
-        fl_array_free_each(action->commands, sbs_common_free_string);
+        fl_array_free_each_pointer(action->commands, (FlArrayFreeElementFunc) fl_cstring_free);
 
     fl_free(action);
 }
 
-SbsAction** sbs_action_resolve_all(const SbsFile *file, SbsStringOrId *actions, const char *env_name)
+SbsAction** sbs_action_resolve_all(SbsContext *context, SbsStringOrId *actions)
 {
     if (!actions)
         return NULL;
@@ -95,7 +75,7 @@ SbsAction** sbs_action_resolve_all(const SbsFile *file, SbsStringOrId *actions, 
 
         if (action.type == SBS_IDENTIFIER)
         {
-            resolved_actions[i] = sbs_action_resolve(file, action.value, env_name);
+            resolved_actions[i] = sbs_action_resolve(context, action.value);
         }
         else
         {
@@ -118,4 +98,24 @@ void sbs_action_free_all(SbsAction **actions)
         sbs_action_free(actions[i]);
 
     fl_array_free(actions);
+}
+
+
+void sbs_action_copy(SbsAction **dest, const SbsAction **src_action)
+{
+    if (!dest)
+        return;
+
+    if (!src_action || !*src_action)
+    {
+        memset(dest, 0, sizeof(SbsAction));
+        return;
+    }
+
+    SbsAction *dst_action = fl_malloc(sizeof(SbsAction));
+
+    dst_action->name = fl_cstring_dup((*src_action)->name);
+    dst_action->commands = sbs_common_extend_array_copy(dst_action->commands, (*src_action)->commands, (SbsArrayCopyElementFn) sbs_common_copy_string);
+
+    memcpy(dest, &dst_action, sizeof(SbsAction));
 }

@@ -3,16 +3,16 @@
 
 #include "action.h"
 
-typedef struct {
+typedef struct SbsSectionPreset {
     const char *name;
-    const char *env;
+    char **env;
     const char *toolchain;
     const char *config;
     const char *target;
-    SbsActionsNode actions;
-} SbsPresetSection;
+    SbsPropertyActions actions;
+} SbsSectionPreset;
 
-SbsPresetSection* sbs_preset_section_parse(SbsParser *parser);
-void sbs_preset_section_free(SbsPresetSection *preset);
+SbsSectionPreset* sbs_section_preset_parse(SbsParser *parser);
+void sbs_section_preset_free(SbsSectionPreset *preset);
 
 #endif /* SBS_PARSER_PRESET_H */

@@ -3,42 +3,43 @@
 
 #include <fllib.h>
 #include "parser.h"
+#include "for.h"
 
-typedef struct {
+typedef struct SbsNodeConfigCompile {
     const char *extension;
     char **flags;
-} SbsConfigCompileNode;
+} SbsNodeConfigCompile;
 
-typedef struct {
+typedef struct SbsNodeConfigArchive {
     const char *extension;
     char **flags;
-} SbsConfigArchiveNode;
+} SbsNodeConfigArchive;
 
-typedef struct {
+typedef struct SbsNodeConfigShared {
     const char *extension;
     char **flags;
-} SbsConfigSharedNode;
+} SbsNodeConfigShared;
 
-typedef struct {
+typedef struct SbsNodeConfigExecutable {
     const char *extension;
     char **flags;
-} SbsConfigExecutableNode;
+} SbsNodeConfigExecutable;
 
-struct SbsConfigNode {
-    SbsConfigCompileNode compile;
-    SbsConfigArchiveNode archive;
-    SbsConfigSharedNode shared;
-    SbsConfigExecutableNode executable;
-};
+typedef struct SbsNodeConfig {
+    SbsNodeConfigCompile compile;
+    SbsNodeConfigArchive archive;
+    SbsNodeConfigShared shared;
+    SbsNodeConfigExecutable executable;
+    SbsSectionFor *for_clause;
+} SbsNodeConfig;
 
-typedef struct {
+typedef struct SbsSectionConfig {
     const char *name;
     char **extends;
-    /* FlHashtable<string, struct SbsConfigNode> */
-    FlHashtable *nodes;
-} SbsConfigSection;
+    SbsNodeConfig **entries;
+} SbsSectionConfig;
 
-SbsConfigSection* sbs_config_section_parse(SbsParser *parser);
-void sbs_config_section_free(SbsConfigSection *config);
+SbsSectionConfig* sbs_section_config_parse(SbsParser *parser);
+void sbs_section_config_free(SbsSectionConfig *config);
 
 #endif /* SBS_PARSER_CONFIGURATION_H */

@@ -1,21 +1,21 @@
 #ifndef SBS_PARSER_FILE_H
 #define SBS_PARSER_FILE_H
 
-#include <fllib.h>
+#include <fllib/containers/Hashtable.h>
 
-typedef struct {
+typedef struct SbsFile {
     const char *filename;
-    /* FlHashtable<char*, SbsEnvSection*> */
+    /* FlHashtable<char*, SbsSectionEnv*> */
     FlHashtable *envs;
-    /* FlHashtable<char*, SbsTargetSection*> */
+    /* FlHashtable<char*, SbsAbstractSectionTarget*> */
     FlHashtable *targets;
-    /* FlHashtable<char*, SbsToolchainSection*> */
+    /* FlHashtable<char*, SbsSectionToolchain*> */
     FlHashtable *toolchains;
-    /* FlHashtable<char*, SbsConfigSection*> */
+    /* FlHashtable<char*, SbsSectionConfig*> */
     FlHashtable *configurations;
-    /* FlHashtable<char*, SbsActionSection*> */
+    /* FlHashtable<char*, SbsSectionAction*> */
     FlHashtable *actions;
-    /* FlHashtable<char*, SbsPresetSection*> */
+    /* FlHashtable<char*, SbsSectionPreset*> */
     FlHashtable *presets;
 } SbsFile;
 

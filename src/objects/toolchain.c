@@ -1,45 +1,35 @@
 #include "toolchain.h"
+#include "../context.h"
 #include "../common/common.h"
 #include "../parser/toolchain.h"
 
-SbsToolchain* sbs_toolchain_resolve(const SbsFile *file, const char *toolchain_name, const char *env_name)
+SbsToolchain* sbs_toolchain_resolve(SbsContext *context, const char *toolchain_name)
 {
-    SbsToolchainSection *toolchain_section = fl_hashtable_get(file->toolchains, toolchain_name);
+    SbsSectionToolchain *toolchain_section = fl_hashtable_get(context->file->toolchains, toolchain_name);
 
     if (!toolchain_section)
         return NULL;
 
     SbsToolchain *toolchain_object = fl_malloc(sizeof(SbsToolchain));
-
     toolchain_object->name = fl_cstring_dup(toolchain_section->name);
 
-    FlList *hierarchy = fl_list_new();
-
-    // Using prepend we will keep the list ordered
-    if (fl_hashtable_has_key(toolchain_section->nodes, env_name))
-        fl_list_prepend(hierarchy, fl_hashtable_get(toolchain_section->nodes, env_name));
-
-    fl_list_prepend(hierarchy, fl_hashtable_get(toolchain_section->nodes, SBS_BASE_OBJECT_KEY));
-
-    struct FlListNode *node = fl_list_head(hierarchy);
-    while (node)
+    for (size_t i=0; i < fl_array_length(toolchain_section->entries); i++)
     {
-        const SbsToolchainNode *ancestor = (const SbsToolchainNode*)node->value;
-        
-        toolchain_object->compiler.bin = sbs_common_set_string(toolchain_object->compiler.bin, ancestor->compiler.bin);
-        toolchain_object->compiler.include_dir_flag = sbs_common_set_string(toolchain_object->compiler.include_dir_flag, ancestor->compiler.include_dir_flag);
-        toolchain_object->compiler.define_flag = sbs_common_set_string(toolchain_object->compiler.define_flag, ancestor->compiler.define_flag);
-        
-        toolchain_object->archiver.bin = sbs_common_set_string(toolchain_object->archiver.bin, ancestor->archiver.bin);
+        SbsNodeToolchain *toolchain_node = toolchain_section->entries[i];
 
-        toolchain_object->linker.bin = sbs_common_set_string(toolchain_object->linker.bin, ancestor->linker.bin);
-        toolchain_object->linker.lib_dir_flag = sbs_common_set_string(toolchain_object->linker.lib_dir_flag, ancestor->linker.lib_dir_flag);
-        toolchain_object->linker.lib_flag = sbs_common_set_string(toolchain_object->linker.lib_flag, ancestor->linker.lib_flag);
+        if (toolchain_node->for_clause && !sbs_for_node_eval(toolchain_node->for_clause->condition, context->symbols))
+            continue;
+        
+        toolchain_object->compiler.bin = sbs_common_set_string(toolchain_object->compiler.bin, toolchain_node->compiler.bin);
+        toolchain_object->compiler.include_dir_flag = sbs_common_set_string(toolchain_object->compiler.include_dir_flag, toolchain_node->compiler.include_dir_flag);
+        toolchain_object->compiler.define_flag = sbs_common_set_string(toolchain_object->compiler.define_flag, toolchain_node->compiler.define_flag);
+        
+        toolchain_object->archiver.bin = sbs_common_set_string(toolchain_object->archiver.bin, toolchain_node->archiver.bin);
 
-        node = node->next;
+        toolchain_object->linker.bin = sbs_common_set_string(toolchain_object->linker.bin, toolchain_node->linker.bin);
+        toolchain_object->linker.lib_dir_flag = sbs_common_set_string(toolchain_object->linker.lib_dir_flag, toolchain_node->linker.lib_dir_flag);
+        toolchain_object->linker.lib_flag = sbs_common_set_string(toolchain_object->linker.lib_flag, toolchain_node->linker.lib_flag);
     }
-
-    fl_list_free(hierarchy);
 
     return toolchain_object;
 }

@@ -2,8 +2,8 @@
 # command must include the --env (or -e) flag to specify one
 
 # This preset builds the sbs build system in release mode
-preset win-clang-release {
-    env: win-cmd,
+preset release {
+    env: [ win-cmd, linux-bash ],
     toolchain: clang,
     config: clang-release,
     target: sbs,
@@ -13,8 +13,8 @@ preset win-clang-release {
 }
 
 # This preset builds the sbs build system in debug mode
-preset win-clang-debug {
-    env: win-cmd,
+preset debug {
+    env: [ win-cmd, linux-bash ],
     toolchain: clang,
     config: clang-debug,
     target: sbs,
@@ -24,8 +24,8 @@ preset win-clang-debug {
 }
 
 # This preset builds the sbs build system in debug mode
-preset win-clang-tests {
-    env: win-cmd,
+preset tests {
+    env: [ win-cmd, linux-bash ],
     toolchain: clang,
     config: clang-debug,
     target: sbs-tests,
@@ -34,31 +34,10 @@ preset win-clang-tests {
     }
 }
 
-# This preset builds the sbs build system in release mode
-preset linux-gcc-release {
-    env: linux-bash,
-    toolchain: gcc,
-    config: clang-release,
-    target: sbs,
-    actions: {
-        before: [ copy-fllib ]
-    }
-}
-
-# This preset builds the sbs build system in debug mode
-preset linux-gcc-debug {
-    env: linux-bash,
-    toolchain: gcc,
-    config: clang-debug,
-    target: sbs,
-    actions: {
-        before: [ copy-fllib ]
-    }
-}
-
 # This is a dummy preset to hack my own build system. We get a clean action for free by running:
 # sbs build -e=<win-cmd|linux-bash> clean
 preset clean {
+    env: [ win-cmd, linux-bash ],
     toolchain: dummy,
     config: dummy,
     target: dummy,
@@ -68,6 +47,7 @@ preset clean {
 }
 
 preset copy-fllib {
+    env: [ win-cmd, linux-bash ],
     toolchain: dummy,
     config: dummy,
     target: dummy,
@@ -77,6 +57,7 @@ preset copy-fllib {
 }
 
 preset install {
+    env: [ win-cmd, linux-bash ],
     toolchain: dummy,
     config: dummy,
     target: dummy,

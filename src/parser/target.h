@@ -2,60 +2,62 @@
 #define SBS_PARSER_TARGET_H
 
 #include <fllib.h>
-#include "common.h"
+#include "helpers.h"
 #include "action.h"
+#include "for.h"
 
-typedef enum {
+typedef enum SbsSectionTargetType {
     SBS_TARGET_COMPILE,
     SBS_TARGET_ARCHIVE,
     SBS_TARGET_SHARED,
     SBS_TARGET_EXECUTABLE,
-} SbsTargetType;
+} SbsSectionTargetType;
 
-typedef struct {
-    SbsTargetType type;
-    const char *name;
-    FlHashtable *entries;
-} SbsTargetSection;
-
-typedef struct {
-    SbsActionsNode actions;
+typedef struct SbsSectionTarget {
+    SbsPropertyActions actions;
     const char *output_dir;
-} SbsTargetNode;
+    SbsSectionFor *for_clause;
+} SbsSectionTarget;
 
-typedef struct {
-    SbsTargetNode base;
+typedef struct SbsSectionCompile {
+    SbsSectionTarget base;
     char **includes;
     char **sources;
     char **defines;
-} SbsTargetCompileNode;
+} SbsSectionCompile;
 
-typedef struct {
-    SbsTargetNode base;
+typedef struct SbsSectionArchive {
+    SbsSectionTarget base;
     const char *output_name;
     SbsStringOrId *objects;
-} SbsTargetArchiveNode;
+} SbsSectionArchive;
 
-typedef struct {
-    SbsTargetNode base;
+typedef struct SbsSectionShared {
+    SbsSectionTarget base;
     const char *output_name;
     SbsStringOrId *objects;
-} SbsTargetSharedNode;
+} SbsSectionShared;
 
-typedef struct {
+typedef struct SbsPropertyLibrary {
     char *path;
     char *name;
-} SbsTargetLibraryNode;
+} SbsPropertyLibrary;
 
-typedef struct {
-    SbsTargetNode base;
+typedef struct SbsSectionExecutable {
+    SbsSectionTarget base;
     const char *output_name;
-    SbsTargetLibraryNode *libraries;
+    SbsPropertyLibrary *libraries;
     SbsStringOrId *objects;
     char **defines;
-} SbsTargetExecutableNode;
+} SbsSectionExecutable;
 
-SbsTargetSection* sbs_target_section_parse(SbsParser *parser);
-void sbs_target_section_free(SbsTargetSection *target);
+typedef struct SbsAbstractSectionTarget {
+    const char *name;
+    SbsSectionTarget **entries;
+    SbsSectionTargetType type;
+} SbsAbstractSectionTarget;
+
+SbsAbstractSectionTarget* sbs_section_target_parse(SbsParser *parser);
+void sbs_section_target_free(SbsAbstractSectionTarget *target);
 
 #endif /* SBS_PARSER_TARGET_H */

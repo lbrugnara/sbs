@@ -161,10 +161,10 @@ config clang-config {
             "-Werror",
             "-Wextra",
             "-pedantic",
-            # ${INPUT_FILE} is a special variable that contains the source filename
-            "-c ${INPUT_FILE}",
-            # The ${OUTPUT_FILE} variable contains the output name for the compiled object
-            "-o ${OUTPUT_FILE}"
+            # ${sbs.input_file} is a special variable that contains the source filename
+            "-c ${sbs.input_file}",
+            # The ${sbs.output_file} variable contains the output name for the compiled object
+            "-o ${sbs.output_file}"
         ]
     },    
 
@@ -184,13 +184,13 @@ config clang-config {
             extension: ".so",
             flags: [ 
                 "-shared",
-                "-o ${OUTPUT_FILE}"
+                "-o ${sbs.output_file}"
             ]
         },
         # Similar to the shared object, the executable object is used by the toolchain's linker to create an executable
         executable: {
             extension: "",
-            flags: [ "-o ${OUTPUT_FILE}" ]
+            flags: [ "-o ${sbs.output_file}" ]
         }
     },
 
@@ -200,7 +200,7 @@ config clang-config {
             extension: ".lib",
             flags: [
                 "/NOLOGO",
-                "/OUT:${OUTPUT_FILE}"
+                "/OUT:${sbs.output_file}"
             ]
         },
         shared: {
@@ -208,13 +208,13 @@ config clang-config {
             flags: [
                 "/NOLOGO",
                 "/DLL",
-                "/OUT:${OUTPUT_FILE}"
+                "/OUT:${sbs.output_file}"
             ]
         },
         executable: {
             extension: ".exe",
             flags: [
-                "/OUT:${OUTPUT_FILE}",
+                "/OUT:${sbs.output_file}",
                 "/DEFAULTLIB:libcmt.lib",
                 "/NOLOGO",
                 "/SUBSYSTEM:CONSOLE"

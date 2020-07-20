@@ -1,10 +1,9 @@
 #include "executable.h"
 #include "build.h"
+#include "../io.h"
 #include "../common/common.h"
 #include "../objects/configuration.h"
 #include "../objects/toolchain.h"
-
-#define SBS_DIR_SEPARATOR "/"
 
 static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *executable, const char *output_dir, const char *output_name)
 {
@@ -12,16 +11,17 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *e
     const char *extension = executable->extension ? executable->extension : ".a";
 
     // Path
-    char *output_filename = fl_cstring_dup(output_dir);
-    if (output_filename[strlen(output_filename) - 1] != SBS_DIR_SEPARATOR[0])
-        fl_cstring_append(&output_filename, SBS_DIR_SEPARATOR);
-    fl_cstring_append(&output_filename, build->config->name);
+    char *output_filename = sbs_io_to_host_path(build->context->env->host->os, output_dir);
 
-    output_filename = fl_cstring_replace_realloc(output_filename, "\\", SBS_DIR_SEPARATOR);
-    
-    if (output_filename[strlen(output_filename) - 1] != SBS_DIR_SEPARATOR[0])
-        fl_cstring_append(&output_filename, SBS_DIR_SEPARATOR);
+    if (output_filename[strlen(output_filename) - 1] != build->context->env->host->dir_separator)
+        fl_cstring_append_char(&output_filename, build->context->env->host->dir_separator);
 
+    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.os}", sbs_host_os_to_str(build->context->host->os));
+    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.arch}", sbs_host_arch_to_str(build->context->host->arch));
+    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.env}", build->context->env->name);
+    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.config}", build->context->config->name);
+    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.target}", build->context->target->name);
+    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.toolchain}", build->context->toolchain->name);
     fl_io_dir_create_recursive(output_filename);
 
     // Create the fullname
@@ -32,8 +32,8 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *e
 
 char** sbs_build_target_executable(SbsBuild *build)
 {
-    SbsTargetExecutable *target_executable = (SbsTargetExecutable*)build->target;
-    const SbsConfigExecutable *config_executable = &build->config->executable;
+    SbsTargetExecutable *target_executable = (SbsTargetExecutable*) build->context->target;
+    const SbsConfigExecutable *config_executable = &build->context->config->executable;
 
     // Collect all the executable flags in the configuration hierarchy
     char *flags = fl_cstring_new(0);
@@ -54,14 +54,14 @@ char** sbs_build_target_executable(SbsBuild *build)
             SbsTargetLibrary *library = target_executable->libraries + i;
             if (library->path)
             {
-                fl_cstring_append(&executable_libraries, build->toolchain->linker.lib_dir_flag);
-                fl_cstring_append(&executable_libraries, library->path);
+                fl_cstring_append(&executable_libraries, build->context->toolchain->linker.lib_dir_flag);
+                sbs_common_append_string_free(&executable_libraries, sbs_io_to_host_path(build->context->env->host->os, library->path));
                 fl_cstring_append(&executable_libraries, " ");
             }
 
             if (library->name)
             {
-                fl_cstring_append(&executable_libraries, build->toolchain->linker.lib_flag);
+                fl_cstring_append(&executable_libraries, build->context->toolchain->linker.lib_flag);
                 fl_cstring_append(&executable_libraries, library->name);
                 fl_cstring_append(&executable_libraries, " ");
             }
@@ -94,19 +94,17 @@ char** sbs_build_target_executable(SbsBuild *build)
     {
         if (target_executable->objects[i].type == SBS_IDENTIFIER)
         {
-            // target_objects is an array of pointers to char allocated by the target
-            SbsTarget *target = sbs_target_resolve(build->file, target_executable->objects[i].value, build->env->name, (const SbsTarget*) target_executable);
+            SbsContext *tmpctx = sbs_context_copy(build->context);
+            sbs_target_free(tmpctx->target);
+            tmpctx->target = sbs_target_resolve(build->context, target_executable->objects[i].value, (const SbsTarget*) target_executable);
 
+            // target_objects is an array of pointers to char allocated by the target
             char **target_objects = sbs_build_target(&(SbsBuild) {
-                .executor = build->executor,
-                .file = build->file,
-                .env = build->env,
-                .toolchain = build->toolchain,
-                .target = target,
-                .config = build->config
+                .context = tmpctx,
+                .script_mode = build->script_mode
             });
 
-            sbs_target_free(target);
+            sbs_context_free(tmpctx);
 
             // Something odd happened if it is null, we need to leave with error
             if (target_objects == NULL)
@@ -137,12 +135,14 @@ char** sbs_build_target_executable(SbsBuild *build)
         }
         else
         {
-            char *object_filename = fl_cstring_dup(target_executable->objects[i].value);
+            char *object_filename = sbs_io_to_host_path(build->context->env->host->os, target_executable->objects[i].value);
 
-            object_filename = fl_cstring_replace_realloc(object_filename, "${SBS_ENV_NAME}", build->env->name);
-            object_filename = fl_cstring_replace_realloc(object_filename, "${SBS_CONFIG_NAME}", build->config->name);
-            object_filename = fl_cstring_replace_realloc(object_filename, "${SBS_TARGET_NAME}", build->target->name);
-            object_filename = fl_cstring_replace_realloc(object_filename, "${SBS_TOOLCHAIN_NAME}", build->toolchain->name);
+            object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.os}", sbs_host_os_to_str(build->context->host->os));
+            object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.arch}", sbs_host_arch_to_str(build->context->host->arch));
+            object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.env}", build->context->env->name);
+            object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.config}", build->context->config->name);
+            object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.target}", build->context->target->name);
+            object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.toolchain}", build->context->toolchain->name);
 
             // We also check here to see if the object pointed by the string is newer than the executable
             // in order to set the needs_linkage flag
@@ -157,15 +157,15 @@ char** sbs_build_target_executable(SbsBuild *build)
         }        
     }
 
-    if (success && needs_linkage)
+    if (success && (needs_linkage || build->script_mode))
     {
-        if (build->toolchain->linker.bin != NULL)
+        if (build->context->toolchain->linker.bin != NULL)
         {
-            // Replace the special ${OUTPUT_FILE} variable in the flag
-            char *executable_flags = fl_cstring_replace(flags, "${OUTPUT_FILE}", output_filename);
+            // Replace the special ${sbs.output_file} variable in the flag
+            char *executable_flags = fl_cstring_replace(flags, "${sbs.output_file}", output_filename);
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s ", build->toolchain->linker.bin, executable_flags);
+            char *command = fl_cstring_vdup("%s %s ", build->context->toolchain->linker.bin, executable_flags);
 
             for (size_t i=0; i < fl_vector_length(executable_objects); i++)
                 fl_cstring_append(fl_cstring_append(&command, " "), *(char**) fl_vector_ref_get(executable_objects, i));
@@ -173,7 +173,7 @@ char** sbs_build_target_executable(SbsBuild *build)
             fl_cstring_append(fl_cstring_append(&command, " "), executable_libraries);
 
             // Exec
-            success = sbs_executor_run_command(build->executor, command) && success;
+            success = sbs_executor_run_command(build->context->executor, command) && success;
 
             fl_cstring_free(command);
             fl_cstring_free(executable_flags);
@@ -181,7 +181,7 @@ char** sbs_build_target_executable(SbsBuild *build)
         else
         {
             success = false;
-            fprintf(stdout, "Toolchain '%s' does not have an linker executable defined for environment '%s'", build->toolchain->name, build->env->name);
+            fprintf(stdout, "Toolchain '%s' does not have an linker executable defined for environment '%s'", build->context->toolchain->name, build->context->env->name);
         }
     }
     else if (success)
@@ -199,7 +199,7 @@ char** sbs_build_target_executable(SbsBuild *build)
 
     if (!success)
     {
-        fl_array_free_each(output, sbs_common_free_string);
+        fl_array_free_each_pointer(output, (FlArrayFreeElementFunc) fl_cstring_free);
         return NULL;
     }
 
