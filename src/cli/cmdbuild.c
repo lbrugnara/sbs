@@ -5,7 +5,7 @@
 #include "../io.h"
 #include "../result.h"
 #include "../build/build.h"
-#include "../parser/file.h"
+#include "../lang/parsers/file.h"
 
 static const char *build_help =
     "Usage: sbs build [ <preset> <options>? <resources>? | <options>? <resources> ] \n"

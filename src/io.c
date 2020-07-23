@@ -2,8 +2,8 @@
 #include <fllib/Cstring.h>
 #include <fllib/IO.h>
 
-#include "host.h"
 #include "io.h"
+#include "runtime/host.h"
 
 char* sbs_io_to_host_path_realloc(SbsHostOs os, char *path)
 {

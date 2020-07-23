@@ -2,28 +2,12 @@
 #include <fllib.h>
 
 #include "build.h"
-#include "action.h"
 #include "archive.h"
 #include "compile.h"
 #include "executable.h"
 #include "shared.h"
-#include "../context.h"
-#include "../utils.h"
-#include "../host.h"
-#include "../executor.h"
-#include "../parser/file.h"
-#include "../parser/action.h"
-#include "../parser/helpers.h"
-#include "../parser/configuration.h"
-#include "../parser/target.h"
-#include "../parser/toolchain.h"
-#include "../parser/lexer.h"
-#include "../parser/parser.h"
-#include "../parser/file.h"
-
-#include "../objects/configuration.h"
-#include "../objects/toolchain.h"
-#include "../objects/preset.h"
+#include "action.h"
+#include "../runtime/context.h"
 
 char** sbs_build_target(SbsBuild *build)
 {

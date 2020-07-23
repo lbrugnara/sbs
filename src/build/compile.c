@@ -1,7 +1,7 @@
 #include "compile.h" 
 #include "../io.h"
 #include "../utils.h"
-#include "../objects/configuration.h"
+#include "../runtime/configuration.h"
 
 // FIXME: Poor man's kind-of topological sort
 static void resolve_c_file_dependencies(SbsBuild *build, const char *target_file, char ***resolved_files, char **include_folders, FlVector *visited_files)

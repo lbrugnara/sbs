@@ -3,15 +3,15 @@
 
 #include <fllib.h>
 #include "../result.h"
-#include "../host.h"
-#include "../context.h"
-#include "../executor.h"
-#include "../parser/file.h"
-#include "../objects/environment.h"
-#include "../objects/configuration.h"
-#include "../objects/preset.h"
-#include "../objects/target.h"
-#include "../objects/toolchain.h"
+#include "../runtime/host.h"
+#include "../runtime/context.h"
+#include "../runtime/executor.h"
+#include "../lang/file.h"
+#include "../runtime/environment.h"
+#include "../runtime/configuration.h"
+#include "../runtime/preset.h"
+#include "../runtime/target.h"
+#include "../runtime/toolchain.h"
 
 typedef struct SbsBuild {
     SbsContext *context;

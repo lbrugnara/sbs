@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <fllib.h>
 
-#include "../objects/environment.h"
-#include "../context.h"
+#include "../runtime/environment.h"
+#include "../runtime/context.h"
 #include "action.h"
 #include "build.h"
 #include "../result.h"
-#include "../objects/action.h"
+#include "../runtime/action.h"
 
 static bool run_command(SbsContext *context, const char *actioncmd)
 {
@@ -25,19 +25,19 @@ static bool run_command(SbsContext *context, const char *actioncmd)
     return result;
 }
 
-static bool run_actions(SbsContext *context, SbsStringOrId *actions)
+static bool run_actions(SbsContext *context, SbsValueCommand *actions)
 {
     if (!actions)
         return true;
 
     for (size_t i=0; i < fl_array_length(actions); i++)
     {
-        SbsStringOrId *action = actions + i;
+        SbsValueCommand *action = actions + i;
         
         if (!action)
             continue;
 
-        if (action->type == SBS_STRING)
+        if (action->type == SBS_COMMAND_STRING)
         {
             if (!run_command(context, action->value))
                 return false;
@@ -71,7 +71,7 @@ static bool run_actions(SbsContext *context, SbsStringOrId *actions)
 
 static bool run_env_actions(SbsContext *context, SbsBuildActionType type)
 {
-    SbsStringOrId *actions = type == SBS_BUILD_ACTION_BEFORE ? context->env->actions.before : context->env->actions.after;
+    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? context->env->actions.before : context->env->actions.after;
 
     if (!actions)
         return true;
@@ -84,7 +84,7 @@ static bool run_target_actions(SbsContext *context, SbsBuildActionType type)
     if (!context->target)
         return true;
 
-    SbsStringOrId *actions = type == SBS_BUILD_ACTION_BEFORE ? context->target->actions.before : context->target->actions.after;    
+    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? context->target->actions.before : context->target->actions.after;    
 
     if (!actions)
         return true;
@@ -97,7 +97,7 @@ static bool run_preset_actions(SbsContext *context, SbsBuildActionType type)
     if (!context->preset)
         return true;
 
-    SbsStringOrId *actions = type == SBS_BUILD_ACTION_BEFORE ? context->preset->actions.before : context->preset->actions.after;    
+    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? context->preset->actions.before : context->preset->actions.after;    
 
     if (!actions)
         return true;

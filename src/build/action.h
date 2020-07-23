@@ -2,7 +2,7 @@
 #define SBS_BUILD_ACTION_H
 
 #include "../result.h"
-#include "../context.h"
+#include "../runtime/context.h"
 
 typedef enum SbsBuildActionType {
     SBS_BUILD_ACTION_BEFORE,

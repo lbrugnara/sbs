@@ -2,8 +2,8 @@
 #include "build.h"
 #include "../io.h"
 #include "../utils.h"
-#include "../objects/configuration.h"
-#include "../objects/toolchain.h"
+#include "../runtime/configuration.h"
+#include "../runtime/toolchain.h"
 
 static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *executable, const char *output_dir, const char *output_name)
 {
@@ -92,7 +92,7 @@ char** sbs_build_target_executable(SbsBuild *build)
     bool success = true;
     for (size_t i = 0; i < n_objects; i++)
     {
-        if (target_executable->objects[i].type == SBS_IDENTIFIER)
+        if (target_executable->objects[i].type == SBS_COMMAND_NAME)
         {
             SbsContext *tmpctx = sbs_context_copy(build->context);
             sbs_target_free(tmpctx->target);

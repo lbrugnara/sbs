@@ -1,7 +1,7 @@
-#include <fllib.h>
+#include <fllib/Mem.h>
+#include <fllib/Array.h>
+#include <fllib/Cstring.h>
 #include "utils.h"
-#include "objects/action.h"
-#include "parser/helpers.h"
 
 FlArray* sbs_array_extend(FlArray *dest, const FlArray *src, SbsArrayCopyElementFn copy_fn)
 {
