@@ -1,0 +1,22 @@
+
+toolchain msvc for env(win-cmd) {
+
+    # These are the same for both envs
+    compiler: {
+        bin: "cl.exe",
+        include_dir_flag: "/I",
+        define_flag: "/D"
+    }    
+
+    # We use LLVM's archiver
+    archiver: {
+        bin: "lib.exe"
+    },
+
+    # We use MS' linker
+    linker: {
+        bin: "link.exe",
+        lib_dir_flag: "/LIBPATH:",
+        lib_flag: "/DEFAULTLIB:"
+    }
+}

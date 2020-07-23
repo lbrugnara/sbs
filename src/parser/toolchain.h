@@ -31,6 +31,7 @@ typedef struct SbsNodeToolchain {
 
 typedef struct SbsSectionToolchain {
     const char *name;
+    SbsSectionFor *for_clause;
     SbsNodeToolchain **entries;
 } SbsSectionToolchain;
 

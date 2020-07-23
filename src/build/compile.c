@@ -4,7 +4,7 @@
 #include "../objects/configuration.h"
 
 // FIXME: Poor man's kind-of topological sort
-static void resolve_c_file_dependencies(SbsBuild *build, const char *target_file, const char ***resolved_files, char **include_folders, FlVector *visited_files)
+static void resolve_c_file_dependencies(SbsBuild *build, const char *target_file, char ***resolved_files, char **include_folders, FlVector *visited_files)
 {
     char *content = fl_io_file_read_all_text(target_file);
 
@@ -143,9 +143,9 @@ static void resolve_c_file_dependencies(SbsBuild *build, const char *target_file
     fl_cstring_free(content);
 }
 
-static const char** resolve_source_files(SbsBuild *build, const char **target_sources)
+static char** resolve_source_files(SbsBuild *build, const char **target_sources)
 {
-    const char** source_files = fl_array_new(sizeof(const char*), 0);
+    char** source_files = fl_array_new(sizeof(const char*), 0);
 
     for (size_t i=0; i < fl_array_length(target_sources); i++)
     {
@@ -280,7 +280,7 @@ char** sbs_build_compile(SbsBuild *build)
     }
 
     // Get all the source files of this compile target
-    const char **target_source_files = resolve_source_files(build, (const char**) target_compile->sources);
+    char **target_source_files = resolve_source_files(build, (const char**) target_compile->sources);
 
     size_t n_sources = fl_array_length(target_source_files);
 
@@ -316,12 +316,12 @@ char** sbs_build_compile(SbsBuild *build)
             // in the source file to know if there are modifications made after the object file creation
             if (!needs_compile)
             {
-                const char **deps = fl_array_new(sizeof(char*), 0);
+                char **deps = fl_array_new(sizeof(char*), 0);
                 resolve_c_file_dependencies(build, source_file, &deps, target_compile->includes, NULL);
 
                 for (size_t i=0; i < fl_array_length(deps); i++)
                 {
-                    const char *dep_file = deps[i];
+                    char *dep_file = deps[i];
             
                     if (fl_io_file_exists(dep_file))
                     {

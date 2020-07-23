@@ -39,6 +39,9 @@ void sbs_section_toolchain_free(SbsSectionToolchain *toolchain)
     if (toolchain->entries)
         fl_array_free_each_pointer(toolchain->entries, (FlArrayFreeElementFunc) sbs_toolchain_entry_free);
 
+    if (toolchain->for_clause)
+        sbs_section_for_free(toolchain->for_clause);
+
     fl_free(toolchain);
 }
 
@@ -165,6 +168,9 @@ SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser)
     const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
     toolchain->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
+
+    if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
+        toolchain->for_clause = sbs_section_for_parse(parser);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 

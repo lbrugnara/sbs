@@ -51,6 +51,9 @@ void sbs_section_config_free(SbsSectionConfig *configuration)
     if (configuration->entries)
         fl_array_free_each_pointer(configuration->entries, (FlArrayFreeElementFunc) sbs_config_entry_free);
 
+    if (configuration->for_clause)
+        sbs_section_for_free(configuration->for_clause);
+
     fl_free(configuration);
 }
 
@@ -244,8 +247,21 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
 
     configuration->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
 
+    // TODO: Improve this:
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_EXTENDS)
+    {
         configuration->extends = sbs_parse_extends_declaration(parser);
+
+        if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
+            configuration->for_clause = sbs_section_for_parse(parser);
+    }
+    else if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
+    {
+        configuration->for_clause = sbs_section_for_parse(parser);
+
+        if (sbs_parser_peek(parser)->type == SBS_TOKEN_EXTENDS)
+            configuration->extends = sbs_parse_extends_declaration(parser);
+    }
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 

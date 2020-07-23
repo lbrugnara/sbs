@@ -36,6 +36,7 @@ typedef struct SbsNodeConfig {
 typedef struct SbsSectionConfig {
     const char *name;
     char **extends;
+    SbsSectionFor *for_clause;
     SbsNodeConfig **entries;
 } SbsSectionConfig;
 

@@ -10,14 +10,18 @@ static void merge_archive_config(SbsConfigArchive *extend, const SbsNodeConfigAr
 static void merge_shared_config(SbsConfigShared *extend, const SbsNodeConfigShared *source);
 static void merge_executable_config(SbsConfigExecutable *extend, const SbsNodeConfigExecutable *source);
 
-static void resolve_config_with_hierarchy(SbsContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)
+static bool try_resolve_config_with_hierarchy(SbsContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)
 {
+    if (config_section->for_clause && !sbs_for_node_eval(config_section->for_clause->condition, context->symbols))
+        return false;
+
     if (config_section->extends)
     {
         for (size_t i = 0; i < fl_array_length(config_section->extends); i++)
         {
             char *parent_name = config_section->extends[i];
-            resolve_config_with_hierarchy(context, configuration, fl_hashtable_get(context->file->configurations, parent_name));
+            if (!try_resolve_config_with_hierarchy(context, configuration, fl_hashtable_get(context->file->configurations, parent_name)))
+                return false;
         }
     }
 
@@ -34,6 +38,8 @@ static void resolve_config_with_hierarchy(SbsContext *context, SbsConfiguration 
         merge_shared_config(&configuration->shared, &config_node->shared);
         merge_executable_config(&configuration->executable, &config_node->executable);
     }
+
+    return true;
 }
 
 SbsConfiguration* sbs_config_resolve(SbsContext *context, const char *config_name)
@@ -46,7 +52,11 @@ SbsConfiguration* sbs_config_resolve(SbsContext *context, const char *config_nam
     SbsConfiguration *configuration = fl_malloc(sizeof(SbsConfiguration));
     configuration->name = fl_cstring_dup(config_section->name);
 
-    resolve_config_with_hierarchy(context, configuration, config_section);
+    if (!try_resolve_config_with_hierarchy(context, configuration, config_section))
+    {
+        sbs_config_free(configuration);
+        return NULL;
+    }
     
     return configuration;
 }

@@ -1,7 +1,6 @@
 # The base configuration contains all the flags shared between debug and release configurations
-config clang-config {
+config clang-config for toolchain(clang, gcc) {
     compile: {
-        # The default object file extension
         extension: ".o",
         flags: [
             "-std=c99",
@@ -29,19 +28,11 @@ config clang-config {
 
     # Specific overrides for linux envs
     for env(linux-bash) {
-        compile: {
-            flags: [ "-fPIC" ]
-        },
-        archive: {
-            extension: ".a",
-            flags: [ "rcs" ]
-        },
+        compile: { flags: [ "-fPIC" ] },
+        archive: { extension: ".a", flags: [ "rcs" ] },
         shared: {
             extension: ".so",
-            flags: [ 
-                "-shared",
-                "-o ${sbs.output_file}"
-            ]
+            flags: [ "-shared", "-o ${sbs.output_file}" ]
         },
         executable: {
             extension: "",
@@ -53,70 +44,35 @@ config clang-config {
     for env(win-cmd) {
         archive: {
             extension: ".lib",
-            flags: [
-                "/NOLOGO",
-                "/OUT:${sbs.output_file}"
-            ]
+            flags: [ "/NOLOGO", "/OUT:${sbs.output_file}" ]
         },
         shared: {
             extension: ".dll",
-            flags: [
-                "/NOLOGO",
-                "/DLL",
-                "/OUT:${sbs.output_file}"
-            ]
+            flags: [ "/NOLOGO", "/DLL", "/OUT:${sbs.output_file}" ]
         },
         executable: {
             extension: ".exe",
-            flags: [
-                "/OUT:${sbs.output_file}",
-                "/DEFAULTLIB:libcmt.lib",
-                "/NOLOGO",
-                "/SUBSYSTEM:CONSOLE"
-            ]
+            flags: [ "/OUT:${sbs.output_file}", "/DEFAULTLIB:libcmt.lib", "/NOLOGO", "/SUBSYSTEM:CONSOLE" ]
         }
     }
 }
 
-# The debug configuration adds flags to generate the debugging information
+# The debug configuration adds flags to generate debug information
 config clang-debug extends clang-config {
-    compile: {
-        flags: [
-            "-ggdb",
-            "-O0",
-            "-DFL_DEBUG"
-        ]
-    }
+    compile: { flags: [ "-ggdb", "-O0", "-DFL_DEBUG" ] }
 
     for env(win-cmd) {
-        shared: {
-            flags: [
-                "/DEBUG:FULL"
-            ]
-        },
-        executable: {
-            flags: [
-                "/DEBUG:FULL"
-            ]
-        }
+        shared: { flags: [ "/DEBUG:FULL" ] },
+        executable: { flags: [ "/DEBUG:FULL" ] }
     }
 }
 
 # The release configuration adds specifc flags to get optimized code
 config clang-release extends clang-config {
-    compile: {
-        flags: [
-            "-O3"
-        ]
-    }
+    compile: { flags: [ "-O3" ] }
 }
 
 # The sanitize config adds the -fsanitize flag to compile with Clang's sanitizers
 config clang-sanitize extends clang-release {
-    compile: {
-        flags: [
-            "-O0",
-            "-fsanitize=address,undefined"
-        ]
-    },
+    compile: { flags: [ "-O0", "-fsanitize=address,undefined" ] },
 }

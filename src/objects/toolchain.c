@@ -10,6 +10,9 @@ SbsToolchain* sbs_toolchain_resolve(SbsContext *context, const char *toolchain_n
     if (!toolchain_section)
         return NULL;
 
+    if (toolchain_section->for_clause && !sbs_for_node_eval(toolchain_section->for_clause->condition, context->symbols))
+        return NULL;
+
     SbsToolchain *toolchain_object = fl_malloc(sizeof(SbsToolchain));
     toolchain_object->name = fl_cstring_dup(toolchain_section->name);
 

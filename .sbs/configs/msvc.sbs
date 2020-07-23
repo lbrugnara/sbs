@@ -1,0 +1,30 @@
+# The MSVC configuration is valid only for the MSVC toolchain
+config msvc-config for toolchain(msvc) {
+    compile: {
+        extension: ".o",
+        flags: [ "/Zi", "/W1", "/c ${sbs.input_file}", "/Fo.\\${sbs.output_file}" ]
+    },    
+    archive: {
+        extension: ".lib",
+        flags: [ "/NOLOGO", "/OUT:${sbs.output_file}" ]
+    },
+    shared: {
+        extension: ".dll",
+        flags: [ "/NOLOGO", "/DLL", "/OUT:${sbs.output_file}" ]
+    },
+    executable: {
+        extension: ".exe",
+        flags: [ "/OUT:${sbs.output_file}", "/DEFAULTLIB:libcmt.lib", "/NOLOGO", "/SUBSYSTEM:CONSOLE" ]
+    }
+}
+
+# Configurations extending from msvc-config inherit all the for clauses too, which means
+# both msvc-debug and msvc-release are available just for the msvc toolchain
+config msvc-debug extends msvc-config {
+    compile: { flags : [  "/Od", "/DEBUG:FULL" ] }
+}
+
+
+config msvc-release extends msvc-config {
+    compile: { flags : [ "/GL", "/Gw" ] }
+}

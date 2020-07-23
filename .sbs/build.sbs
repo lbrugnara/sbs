@@ -2,10 +2,18 @@
 
 include [
     "actions.sbs",
-    "configs.sbs",
+
+    "toolchains/gcc.sbs",
+    "toolchains/clang.sbs",
+    "toolchains/msvc.sbs",
+
+    "configs/clang.sbs",
+    "configs/msvc.sbs",
+
     "envs.sbs",
     "presets.sbs",
     "targets.sbs",
-    "toolchains.sbs",
+
+
     "dummy.sbs"
 ]
