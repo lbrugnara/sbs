@@ -1,7 +1,7 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "for.h"
-#include "../common/common.h"
+#include "../utils.h"
 
 void free_value_node(SbsForValueNode *value_node)
 {
@@ -163,7 +163,7 @@ SbsNodeFor* copy_value_node(SbsForValueNode* node)
 
     copy->kind = node->kind;
     copy->resource = node->resource;
-    copy->variables = sbs_common_extend_array_copy(copy->variables, node->variables, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    copy->variables = sbs_string_array_extend(copy->variables, node->variables);
 
     return (SbsNodeFor*) copy;
 }

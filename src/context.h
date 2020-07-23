@@ -2,7 +2,7 @@
 #define SBS_CONTEXT_H
 
 #include <stdbool.h>
-#include "common/result.h"
+#include "result.h"
 
 typedef struct SbsContextArgs {
     char *env;

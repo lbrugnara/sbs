@@ -1,7 +1,7 @@
 #include "executable.h"
 #include "build.h"
 #include "../io.h"
-#include "../common/common.h"
+#include "../utils.h"
 #include "../objects/configuration.h"
 #include "../objects/toolchain.h"
 
@@ -55,7 +55,7 @@ char** sbs_build_target_executable(SbsBuild *build)
             if (library->path)
             {
                 fl_cstring_append(&executable_libraries, build->context->toolchain->linker.lib_dir_flag);
-                sbs_common_append_string_free(&executable_libraries, sbs_io_to_host_path(build->context->env->host->os, library->path));
+                sbs_string_append_free(&executable_libraries, sbs_io_to_host_path(build->context->env->host->os, library->path));
                 fl_cstring_append(&executable_libraries, " ");
             }
 

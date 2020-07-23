@@ -2,7 +2,7 @@
 #include "action.h"
 #include "helpers.h"
 #include "parser.h"
-#include "../common/common.h"
+#include "../utils.h"
 
 static void action_node_free(SbsNodeAction *action_node);
 
@@ -93,7 +93,7 @@ SbsSectionAction* sbs_section_action_parse(SbsParser *parser)
 static void action_node_free(SbsNodeAction *action_node)
 {
     if (action_node->commands)
-        fl_array_free_each(action_node->commands, sbs_common_free_string_or_id);
+        fl_array_free_each(action_node->commands, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 
     if (action_node->for_clause)
         sbs_section_for_free(action_node->for_clause);
@@ -163,8 +163,8 @@ SbsPropertyActions sbs_property_actions_parse(SbsParser *parser)
 void sbs_property_actions_free(SbsPropertyActions *actions)
 {
     if (actions->before)
-        fl_array_free_each(actions->before, sbs_common_free_string_or_id);
+        fl_array_free_each(actions->before, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 
     if (actions->after)
-        fl_array_free_each(actions->after, sbs_common_free_string_or_id);
+        fl_array_free_each(actions->after, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 }

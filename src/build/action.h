@@ -1,7 +1,7 @@
 #ifndef SBS_BUILD_ACTION_H
 #define SBS_BUILD_ACTION_H
 
-#include "../common/result.h"
+#include "../result.h"
 #include "../context.h"
 
 typedef enum SbsBuildActionType {

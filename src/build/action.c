@@ -5,7 +5,7 @@
 #include "../context.h"
 #include "action.h"
 #include "build.h"
-#include "../common/result.h"
+#include "../result.h"
 #include "../objects/action.h"
 
 static bool run_command(SbsContext *context, const char *actioncmd)

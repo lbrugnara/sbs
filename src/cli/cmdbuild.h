@@ -1,7 +1,7 @@
 #ifndef SBS_CMDBUILD_H
 #define SBS_CMDBUILD_H
 
-#include "../common/result.h"
+#include "../result.h"
 
 /*
  * Function: sbs_command_build

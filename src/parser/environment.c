@@ -2,7 +2,7 @@
 #include "helpers.h"
 #include "parser.h"
 #include "variable.h"
-#include "../common/common.h"
+#include "../utils.h"
 
 void sbs_section_env_free(SbsSectionEnv *env)
 {
@@ -10,10 +10,10 @@ void sbs_section_env_free(SbsSectionEnv *env)
         return;
 
     if (env->os)
-        sbs_common_free_variable(env->os);
+        sbs_variable_free(env->os);
 
     if (env->arch)
-        fl_array_free_each_pointer(env->arch, (FlArrayFreeElementFunc) sbs_common_free_variable);
+        fl_array_free_each_pointer(env->arch, (FlArrayFreeElementFunc) sbs_variable_free);
 
     if (env->name)
         fl_cstring_free(env->name);

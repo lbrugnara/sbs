@@ -1,7 +1,7 @@
 #include "shared.h"
 #include "build.h"
 #include "../io.h"
-#include "../common/common.h"
+#include "../utils.h"
 #include "../objects/configuration.h"
 #include "../objects/toolchain.h"
 

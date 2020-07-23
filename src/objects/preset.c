@@ -11,13 +11,13 @@ SbsPreset* sbs_preset_resolve(SbsContext *context, const char *preset_name)
     SbsPreset *preset_object = fl_malloc(sizeof(SbsPreset));
 
     preset_object->name = fl_cstring_dup(preset_section->name);
-    preset_object->env = sbs_common_extend_array_copy(preset_object->env, preset_section->env, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    preset_object->env = sbs_string_array_extend(preset_object->env, preset_section->env);
     preset_object->toolchain = preset_section->toolchain ? fl_cstring_dup(preset_section->toolchain) : NULL;
     preset_object->config = preset_section->config ? fl_cstring_dup(preset_section->config) : NULL;
     preset_object->target = preset_section->target ? fl_cstring_dup(preset_section->target) : NULL;
     
-    preset_object->actions.before = sbs_common_extend_array_copy(preset_object->actions.before, preset_section->actions.before, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
-    preset_object->actions.after = sbs_common_extend_array_copy(preset_object->actions.after, preset_section->actions.after, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
+    preset_object->actions.before = sbs_string_or_id_array_extend(preset_object->actions.before, preset_section->actions.before);
+    preset_object->actions.after = sbs_string_or_id_array_extend(preset_object->actions.after, preset_section->actions.after);
 
     return preset_object;
 }
@@ -39,10 +39,10 @@ void sbs_preset_free(SbsPreset *preset)
         fl_cstring_free(preset->target);
 
     if (preset->actions.before)
-        fl_array_free_each(preset->actions.before, (FlArrayFreeElementFunc) sbs_common_free_string_or_id);
+        fl_array_free_each(preset->actions.before, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 
     if (preset->actions.after)
-        fl_array_free_each(preset->actions.after, (FlArrayFreeElementFunc) sbs_common_free_string_or_id);
+        fl_array_free_each(preset->actions.after, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 
     fl_free(preset);
 }

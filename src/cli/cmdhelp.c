@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "cli.h"
-#include "../common/result.h"
+#include "../result.h"
 
 static const char *help = 
     CLI_HEADER

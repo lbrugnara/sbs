@@ -2,7 +2,7 @@
 #include "configuration.h"
 #include "../context.h"
 #include "../parser/configuration.h"
-#include "../common/common.h"
+#include "../utils.h"
 
 static void find_ancestors(const SbsSectionConfig *config, FlList *ancestors, const SbsFile *file);
 static void merge_compile_config(SbsConfigCompile *extend, const SbsNodeConfigCompile *source);
@@ -98,32 +98,32 @@ void sbs_config_free(SbsConfiguration *config)
 static void merge_compile_config(SbsConfigCompile *extend, const SbsNodeConfigCompile *source)
 {
     if (source->extension)
-        extend->extension = sbs_common_set_string(extend->extension, source->extension);
+        extend->extension = sbs_string_set(extend->extension, source->extension);
     
-    extend->flags = sbs_common_extend_array_copy(extend->flags, source->flags, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
 }
 
 static void merge_archive_config(SbsConfigArchive *extend, const SbsNodeConfigArchive *source)
 {
     if (source->extension)
-        extend->extension = sbs_common_set_string(extend->extension, source->extension);
+        extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_common_extend_array_copy(extend->flags, source->flags, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
 }
 
 static void merge_shared_config(SbsConfigShared *extend, const SbsNodeConfigShared *source)
 {
     if (source->extension)
-        extend->extension = sbs_common_set_string(extend->extension, source->extension);
+        extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_common_extend_array_copy(extend->flags, source->flags, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
 }
 
 static void merge_executable_config(SbsConfigExecutable *extend, const SbsNodeConfigExecutable *source)
 {
     if (source->extension)
-        extend->extension = sbs_common_set_string(extend->extension, source->extension);
+        extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_common_extend_array_copy(extend->flags, source->flags, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
 }
 

@@ -1,7 +1,7 @@
 #include "toolchain.h"
 #include "helpers.h"
 #include "parser.h"
-#include "../common/common.h"
+#include "../utils.h"
 
 void sbs_toolchain_entry_free(SbsNodeToolchain *toolchain_entry)
 {

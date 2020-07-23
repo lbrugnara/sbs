@@ -3,7 +3,7 @@
 #include "helpers.h"
 #include "parser.h"
 #include "for.h"
-#include "../common/common.h"
+#include "../utils.h"
 
 void sbs_config_entry_free(struct SbsNodeConfig *config)
 {

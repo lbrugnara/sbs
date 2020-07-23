@@ -39,7 +39,7 @@ SbsAction* sbs_action_resolve(SbsContext *context, const char *action_name)
                     continue;
                 }
 
-                action_object->commands = sbs_common_extend_array_copy(action_object->commands, ref_action->commands, (SbsArrayCopyElementFn) sbs_common_copy_string);
+                action_object->commands = sbs_string_array_extend(action_object->commands, ref_action->commands);
 
                 sbs_action_free(ref_action);
             }
@@ -115,7 +115,7 @@ void sbs_action_copy(SbsAction **dest, const SbsAction **src_action)
     SbsAction *dst_action = fl_malloc(sizeof(SbsAction));
 
     dst_action->name = fl_cstring_dup((*src_action)->name);
-    dst_action->commands = sbs_common_extend_array_copy(dst_action->commands, (*src_action)->commands, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    dst_action->commands = sbs_string_array_extend(dst_action->commands, (*src_action)->commands);
 
     memcpy(dest, &dst_action, sizeof(SbsAction));
 }

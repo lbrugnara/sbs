@@ -1,6 +1,6 @@
 #include "compile.h" 
 #include "../io.h"
-#include "../common/common.h"
+#include "../utils.h"
 #include "../objects/configuration.h"
 
 // FIXME: Poor man's kind-of topological sort
@@ -263,7 +263,7 @@ char** sbs_build_compile(SbsBuild *build)
     for (size_t i = 0; target_compile->includes && i < fl_array_length(target_compile->includes); i++)
     {
         fl_cstring_append(&includes, build->context->toolchain->compiler.include_dir_flag);
-        sbs_common_append_string_free(&includes, sbs_io_to_host_path(build->context->env->host->os, target_compile->includes[i]));
+        sbs_string_append_free(&includes, sbs_io_to_host_path(build->context->env->host->os, target_compile->includes[i]));
         fl_cstring_append(&includes, " ");
     }
 

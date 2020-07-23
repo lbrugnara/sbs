@@ -3,7 +3,7 @@
 #include "cli.h"
 #include "cmdbuild.h"
 #include "../io.h"
-#include "../common/result.h"
+#include "../result.h"
 #include "../build/build.h"
 #include "../parser/file.h"
 

@@ -8,7 +8,7 @@
 #include "executable.h"
 #include "shared.h"
 #include "../context.h"
-#include "../common/common.h"
+#include "../utils.h"
 #include "../host.h"
 #include "../executor.h"
 #include "../parser/file.h"

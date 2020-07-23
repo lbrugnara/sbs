@@ -2,7 +2,7 @@
 #define SBS_BUILD_H
 
 #include <fllib.h>
-#include "../common/result.h"
+#include "../result.h"
 #include "../host.h"
 #include "../context.h"
 #include "../executor.h"

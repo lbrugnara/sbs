@@ -1,7 +1,7 @@
 #ifndef SBS_CMDINIT_H
 #define SBS_CMDINIT_H
 
-#include "../common/result.h"
+#include "../result.h"
 
 /*
  * Function: sbs_command_init

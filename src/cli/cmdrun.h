@@ -1,7 +1,7 @@
 #ifndef SBS_CMDRUN_H
 #define SBS_CMDRUN_H
 
-#include "../common/result.h"
+#include "../result.h"
 
 SbsResult sbs_command_run(int argc, char **argv, char **env);
 

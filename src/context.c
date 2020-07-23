@@ -1,6 +1,6 @@
 #include <fllib/Mem.h>
 #include "context.h"
-#include "common/result.h"
+#include "result.h"
 
 #include "executor.h"
 #include "parser/file.h"

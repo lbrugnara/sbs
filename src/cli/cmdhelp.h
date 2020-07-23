@@ -1,7 +1,7 @@
 #ifndef SBS_CMDHELP_H
 #define SBS_CMDHELP_H
 
-#include "../common/result.h"
+#include "../result.h"
 
 /*
  * Function: sbs_command_help

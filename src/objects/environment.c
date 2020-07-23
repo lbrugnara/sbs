@@ -61,16 +61,16 @@ SbsEnv* sbs_env_resolve(SbsContext *context, const char *env_name)
 
     SbsEnv *env_object = fl_malloc(sizeof(SbsEnv));
 
-    env_object->name = sbs_common_set_string(env_object->name, env_section->name);
-    env_object->type = sbs_common_set_string(env_object->type, env_section->type);
-    env_object->terminal = sbs_common_set_string(env_object->terminal, env_section->terminal);
-    env_object->args = sbs_common_extend_array_copy(env_object->args, env_section->args, (SbsArrayCopyElementFn) sbs_common_copy_string);
-    env_object->variables = sbs_common_extend_array_copy(env_object->variables, env_section->variables, (SbsArrayCopyElementFn) sbs_common_copy_string);
+    env_object->name = sbs_string_set(env_object->name, env_section->name);
+    env_object->type = sbs_string_set(env_object->type, env_section->type);
+    env_object->terminal = sbs_string_set(env_object->terminal, env_section->terminal);
+    env_object->args = sbs_string_array_extend(env_object->args, env_section->args);
+    env_object->variables = sbs_string_array_extend(env_object->variables, env_section->variables);
     env_object->os = variable_to_host_os(env_section->os);
     env_object->arch = variable_array_to_host_arch(env_section->arch);
 
-    env_object->actions.before = sbs_common_extend_array_copy(env_object->actions.before, env_section->actions.before, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
-    env_object->actions.after = sbs_common_extend_array_copy(env_object->actions.after, env_section->actions.after, (SbsArrayCopyElementFn) sbs_common_copy_string_or_id);
+    env_object->actions.before = sbs_string_or_id_array_extend(env_object->actions.before, env_section->actions.before);
+    env_object->actions.after = sbs_string_or_id_array_extend(env_object->actions.after, env_section->actions.after);
 
     return env_object;
 }
@@ -102,10 +102,10 @@ void sbs_env_free(SbsEnv *env)
         fl_array_free_each_pointer(env->args, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (env->actions.before)
-        fl_array_free_each(env->actions.before, (FlArrayFreeElementFunc) sbs_common_free_string_or_id);
+        fl_array_free_each(env->actions.before, (FlArrayFreeElementFunc) sbs_string_or_id_free);
     
     if (env->actions.after)
-        fl_array_free_each(env->actions.after, (FlArrayFreeElementFunc) sbs_common_free_string_or_id);
+        fl_array_free_each(env->actions.after, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 
     free(env);
 }

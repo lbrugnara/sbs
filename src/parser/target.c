@@ -2,7 +2,7 @@
 #include "target.h"
 #include "helpers.h"
 #include "parser.h"
-#include "../common/common.h"
+#include "../utils.h"
 
 static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionTargetType target_type);
 static void free_library_node(void*);
@@ -36,7 +36,7 @@ void sbs_target_entry_free(SbsSectionTargetType target_type, SbsSectionTarget *t
             SbsSectionArchive *archive = (SbsSectionArchive*)target_entry;
 
             if (archive->objects)
-                fl_array_free_each(archive->objects, sbs_common_free_string_or_id);
+                fl_array_free_each(archive->objects, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 
             if (archive->output_name)
                 fl_cstring_free(archive->output_name);
@@ -48,7 +48,7 @@ void sbs_target_entry_free(SbsSectionTargetType target_type, SbsSectionTarget *t
             SbsSectionShared *shared = (SbsSectionShared*)target_entry;
 
             if (shared->objects)
-                fl_array_free_each(shared->objects, sbs_common_free_string_or_id);
+                fl_array_free_each(shared->objects, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 
             if (shared->output_name)
                 fl_cstring_free(shared->output_name);
@@ -60,7 +60,7 @@ void sbs_target_entry_free(SbsSectionTargetType target_type, SbsSectionTarget *t
             SbsSectionExecutable *executable = (SbsSectionExecutable*)target_entry;
 
             if (executable->objects)
-                fl_array_free_each(executable->objects, sbs_common_free_string_or_id);
+                fl_array_free_each(executable->objects, (FlArrayFreeElementFunc) sbs_string_or_id_free);
 
             if (executable->libraries)
                 fl_array_free_each(executable->libraries, free_library_node);

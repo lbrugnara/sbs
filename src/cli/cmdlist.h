@@ -1,7 +1,7 @@
 #ifndef SBS_CMDLIST_H
 #define SBS_CMDLIST_H
 
-#include "../common/result.h"
+#include "../result.h"
 
 /*
  * Function: sbs_command_list

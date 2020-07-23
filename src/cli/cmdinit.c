@@ -3,7 +3,7 @@
 #include "cmdinit.h"
 
 #include "cli.h"
-#include "../common/result.h"
+#include "../result.h"
 
 SbsResult sbs_command_init(int argc, char **argv, char **env)
 {
