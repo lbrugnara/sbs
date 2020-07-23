@@ -132,6 +132,12 @@ static bool parse_include_statement(SbsParser *parser, SbsFile *file)
         // Parse the included file
          SbsFile *included_file = sbs_file_parse(filename);
 
+        if (included_file == NULL)
+        {
+            // TODO: Error handling here?
+            continue;
+        }
+
         // Merge the included build file into our main build file
         merge_into_file(file, included_file);
 

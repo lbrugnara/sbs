@@ -2,6 +2,7 @@
 #include "args.h"
 #include "cli.h"
 #include "cmdlist.h"
+#include "../io.h"
 #include "../common/result.h"
 #include "../build/build.h"
 #include "../parser/file.h"
@@ -94,17 +95,20 @@ SbsResult sbs_command_list(int argc, char **argv, char **env)
     }
 
     // If present the file argument, make sure the file exists
-    if (args.file && !fl_io_file_exists(args.file))
+    char *file_abspath = sbs_io_realpath((args.file ? args.file : ".sbs/build.sbs"));
+
+    if (file_abspath && !fl_io_file_exists(file_abspath))
     {
         sbs_cli_print_header();
-        const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, args.file);
+        const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, file_abspath);
         sbs_cli_print_error("%s", error);
         fl_cstring_free(error);
         return SBS_RES_INVALID_FILE;
     }
     
     // Parse the build file to get all the resources
-    SbsFile *file = sbs_file_parse(args.file ? args.file : ".sbs/build.sbs");
+    SbsFile *file = sbs_file_parse(file_abspath);
+    fl_cstring_free(file_abspath);
 
     // Get the requested resource. If the resource name is not valid, show an error.
     const char *resource_name = NULL;
