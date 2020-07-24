@@ -1,7 +1,6 @@
-#include <stdio.h>
+#include "cmdrun.h"
 #include "args.h"
 #include "cli.h"
-#include "cmdrun.h"
 
 SbsResult sbs_command_run(int argc, char **argv, char **env)
 {

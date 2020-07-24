@@ -2,9 +2,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <fllib.h>
+#include <fllib/Mem.h>
+#include <fllib/Array.h>
+#include <fllib/Cstring.h>
+#include <fllib/os/Process.h>
 #include "executor.h"
-#include "environment.h"
 
 extern char** environ;
 

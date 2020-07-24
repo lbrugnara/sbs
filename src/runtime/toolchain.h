@@ -1,11 +1,6 @@
 #ifndef SBS_RUNTIME_TOOLCHAIN_H
 #define SBS_RUNTIME_TOOLCHAIN_H
 
-#include <fllib.h>
-#include "context.h"
-#include "../lang/file.h"
-#include "../lang/for.h"
-
 typedef struct SbsToolchainCompiler {
     char *bin;
     char *include_dir_flag;
@@ -29,7 +24,6 @@ typedef struct SbsToolchain {
     SbsToolchainArchiver archiver;
 } SbsToolchain;
 
-SbsToolchain* sbs_toolchain_resolve(SbsContext *context, const char *toolchain_name);
 void sbs_toolchain_free(SbsToolchain *toolchain);
 
 #endif /* SBS_RUNTIME_TOOLCHAIN_H */

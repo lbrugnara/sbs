@@ -1,8 +1,6 @@
 #ifndef SBS_RUNTIME_EXECUTOR_H
 #define SBS_RUNTIME_EXECUTOR_H
 
-#include <fllib.h>
-
 typedef struct SbsExecutor SbsExecutor;
 
 SbsExecutor* sbs_executor_new(char *typestr, char **args, char **variables, char *terminal);

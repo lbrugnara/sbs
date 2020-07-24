@@ -1,6 +1,5 @@
 #include <stdio.h>
-#include <fllib.h>
-
+#include <fllib/Array.h>
 #include "build.h"
 #include "archive.h"
 #include "compile.h"

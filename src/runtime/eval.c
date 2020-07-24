@@ -1,4 +1,7 @@
+#include <fllib/Mem.h>
+#include <fllib/Array.h>
 #include <fllib/Cstring.h>
+#include <fllib/containers/Hashtable.h>
 #include "eval.h"
 #include "../utils.h"
 

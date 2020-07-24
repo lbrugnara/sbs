@@ -9,7 +9,7 @@ typedef enum SbsArgsResult {
     SBS_ARGS_ERROR
 } SbsArgsResult;
 
-#define sbs_parse_args(args, body) \
+#define sbs_args_parse(args, body) \
 do { \
     bool sbs_break = false; \
     SbsArgsResult *sbs_resultptr = NULL; \
@@ -18,11 +18,11 @@ do { \
     body \
 } while (0)
 
-#define use_retval(retvalptr) sbs_resultptr = (retvalptr); *sbs_resultptr = SBS_ARGS_OK
+#define sbs_args_retval(retvalptr) sbs_resultptr = (retvalptr); *sbs_resultptr = SBS_ARGS_OK
     
-#define use_error_func(perr) void (*sbs_print_err)(const char*, ...) = (perr)
+#define sbs_args_error_fn(perr) void (*sbs_print_err)(const char*, ...) = (perr)
 
-#define with_help(lname, sname) \
+#define sbs_args_help(lname, sname) \
 do { \
     char **sbs_argsptr_bu = sbs_argsptr; \
     while ((sbs_arg = *sbs_argsptr++)) \
@@ -36,7 +36,7 @@ do { \
     sbs_arg = NULL; \
 } while (0)
 
-#define with_help_func(lname, sname, func) \
+#define sbs_args_help_fn(lname, sname, func) \
 do { \
     char **sbs_argsptr_bu = sbs_argsptr; \
     while ((sbs_arg = *sbs_argsptr++)) \
@@ -50,7 +50,7 @@ do { \
     sbs_arg = NULL; \
 } while (0)
 
-#define with_options(...) \
+#define sbs_args_list(...) \
 do { \
     if (sbs_break) break; \
     sbs_arg = *sbs_argsptr++; \
@@ -70,13 +70,13 @@ do { \
     } \
 } while (1)
 
-#define command_any(dest) \
+#define sbs_args_cmd(dest) \
     else if (sbs_arg[0] != '-' && (dest) == NULL) \
     { \
         (dest) = sbs_arg; \
     } \
 
-#define flag_string(lname, sname, strptr) \
+#define sbs_args_string(lname, sname, strptr) \
     else if (sbs_args_is_flag((lname), (sname), sbs_arg)) \
     { \
         if (!sbs_args_is_string(sbs_arg, (strptr))) \
@@ -88,7 +88,7 @@ do { \
         } \
     }
 
-#define flag_bool(lname, sname, boolptr) \
+#define sbs_args_bool(lname, sname, boolptr) \
     else if (sbs_args_is_flag((lname), (sname), sbs_arg)) \
     { \
         if (!sbs_args_is_bool(sbs_arg, (boolptr))) \
@@ -100,13 +100,13 @@ do { \
         } \
     }
 
-#define flag_without_value(lname, sname, boolptr) \
+#define sbs_args_flag(lname, sname, boolptr) \
     else if (sbs_args_is_flag((lname), (sname), sbs_arg)) \
     { \
         *(boolptr) = true; \
     }
 
-#define sbs_args_is_command(module_name, str) flm_cstring_equals((module_name), (str))
+#define sbs_args_is_cmd(module_name, str) flm_cstring_equals((module_name), (str))
 
 bool sbs_args_is_flag(const char *longname, const char *shortname, const char *arg);
 bool sbs_args_is_string(const char *arg, char **option);

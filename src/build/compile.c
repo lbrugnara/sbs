@@ -1,3 +1,7 @@
+#include <fllib/Array.h>
+#include <fllib/Cstring.h>
+#include <fllib/IO.h>
+#include <fllib/containers/Vector.h>
 #include "compile.h" 
 #include "../io.h"
 #include "../utils.h"
@@ -214,6 +218,7 @@ static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile
     if (output_file_fullpath[strlen(output_file_fullpath) - 1] != build->context->env->host->dir_separator)
         fl_cstring_append_char(&output_file_fullpath, build->context->env->host->dir_separator);
 
+    // TODO: Implement proper string interpolation
     output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.os}", sbs_host_os_to_str(build->context->host->os));
     output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.arch}", sbs_host_arch_to_str(build->context->host->arch));
     output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.env}", build->context->env->name);

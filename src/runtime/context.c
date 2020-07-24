@@ -1,15 +1,15 @@
 #include <fllib/Mem.h>
+#include <fllib/Array.h>
+#include <fllib/containers/Hashtable.h>
 #include "context.h"
-
+#include "executor.h"
+#include "resolvers/environment.h"
+#include "resolvers/configuration.h"
+#include "resolvers/preset.h"
+#include "resolvers/target.h"
+#include "resolvers/toolchain.h"
 #include "../result.h"
 #include "../lang/file.h"
-
-#include "executor.h"
-#include "environment.h"
-#include "configuration.h"
-#include "preset.h"
-#include "target.h"
-#include "toolchain.h"
 
 static inline bool resolve_executor(SbsContext *context, bool script_mode, SbsResult *result)
 {

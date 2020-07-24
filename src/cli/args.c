@@ -1,9 +1,6 @@
-#include <stdio.h>
-#include <fllib/Std.h>
+#include <stdbool.h>
 #include <fllib/Cstring.h>
 #include "args.h"
-#include "cli.h"
-#include "cmdbuild.h"
 
 bool sbs_args_is_flag(const char *longname, const char *shortname, const char *arg)
 {

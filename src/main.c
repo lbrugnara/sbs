@@ -1,5 +1,3 @@
-#include <fllib/Std.h>
-
 #include "cli/args.h"
 #include "cli/cmdrun.h"
 #include "cli/cmdbuild.h"
@@ -22,13 +20,13 @@ int main(int argc, char **argv, char **env)
         return sbs_command_help(argc, argv, env);
 
     // Check for subcommands
-    if (sbs_args_is_command("init", argv[1]))
+    if (sbs_args_is_cmd("init", argv[1]))
         return sbs_command_init(argc, argv, env);
     
-    if (sbs_args_is_command("list", argv[1]))
+    if (sbs_args_is_cmd("list", argv[1]))
         return sbs_command_list(argc, argv, env);
     
-    if (sbs_args_is_command("build", argv[1]))
+    if (sbs_args_is_cmd("build", argv[1]))
         return sbs_command_build(argc, argv, env);    
 
     // Default command is running an action

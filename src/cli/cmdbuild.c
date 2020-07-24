@@ -1,7 +1,7 @@
 #include <stdio.h>
+#include "cmdbuild.h"
 #include "args.h"
 #include "cli.h"
-#include "cmdbuild.h"
 #include "../io.h"
 #include "../result.h"
 #include "../build/build.h"
@@ -61,18 +61,18 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
     SbsContextArgs args = { 0 };
     SbsArgsResult parsed_args = SBS_ARGS_OK;
     // args+2: skip program name and "build" argument
-    sbs_parse_args(argv+2, {
-        use_retval(&parsed_args);
-        use_error_func(sbs_cli_print_error);
-        with_help("--help", "-h");
-        with_options(
-            command_any(args.preset)
-            flag_string("--env", "-e", &args.env)
-            flag_string("--toolchain", "-tc", &args.toolchain)
-            flag_string("--config", "-c", &args.config)
-            flag_string("--target", "-t", &args.target)
-            flag_string("--file", "-f", &build_file_path)
-            flag_without_value("--script-mode", "-s", &args.script_mode)
+    sbs_args_parse(argv+2, {
+        sbs_args_retval(&parsed_args);
+        sbs_args_error_fn(sbs_cli_print_error);
+        sbs_args_help("--help", "-h");
+        sbs_args_list(
+            sbs_args_cmd(args.preset)
+            sbs_args_string("--env", "-e", &args.env)
+            sbs_args_string("--toolchain", "-tc", &args.toolchain)
+            sbs_args_string("--config", "-c", &args.config)
+            sbs_args_string("--target", "-t", &args.target)
+            sbs_args_string("--file", "-f", &build_file_path)
+            sbs_args_flag("--script-mode", "-s", &args.script_mode)
         );
     });
 

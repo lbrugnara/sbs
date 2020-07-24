@@ -1,15 +1,14 @@
 #include <stdio.h>
-#include <fllib.h>
-
-#include "../runtime/environment.h"
-#include "../runtime/context.h"
+#include <fllib/Array.h>
+#include <fllib/Cstring.h>
 #include "action.h"
-#include "build.h"
 #include "../result.h"
-#include "../runtime/action.h"
+#include "../runtime/context.h"
+#include "../runtime/resolvers/action.h"
 
 static bool run_command(SbsContext *context, const char *actioncmd)
 {
+    // TODO: Implement proper string interpolation
     char *command = fl_cstring_dup(actioncmd);
     command = fl_cstring_replace_realloc(command, "${sbs.os}", sbs_host_os_to_str(context->host->os));
     command = fl_cstring_replace_realloc(command, "${sbs.arch}", sbs_host_arch_to_str(context->host->arch));

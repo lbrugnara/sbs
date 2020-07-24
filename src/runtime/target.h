@@ -3,7 +3,6 @@
 
 #include <fllib.h>
 
-#include "context.h"
 #include "../lang/action.h"
 #include "../lang/target.h"
 #include "../lang/file.h"
@@ -50,7 +49,6 @@ typedef struct SbsTargetExecutable {
     char **defines;
 } SbsTargetExecutable;
 
-SbsTarget* sbs_target_resolve(SbsContext *context, const char *target_name, const SbsTarget *parent);
 void sbs_target_free(SbsTarget *target);
 
 #endif /* SBS_RUNTIME_TARGET_H */

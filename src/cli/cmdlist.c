@@ -1,10 +1,13 @@
 #include <stdio.h>
+#include <fllib/Array.h>
+#include <fllib/Cstring.h>
+#include <fllib/IO.h>
+#include <fllib/containers/Hashtable.h>
+#include "cmdlist.h"
 #include "args.h"
 #include "cli.h"
-#include "cmdlist.h"
 #include "../io.h"
 #include "../result.h"
-#include "../build/build.h"
 #include "../lang/parsers/file.h"
 
 struct SbsListArguments {
@@ -53,17 +56,17 @@ SbsResult sbs_command_list(int argc, char **argv, char **env)
 
     struct SbsListArguments args = { 0 };
     
-    // A boolean to pass to the sbs_parse_args macro to save the parsing result
+    // A boolean to pass to the sbs_args_parse macro to save the parsing result
     SbsArgsResult parsed_args = SBS_ARGS_OK;
     
     // args+2: skip program name and "build" argument
-    sbs_parse_args(argv+2, {
-        use_retval(&parsed_args);
-        use_error_func(sbs_cli_print_error);
-        with_help("--help", "-h");
-        with_options(
-            command_any(args.resource)
-            flag_string("--file", "-f", &args.file)
+    sbs_args_parse(argv+2, {
+        sbs_args_retval(&parsed_args);
+        sbs_args_error_fn(sbs_cli_print_error);
+        sbs_args_help("--help", "-h");
+        sbs_args_list(
+            sbs_args_cmd(args.resource)
+            sbs_args_string("--file", "-f", &args.file)
         );
     });
 

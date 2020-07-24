@@ -1,9 +1,12 @@
+#include <fllib/Array.h>
+#include <fllib/Cstring.h>
+#include <fllib/IO.h>
+#include <fllib/containers/Vector.h>
 #include "executable.h"
-#include "build.h"
 #include "../io.h"
 #include "../utils.h"
-#include "../runtime/configuration.h"
-#include "../runtime/toolchain.h"
+#include "../runtime/context.h"
+#include "../runtime/resolvers/target.h"
 
 static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *executable, const char *output_dir, const char *output_name)
 {
@@ -16,6 +19,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *e
     if (output_filename[strlen(output_filename) - 1] != build->context->env->host->dir_separator)
         fl_cstring_append_char(&output_filename, build->context->env->host->dir_separator);
 
+    // TODO: Implement proper string interpolation
     output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.os}", sbs_host_os_to_str(build->context->host->os));
     output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.arch}", sbs_host_arch_to_str(build->context->host->arch));
     output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.env}", build->context->env->name);
@@ -137,6 +141,7 @@ char** sbs_build_target_executable(SbsBuild *build)
         {
             char *object_filename = sbs_io_to_host_path(build->context->env->host->os, target_executable->objects[i].value);
 
+            // TODO: Implement proper string interpolation
             object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.os}", sbs_host_os_to_str(build->context->host->os));
             object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.arch}", sbs_host_arch_to_str(build->context->host->arch));
             object_filename = fl_cstring_replace_realloc(object_filename, "${sbs.env}", build->context->env->name);

@@ -1,7 +1,5 @@
 #include <fllib/IO.h>
-
 #include "cmdinit.h"
-
 #include "cli.h"
 #include "../result.h"
 

@@ -3,6 +3,15 @@
 
 #include <stdbool.h>
 #include "../result.h"
+#include "../lang/file.h"
+#include "configuration.h"
+#include "eval.h"
+#include "executor.h"
+#include "environment.h"
+#include "host.h"
+#include "preset.h"
+#include "target.h"
+#include "toolchain.h"
 
 typedef struct SbsContextArgs {
     char *env;
@@ -14,18 +23,18 @@ typedef struct SbsContextArgs {
 } SbsContextArgs;
 
 typedef struct SbsContext {
-    const struct SbsFile *file;
-    struct SbsHostInfo *host;
-    struct SbsEvalContext *symbols;
-    struct SbsExecutor *executor;
-    struct SbsEnv *env;
-    struct SbsToolchain *toolchain;
-    struct SbsTarget *target;
-    struct SbsConfiguration *config;
-    struct SbsPreset *preset;
+    const SbsFile *file;
+    SbsHostInfo *host;
+    SbsEvalContext *symbols;
+    SbsExecutor *executor;
+    SbsEnv *env;
+    SbsToolchain *toolchain;
+    SbsTarget *target;
+    SbsConfiguration *config;
+    SbsPreset *preset;
 } SbsContext;
 
-SbsContext* sbs_context_new(const struct SbsFile *file, SbsContextArgs *args, enum SbsResult *result);
+SbsContext* sbs_context_new(const SbsFile *file, SbsContextArgs *args, enum SbsResult *result);
 void sbs_context_free(SbsContext *context);
 SbsContext* sbs_context_copy(const SbsContext *ctx);
 

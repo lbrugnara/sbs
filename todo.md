@@ -1,4 +1,5 @@
 v0.2.0:
+    [ ] Rename "for" keyword to "if". In the current context it makes (a lot) of sense to use the conditional
     [ ] Make "toolchain" an array to allow multiple toolset combinations
     [ ] Make "target" in presets an array object to run multiple targets at once
     [ ] sbs run command to run presets
@@ -19,6 +20,10 @@ v0.2.0:
     [x] Detect host OS and architecture (basic)
 
 v0.2.x:
+    [ ] String interpolation for variables and probably a ternary if or something like that
+        Examples: 
+            - "/path/to/libsomething.${sbs.env == "win-cmd" ? "lib" : "a"}" <-- The "win-cmd" must be a string because we don't have context for it
+            - "/path/to/libsomething.${env(win-cmd) ? "lib" : "a"}" <-- win-cmd is expected to be an env (this one could work right away)
     [ ] Detect installed toolchains: search for the binaries using the executor?
     [ ] Add support for glob (currently we only support regexes)
         [ ] Prepend regexes with ~ to differentiate paths from it
@@ -34,6 +39,7 @@ backlog:
     [ ] Scripting mode: Argument to request just the specific target without resolving dependencies?
         Example: just invoking a linker command using the shared or executable target
     [ ] Add a "show" command to view details about resources
+        [ ] Every element within an SbsFile should be able to print its own representation.
     [ ] Add flags to request verbosity
         [ ] Improve logging
         [ ] Make the parser continue on errors (unknown properties, missing commas?)

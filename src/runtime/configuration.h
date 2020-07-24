@@ -1,11 +1,6 @@
 #ifndef SBS_RUNTIME_CONFIGURATION_H
 #define SBS_RUNTIME_CONFIGURATION_H
 
-#include <fllib.h>
-#include "context.h"
-#include "../lang/file.h"
-#include "../lang/for.h"
-
 typedef struct SbsConfigCompile {
     char *extension;
     char **flags;
@@ -34,7 +29,6 @@ typedef struct SbsConfiguration {
     SbsConfigExecutable executable;
 } SbsConfiguration;
 
-SbsConfiguration* sbs_config_resolve(SbsContext *context, const char *config_name);
 void sbs_config_free(SbsConfiguration *config);
 
 #endif /* SBS_RUNTIME_CONFIGURATION_H */
