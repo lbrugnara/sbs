@@ -6,7 +6,7 @@
 
 void sbs_section_for_free(SbsSectionFor *section)
 {
-    sbs_eval_node_free(section->condition);
+    sbs_expression_free(section->expr);
     fl_free(section);
 }
 
@@ -14,7 +14,7 @@ SbsSectionFor* sbs_section_for_copy(SbsSectionFor *section)
 {
     SbsSectionFor *copy = fl_malloc(sizeof(SbsSectionFor));
 
-    copy->condition = sbs_eval_node_copy(section->condition);
+    copy->expr = sbs_expression_copy(section->expr);
 
     return copy;
 }
@@ -30,7 +30,7 @@ SbsSectionFor* sbs_section_for_extend(SbsSectionFor *child_section, SbsSectionFo
     }
     else
     {
-        child_section->condition = sbs_eval_node_make_binary(SBS_EVAL_OP_AND, child_section->condition, sbs_eval_node_copy(parent_section->condition));
+        child_section->expr = sbs_expression_make_binary(SBS_EVAL_OP_AND, child_section->expr, sbs_expression_copy(parent_section->expr));
     }
 
     return child_section;

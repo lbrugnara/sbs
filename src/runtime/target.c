@@ -45,7 +45,7 @@ SbsTarget* sbs_target_resolve(SbsContext *context, const char *target_name, cons
     {
         SbsSectionTarget *target_section = abs_target_section->entries[i];
 
-        if (target_section->for_clause && !sbs_eval_run(target_section->for_clause->condition, context->symbols))
+        if (target_section->for_clause && !sbs_expression_eval(context->symbols, target_section->for_clause->expr))
             continue;
 
         merge_base_target(context, target, target_section);

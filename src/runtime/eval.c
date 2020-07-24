@@ -2,6 +2,8 @@
 #include "eval.h"
 #include "../utils.h"
 
+static SbsValueExpr* eval_run(SbsEvalContext *context, SbsExpression *node);
+
 SbsEvalContext* sbs_eval_context_new(void)
 {
     SbsEvalContext *ctx = fl_malloc(sizeof(SbsEvalContext));
@@ -24,130 +26,305 @@ void sbs_eval_context_free(SbsEvalContext *context)
     fl_free(context);
 }
 
-static bool eval_value_node(SbsEvalArrayNode *value_node, SbsEvalContext *context)
+static SbsValueExpr* eval_variable_node(SbsVariableExpr *var_node, SbsEvalContext *context)
 {
-    const char *value = NULL;
+    SbsValueExpr *result = fl_malloc(sizeof(SbsValueExpr));
+    result->kind = SBS_EXPR_VALUE;
+    result->type = SBS_EXPR_VALUE_TYPE_UNK;
 
-    switch(value_node->resource)
-    {
-        case SBS_FOR_RESOURCE_OS:
-            value = fl_hashtable_get(context->variables, "$sbs.os");
-            break;
+    if (!fl_hashtable_has_key(context->variables, var_node->name))
+        return result;
 
-        case SBS_FOR_RESOURCE_ARCH:
-            value = fl_hashtable_get(context->variables, "$sbs.arch");
-            break;
+    char *var_value = fl_hashtable_get(context->variables, var_node->name);
 
-        case SBS_FOR_RESOURCE_ENV:
-            value = fl_hashtable_get(context->variables, "$sbs.env");
-            break;
+    if (var_value == NULL)
+        return result;
 
-        case SBS_FOR_RESOURCE_TOOLCHAIN:
-            value = fl_hashtable_get(context->variables, "$sbs.toolchain");
-            break;
+    // TODO: By now, we assume STRING type here
+    result->type = SBS_EXPR_VALUE_TYPE_STR;
+    result->value.s = fl_cstring_dup(var_value);
 
-        case SBS_FOR_RESOURCE_CONFIG:
-            value = fl_hashtable_get(context->variables, "$sbs.config");
-            break;
-
-        case SBS_FOR_RESOURCE_TARGET:
-            value = fl_hashtable_get(context->variables, "$sbs.target");
-            break;
-    }
-
-    if (!value)
-        return false;
-
-    for (size_t i=0; i < fl_array_length(value_node->variables); i++)
-    {
-        if (flm_cstring_equals(value_node->variables[i], value))
-            return true;
-    }
-
-    return false;
+    return result;
 }
 
-static bool eval_unary_node(SbsEvalUnaryNode *unary_node, SbsEvalContext *context)
+static SbsValueExpr* eval_array_node(SbsArrayExpr *array_node, SbsEvalContext *context)
 {
-    bool result = sbs_eval_run(unary_node->node, context);
+    SbsValueExpr *array_val = fl_malloc(sizeof(SbsValueExpr));
+    array_val->kind = SBS_EXPR_VALUE;
+    array_val->type = SBS_EXPR_VALUE_TYPE_ARRAY;
+    array_val->value.a = fl_array_new(sizeof(SbsExpression*), 0);
 
-    return unary_node->op == SBS_EVAL_OP_NOT ? !result : result;
+    for (size_t i=0; i < fl_array_length(array_node->items); i++)
+    {
+        SbsValueExpr *result = eval_run(context, array_node->items[i]);
+        array_val->value.a = fl_array_append(array_val->value.a, &result);
+    }
+
+    return array_val;
 }
 
-static bool eval_binary_node(SbsEvalBinaryNode *binary_node, SbsEvalContext *context)
+static SbsValueExpr* eval_unary_node(SbsUnaryExpr *unary_node, SbsEvalContext *context)
 {
-    bool left_result = sbs_eval_run(binary_node->left, context);
+    SbsValueExpr *result = eval_run(context, unary_node->node);
+
+    // TODO: Error handling for non-boolean values or type conversion...
+    if (result->type != SBS_EXPR_VALUE_TYPE_BOOL)
+        return result;
+
+    if (unary_node->op == SBS_EVAL_OP_NOT)
+        result->value.b = !result->value.b;
+
+    return result;
+}
+
+static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext *context)
+{
+    SbsValueExpr *bin_result = fl_malloc(sizeof(SbsValueExpr));
+    bin_result->kind = SBS_EXPR_VALUE;
+    bin_result->type = SBS_EXPR_VALUE_TYPE_UNK;
+
+    SbsValueExpr *left_result = eval_run(context, binary_node->left);
 
     switch (binary_node->op)
     {
         case SBS_EVAL_OP_AND:
-            // Short circuit
-            return left_result && sbs_eval_run(binary_node->right, context);
+        {
+            // At this point we know it needs to be bool
+            bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
+            bin_result->value.b = false;
 
+            // Short circuit
+            // TODO: Error handling for non-boolean values or type conversion...
+            if (left_result->type != SBS_EXPR_VALUE_TYPE_BOOL || !left_result->value.b)
+            {
+                sbs_expression_free((SbsExpression*) left_result);
+                return bin_result;
+            }
+
+            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+
+            // TODO: Error handling for non-boolean values or type conversion...
+            if (right_result->type != SBS_EXPR_VALUE_TYPE_BOOL)
+            {
+                sbs_expression_free((SbsExpression*) left_result);
+                sbs_expression_free((SbsExpression*) right_result);
+                return bin_result;
+            }
+
+            // The result depends on the RHS
+            bin_result->value.b = right_result->value.b;
+            sbs_expression_free((SbsExpression*) left_result);
+            sbs_expression_free((SbsExpression*) right_result);
+            return bin_result;            
+        }
         case SBS_EVAL_OP_OR:
-            // Short circuit
-            return left_result || sbs_eval_run(binary_node->right, context);
+        {
+            // At this point we know it needs to be bool
+            bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
+            bin_result->value.b = false;
 
-        default:
-            break;
+            // TODO: Error handling for non-boolean values or type conversion...
+            if (left_result->type != SBS_EXPR_VALUE_TYPE_BOOL)
+            {
+                sbs_expression_free((SbsExpression*) left_result);
+                return bin_result;
+            }
+
+            // Short circuit
+            if (left_result->value.b)
+            {
+                bin_result->value.b = true;
+                sbs_expression_free((SbsExpression*) left_result);
+                return bin_result;
+            }
+
+            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+
+            // TODO: Error handling for non-boolean values or type conversion...
+            if (right_result->type != SBS_EXPR_VALUE_TYPE_BOOL)
+            {
+                sbs_expression_free((SbsExpression*) left_result);
+                sbs_expression_free((SbsExpression*) right_result);
+                return bin_result;
+            }
+
+            // The result depends on the RHS
+            bin_result->value.b = right_result->value.b;
+            sbs_expression_free((SbsExpression*) left_result);
+            sbs_expression_free((SbsExpression*) right_result);
+            return bin_result;            
+        }
+        case SBS_EVAL_OP_IN_ARRAY:
+        {
+            // At this point we know it needs to be bool
+            bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
+            bin_result->value.b = false;
+
+            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+
+            if (right_result->type != SBS_EXPR_VALUE_TYPE_ARRAY)
+            {
+                sbs_expression_free((SbsExpression*) left_result);
+                sbs_expression_free((SbsExpression*) right_result);
+                return bin_result;
+            }
+
+            bool in_array = false;
+            for (size_t i=0; !in_array && i < fl_array_length(right_result->value.a); i++)
+            {
+                SbsExpression *node = right_result->value.a[i];
+
+                if (node->kind != SBS_EXPR_VALUE)
+                    break;
+
+                SbsValueExpr *item = (SbsValueExpr*) node;
+
+                // We don't check for arrays within arrays (by now at least..)
+                if (item->type == SBS_EXPR_VALUE_TYPE_UNK || item->type == SBS_EXPR_VALUE_TYPE_ARRAY || item->type != left_result->type)
+                    break;
+
+                switch (item->type)
+                {
+                    case SBS_EXPR_VALUE_TYPE_BOOL:
+                        in_array = item->value.b != left_result->value.b;
+                        break;
+
+                    case SBS_EXPR_VALUE_TYPE_STR:
+                        in_array = flm_cstring_equals(item->value.s, left_result->value.s);
+                        break;
+
+                    default: break;
+                }
+            }
+
+            sbs_expression_free((SbsExpression*) left_result);
+            sbs_expression_free((SbsExpression*) right_result);
+
+            bin_result->value.b = in_array;
+
+            return bin_result;
+        }
+
+        default: break;
     }
 
     return false;
 }
 
-bool sbs_eval_run(SbsEvalNode *node, SbsEvalContext *context)
+static SbsValueExpr* eval_run(SbsEvalContext *context, SbsExpression *node)
 {
+    SbsValueExpr *result = NULL;
+
     switch (node->kind)
     {
-        case SBS_EVAL_NODE_VALUE:
-            return eval_value_node((SbsEvalArrayNode*) node, context);
+        case SBS_EXPR_VALUE:
+            result = (SbsValueExpr*) sbs_expression_copy(node);
+            break;
 
-        case SBS_EVAL_NODE_UNARY:
-            return eval_unary_node((SbsEvalUnaryNode*) node, context);
+        case SBS_EXPR_VARIABLE:
+            result = eval_variable_node((SbsVariableExpr*) node, context);
+            break;
 
-        case SBS_EVAL_NODE_BINARY:
-            return eval_binary_node((SbsEvalBinaryNode*) node, context);        
+        case SBS_EXPR_ARRAY:
+            result = eval_array_node((SbsArrayExpr*) node, context);
+            break;
 
-        default:
-            return false;
+        case SBS_EXPR_UNARY:
+            result = eval_unary_node((SbsUnaryExpr*) node, context);
+            break;
+
+        case SBS_EXPR_BINARY:
+            result = eval_binary_node((SbsBinaryExpr*) node, context);
+            break;
+
+        default: break;
     }
+
+    return result;
 }
 
-static void free_value_node(SbsEvalArrayNode *value_node)
+bool sbs_expression_eval(SbsEvalContext *context, SbsExpression *node)
 {
-    if (value_node->variables)
-        fl_array_free_each_pointer(value_node->variables, (FlArrayFreeElementFunc) fl_cstring_free);
+    SbsExpression *node_copy = sbs_expression_copy(node);
+
+    SbsValueExpr *result = eval_run(context, node_copy);
+
+    bool b = false;
+    
+    if (result != NULL && result->type == SBS_EXPR_VALUE_TYPE_BOOL)
+        b = result->value.b;
+
+    sbs_expression_free((SbsExpression*) result);
+    sbs_expression_free(node_copy);
+
+    return b;
+}
+
+static void free_value_node(SbsValueExpr *value)
+{
+    if (value->type == SBS_EXPR_VALUE_TYPE_STR)
+    {
+        fl_cstring_free(value->value.s);
+    }
+    else if (value->type == SBS_EXPR_VALUE_TYPE_ARRAY)
+    {
+        fl_array_free_each_pointer(value->value.a, (FlArrayFreeElementFunc) sbs_expression_free);
+    }
+
+    fl_free(value);
+}
+
+static void free_variable_node(SbsVariableExpr *value_node)
+{
+    if (value_node->name)
+        fl_cstring_free(value_node->name);
 
     fl_free(value_node);
 }
 
-static void free_unary_node(SbsEvalUnaryNode *unary_node)
+static void free_array_node(SbsArrayExpr *value_node)
 {
-    sbs_eval_node_free(unary_node->node);
+    if (value_node->items)
+        fl_array_free_each_pointer(value_node->items, (FlArrayFreeElementFunc) sbs_expression_free);
+
+    fl_free(value_node);
+}
+
+static void free_unary_node(SbsUnaryExpr *unary_node)
+{
+    sbs_expression_free(unary_node->node);
     fl_free(unary_node);
 }
 
-static void free_binary_node(SbsEvalBinaryNode *binary_node)
+static void free_binary_node(SbsBinaryExpr *binary_node)
 {
-    sbs_eval_node_free(binary_node->left);
-    sbs_eval_node_free(binary_node->right);
+    sbs_expression_free(binary_node->left);
+    sbs_expression_free(binary_node->right);
     fl_free(binary_node);
 }
 
-void sbs_eval_node_free(SbsEvalNode *node)
+void sbs_expression_free(SbsExpression *node)
 {
     switch (node->kind)
     {
-        case SBS_EVAL_NODE_VALUE:
-            free_value_node((SbsEvalArrayNode*) node);
+        case SBS_EXPR_VALUE:
+            free_value_node((SbsValueExpr*) node);
             break;
 
-        case SBS_EVAL_NODE_UNARY:
-            free_unary_node((SbsEvalUnaryNode*) node);
+        case SBS_EXPR_VARIABLE:
+            free_variable_node((SbsVariableExpr*) node);
             break;
 
-        case SBS_EVAL_NODE_BINARY:
-            free_binary_node((SbsEvalBinaryNode*) node);
+        case SBS_EXPR_ARRAY:
+            free_array_node((SbsArrayExpr*) node);
+            break;
+
+        case SBS_EXPR_UNARY:
+            free_unary_node((SbsUnaryExpr*) node);
+            break;
+
+        case SBS_EXPR_BINARY:
+            free_binary_node((SbsBinaryExpr*) node);
             break;
 
         default:
@@ -155,52 +332,101 @@ void sbs_eval_node_free(SbsEvalNode *node)
     }
 }
 
-static SbsEvalNode* copy_value_node(SbsEvalArrayNode* node)
+static SbsExpression* copy_value_node(SbsValueExpr* node)
 {
-    SbsEvalArrayNode *copy = fl_malloc(sizeof(SbsEvalArrayNode));
+    SbsValueExpr *copy = fl_malloc(sizeof(SbsValueExpr));
 
     copy->kind = node->kind;
-    copy->resource = node->resource;
-    copy->variables = sbs_string_array_extend(copy->variables, node->variables);
+    copy->type = node->type;
 
-    return (SbsEvalNode*) copy;
+    if (node->type == SBS_EXPR_VALUE_TYPE_BOOL)
+    {
+        copy->value.b = node->value.b;
+    }
+    else if (node->type == SBS_EXPR_VALUE_TYPE_STR)
+    {
+        copy->value.s = fl_cstring_dup(node->value.s);
+    }
+    else if (node->type == SBS_EXPR_VALUE_TYPE_ARRAY)
+    {
+        copy->value.a = fl_array_new(sizeof(SbsExpression*), fl_array_length(node->value.a));
+
+        for (size_t i=0; i < fl_array_length(node->value.a); i++)
+        {
+            SbsExpression *item_copy = sbs_expression_copy(node->value.a[i]);
+            copy->value.a = fl_array_append(copy->value.a, &item_copy);
+        }
+    }
+
+    return (SbsExpression*) copy;
 }
 
-static SbsEvalNode* copy_unary_node(SbsEvalUnaryNode* node)
+static SbsExpression* copy_variable_node(SbsVariableExpr* node)
 {
-    SbsEvalUnaryNode *copy = fl_malloc(sizeof(SbsEvalUnaryNode));
+    SbsVariableExpr *copy = fl_malloc(sizeof(SbsVariableExpr));
+
+    copy->kind = node->kind;
+    copy->name = fl_cstring_dup(node->name);
+
+    return (SbsExpression*) copy;
+}
+
+static SbsExpression* copy_array_node(SbsArrayExpr* node)
+{
+    SbsArrayExpr *copy = fl_malloc(sizeof(SbsArrayExpr));
+
+    copy->kind = node->kind;
+    copy->items = fl_array_new(sizeof(SbsExpression*), fl_array_length(node->items));
+
+    for (size_t i=0; i < fl_array_length(node->items); i++)
+    {
+        copy->items[i] = sbs_expression_copy(node->items[i]);
+    }
+
+    return (SbsExpression*) copy;
+}
+
+static SbsExpression* copy_unary_node(SbsUnaryExpr* node)
+{
+    SbsUnaryExpr *copy = fl_malloc(sizeof(SbsUnaryExpr));
 
     copy->kind = node->kind;
     copy->op = node->op;
-    copy->node = sbs_eval_node_copy(node->node);
+    copy->node = sbs_expression_copy(node->node);
 
-    return (SbsEvalNode*) copy;
+    return (SbsExpression*) copy;
 }
 
-static SbsEvalNode* copy_binary_node(SbsEvalBinaryNode* node)
+static SbsExpression* copy_binary_node(SbsBinaryExpr* node)
 {
-    SbsEvalBinaryNode *copy = fl_malloc(sizeof(SbsEvalBinaryNode));
+    SbsBinaryExpr *copy = fl_malloc(sizeof(SbsBinaryExpr));
 
     copy->kind = node->kind;
     copy->op = node->op;
-    copy->left = sbs_eval_node_copy(node->left);
-    copy->right = sbs_eval_node_copy(node->right);
+    copy->left = sbs_expression_copy(node->left);
+    copy->right = sbs_expression_copy(node->right);
 
-    return (SbsEvalNode*) copy;
+    return (SbsExpression*) copy;
 }
 
-SbsEvalNode* sbs_eval_node_copy(SbsEvalNode *node)
+SbsExpression* sbs_expression_copy(SbsExpression *node)
 {
     switch (node->kind)
     {
-        case SBS_EVAL_NODE_VALUE:
-            return copy_value_node((SbsEvalArrayNode*) node);
+        case SBS_EXPR_VALUE:
+            return copy_value_node((SbsValueExpr*) node);
 
-        case SBS_EVAL_NODE_UNARY:
-            return copy_unary_node((SbsEvalUnaryNode*) node);
+        case SBS_EXPR_VARIABLE:
+            return copy_variable_node((SbsVariableExpr*) node);
 
-        case SBS_EVAL_NODE_BINARY:
-            return copy_binary_node((SbsEvalBinaryNode*) node);
+        case SBS_EXPR_ARRAY:
+            return copy_array_node((SbsArrayExpr*) node);
+
+        case SBS_EXPR_UNARY:
+            return copy_unary_node((SbsUnaryExpr*) node);
+
+        case SBS_EXPR_BINARY:
+            return copy_binary_node((SbsBinaryExpr*) node);
 
         default:
             break;
@@ -209,14 +435,14 @@ SbsEvalNode* sbs_eval_node_copy(SbsEvalNode *node)
     return NULL;
 }
 
-SbsEvalNode* sbs_eval_node_make_binary(SbsEvalOperatorKind op, SbsEvalNode *left, SbsEvalNode *right)
+SbsExpression* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right)
 {
-    SbsEvalBinaryNode *binode = fl_malloc(sizeof(SbsEvalBinaryNode));
+    SbsBinaryExpr *binode = fl_malloc(sizeof(SbsBinaryExpr));
 
-    binode->kind = SBS_EVAL_NODE_BINARY;
+    binode->kind = SBS_EXPR_BINARY;
     binode->op = op;
     binode->left = left;
     binode->right = right;
 
-    return (SbsEvalNode*) binode;
+    return (SbsExpression*) binode;
 }

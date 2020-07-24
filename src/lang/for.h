@@ -4,7 +4,7 @@
 #include "../runtime/eval.h"
 
 typedef struct SbsSectionFor {
-    SbsEvalNode *condition;
+    SbsExpression *expr;
 } SbsSectionFor;
 
 void sbs_section_for_free(SbsSectionFor *section);

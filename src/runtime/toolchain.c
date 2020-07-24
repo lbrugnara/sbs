@@ -10,7 +10,7 @@ SbsToolchain* sbs_toolchain_resolve(SbsContext *context, const char *toolchain_n
     if (!toolchain_section)
         return NULL;
 
-    if (toolchain_section->for_clause && !sbs_eval_run(toolchain_section->for_clause->condition, context->symbols))
+    if (toolchain_section->for_clause && !sbs_expression_eval(context->symbols, toolchain_section->for_clause->expr))
         return NULL;
 
     SbsToolchain *toolchain_object = fl_malloc(sizeof(SbsToolchain));
@@ -20,7 +20,7 @@ SbsToolchain* sbs_toolchain_resolve(SbsContext *context, const char *toolchain_n
     {
         SbsNodeToolchain *toolchain_node = toolchain_section->entries[i];
 
-        if (toolchain_node->for_clause && !sbs_eval_run(toolchain_node->for_clause->condition, context->symbols))
+        if (toolchain_node->for_clause && !sbs_expression_eval(context->symbols, toolchain_node->for_clause->expr))
             continue;
         
         toolchain_object->compiler.bin = sbs_string_set(toolchain_object->compiler.bin, toolchain_node->compiler.bin);

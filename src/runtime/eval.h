@@ -8,60 +8,71 @@ typedef enum SbsEvalOperatorKind {
     SBS_EVAL_OP_ID,
     SBS_EVAL_OP_AND,
     SBS_EVAL_OP_OR,
-    SBS_EVAL_OP_NOT
+    SBS_EVAL_OP_NOT,
+    SBS_EVAL_OP_IN_ARRAY,
 } SbsEvalOperatorKind;
 
-typedef enum SbsEvalNodeKind {
-    SBS_EVAL_NODE_UNK,
-    SBS_EVAL_NODE_UNARY,
-    SBS_EVAL_NODE_BINARY,
-    SBS_EVAL_NODE_VALUE,
-} SbsEvalNodeKind;
+typedef enum SbsExprKind {
+    SBS_EXPR_UNK,
+    SBS_EXPR_UNARY,
+    SBS_EXPR_BINARY,
+    SBS_EXPR_ARRAY,
+    SBS_EXPR_VARIABLE,
+    SBS_EXPR_VALUE
+} SbsExprKind;
 
-typedef struct SbsEvalNode {    
-    SbsEvalNodeKind kind;
-} SbsEvalNode;
+typedef struct SbsExpression {    
+    SbsExprKind kind;
+} SbsExpression;
 
-// TODO: SbsForResourceKind shouldn't be necessary, we could simply create
-// an SbsEvalVariable to collect them from the context
-typedef enum SbsForResourceKind {
-    SBS_FOR_RESOURCE_OS,
-    SBS_FOR_RESOURCE_ARCH,
-    SBS_FOR_RESOURCE_ENV,
-    SBS_FOR_RESOURCE_TOOLCHAIN,
-    SBS_FOR_RESOURCE_CONFIG,
-    SBS_FOR_RESOURCE_TARGET,
-} SbsForResourceKind;
+typedef struct SbsValueExpr {
+    SbsExprKind kind;
+    enum {
+        SBS_EXPR_VALUE_TYPE_UNK,
+        SBS_EXPR_VALUE_TYPE_BOOL,
+        SBS_EXPR_VALUE_TYPE_STR,
+        SBS_EXPR_VALUE_TYPE_ARRAY,
+    } type;
+    union {
+        bool b;
+        char *s;
+        SbsExpression **a;
+    } value;
+} SbsValueExpr;
 
-typedef struct SbsEvalArrayNode {
-    SbsEvalNodeKind kind;
-    SbsForResourceKind resource;
-    char **variables;
-} SbsEvalArrayNode;
+typedef struct SbsVariableExpr {
+    SbsExprKind kind;
+    char *name;
+} SbsVariableExpr;
 
-typedef struct SbsEvalUnaryNode {
-    SbsEvalNodeKind kind;
+typedef struct SbsArrayExpr {
+    SbsExprKind kind;
+    SbsExpression **items;
+} SbsArrayExpr;
+
+typedef struct SbsUnaryExpr {
+    SbsExprKind kind;
     SbsEvalOperatorKind op;
-    SbsEvalNode *node;
-} SbsEvalUnaryNode;
+    SbsExpression *node;
+} SbsUnaryExpr;
 
-typedef struct SbsEvalBinaryNode {
-    SbsEvalNodeKind kind;
+typedef struct SbsBinaryExpr {
+    SbsExprKind kind;
     SbsEvalOperatorKind op;
-    SbsEvalNode *left;
-    SbsEvalNode *right;
-} SbsEvalBinaryNode;
+    SbsExpression *left;
+    SbsExpression *right;
+} SbsBinaryExpr;
 
 typedef struct SbsEvalContext {
     FlHashtable *variables;
 } SbsEvalContext;
 
 SbsEvalContext* sbs_eval_context_new(void);
-bool sbs_eval_run(SbsEvalNode *node, SbsEvalContext *context);
 void sbs_eval_context_free(SbsEvalContext *context);
 
-void sbs_eval_node_free(SbsEvalNode *node);
-SbsEvalNode* sbs_eval_node_copy(SbsEvalNode *node);
-SbsEvalNode* sbs_eval_node_make_binary(SbsEvalOperatorKind op, SbsEvalNode *left, SbsEvalNode *right);
+bool sbs_expression_eval(SbsEvalContext *context, SbsExpression *node);
+void sbs_expression_free(SbsExpression *node);
+SbsExpression* sbs_expression_copy(SbsExpression *node);
+SbsExpression* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right);
 
 #endif /* SBS_RUNTIME_EVAL_H */
