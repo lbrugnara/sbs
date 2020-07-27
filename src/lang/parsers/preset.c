@@ -38,20 +38,19 @@ SbsSectionPreset* sbs_section_preset_parse(SbsParser *parser)
     {
         const SbsToken *token = sbs_parser_peek(parser);
 
-        if (token->type == SBS_TOKEN_ENV)
+        if (sbs_token_equals(token, "envs"))
         {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            preset->envs = sbs_parse_identifier_array(parser);
+        }
+        else if (sbs_token_equals(token, "env"))
+        {
+            // This is here for compatibility
             sbs_parser_consume(parser, SBS_TOKEN_ENV);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-
-            if (sbs_parser_peek(parser)->type == SBS_TOKEN_LBRACKET)
-            {
-                preset->env = sbs_parse_identifier_array(parser);
-            }
-            else
-            {
-                preset->env = fl_array_new(sizeof(char**), 1);
-                preset->env[0] = sbs_parse_identifier(parser);
-            }            
+            preset->envs = fl_array_new(sizeof(char**), 1);
+            preset->envs[0] = sbs_parse_identifier(parser);
         }
         else if (token->type == SBS_TOKEN_TOOLCHAIN)
         {
@@ -65,11 +64,19 @@ SbsSectionPreset* sbs_section_preset_parse(SbsParser *parser)
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             preset->config = sbs_parse_identifier(parser);
         }
-        else if (token->type == SBS_TOKEN_TARGET)
+        else if (sbs_token_equals(token, "targets"))
         {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            preset->targets = sbs_parse_identifier_array(parser);
+        }
+        else if (sbs_token_equals(token, "target"))
+        {
+            // This is here for compatibility
             sbs_parser_consume(parser, SBS_TOKEN_TARGET);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            preset->target = sbs_parse_identifier(parser);
+            preset->targets = fl_array_new(sizeof(char**), 1);
+            preset->targets[0] = sbs_parse_identifier(parser);
         }
         else if (sbs_token_equals(token, "actions"))
         {

@@ -29,26 +29,37 @@ static inline bool resolve_executor(SbsContext *context, bool script_mode, SbsRe
 
 static inline bool resolve_target(SbsContext *context, const char *targetarg, SbsResult *result)
 {
-    const char *target_name = context->preset && context->preset->target ? context->preset->target : NULL;
-
-    if (targetarg)
-        target_name = targetarg;
-
-    if (!target_name)
+    if (targetarg == NULL)
     {
-        *result = sbs_result_print_reason(SBS_RES_MISSING_TARGET_ARG);
-        return false;
-    }
+        context->targets = fl_array_new(sizeof(SbsTarget*), fl_array_length(context->preset->targets));
+        for (size_t i = 0; i < fl_array_length(context->preset->targets); i++)
+        {
+            char *target_name = context->preset->targets[i];
 
-    // Resolve target
-    context->target = sbs_target_resolve(context, target_name, NULL);
-    if (context->target == NULL)
+            // Resolve target
+            SbsTarget *tmp = sbs_target_resolve(context, target_name, NULL);
+            if (tmp == NULL)
+            {
+                *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
+                return false;
+            }   
+
+            context->targets[i] = tmp;
+        }
+    }
+    else
     {
-        *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
-        return false;
-    }
+        SbsTarget *tmp = sbs_target_resolve(context, targetarg, NULL);
+        if (tmp == NULL)
+        {
+            *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, targetarg);
+            return false;
+        }   
 
-    fl_hashtable_add(context->symbols->variables, "$sbs.target", context->target->name);
+        context->targets = fl_array_new(sizeof(SbsTarget*), 1);
+        context->targets[0] = tmp;
+        fl_hashtable_add(context->symbols->variables, "sbs.target", targetarg);
+    }
 
     return true;
 }
@@ -80,7 +91,7 @@ static inline bool resolve_config(SbsContext *context, const char *configarg, Sb
         return false;
     }
 
-    fl_hashtable_add(context->symbols->variables, "$sbs.config", context->config->name);
+    fl_hashtable_add(context->symbols->variables, "sbs.config", context->config->name);
 
     return true;
 }
@@ -113,7 +124,7 @@ static inline bool resolve_toolchain(SbsContext *context, const char *toolchaina
         return false;
     }
 
-    fl_hashtable_add(context->symbols->variables, "$sbs.toolchain", context->toolchain->name);
+    fl_hashtable_add(context->symbols->variables, "sbs.toolchain", context->toolchain->name);
 
     return true;
 }
@@ -126,15 +137,15 @@ static inline bool resolve_env(SbsContext *context, const char *envarg, SbsResul
     {
         // If the user did not provide an environment name, the "env" property within the preset must be
         // valid and it must contain at least 1 environment
-        if (context->preset == NULL || context->preset->env == NULL || fl_array_length(context->preset->env) == 0)
+        if (context->preset == NULL || context->preset->envs == NULL || fl_array_length(context->preset->envs) == 0)
         {
             *result = sbs_result_print_reason(SBS_RES_MISSING_ENV_ARG);
             return false;
         }
 
-        for (size_t i=0; i < fl_array_length(context->preset->env); i++)
+        for (size_t i=0; i < fl_array_length(context->preset->envs); i++)
         {
-            SbsEnv *tmp = sbs_env_resolve(context, context->preset->env[i]);
+            SbsEnv *tmp = sbs_env_resolve(context, context->preset->envs[i]);
 
             // TODO: Error handling here or previous validation?
             if (!tmp) continue;
@@ -173,7 +184,7 @@ static inline bool resolve_env(SbsContext *context, const char *envarg, SbsResul
     // TODO: Allow override of the architecture using arguments
     context->env->host = sbs_host_new(context->env->os, sbs_host_arch());
 
-    fl_hashtable_add(context->symbols->variables, "$sbs.env", context->env->name);
+    fl_hashtable_add(context->symbols->variables, "sbs.env", context->env->name);
 
     return true;
 }
@@ -207,8 +218,8 @@ static inline bool resolve_host(SbsContext *context, SbsResult *result)
         return false;
     }
 
-    fl_hashtable_add(context->symbols->variables, "$sbs.os", sbs_host_os_to_str(context->host->os));
-    fl_hashtable_add(context->symbols->variables, "$sbs.arch", sbs_host_arch_to_str(context->host->arch));
+    fl_hashtable_add(context->symbols->variables, "sbs.os", sbs_host_os_to_str(context->host->os));
+    fl_hashtable_add(context->symbols->variables, "sbs.arch", sbs_host_arch_to_str(context->host->arch));
 
     return true;
 }
@@ -255,7 +266,7 @@ init_error:
 void sbs_context_free(SbsContext *context)
 {
     if (context->config) sbs_config_free(context->config);
-    if (context->target) sbs_target_free(context->target);
+    if (context->targets) fl_array_free_each_pointer(context->targets, (FlArrayFreeElementFunc) sbs_target_free);
     if (context->toolchain) sbs_toolchain_free(context->toolchain);
     if (context->env) sbs_env_free(context->env);
     if (context->preset) sbs_preset_free(context->preset);
@@ -275,8 +286,24 @@ SbsContext* sbs_context_copy(const SbsContext *ctx)
         .env = ctx->env != NULL ? ctx->env->name : NULL,
         .toolchain = ctx->toolchain != NULL ? ctx->toolchain->name : NULL,
         .config = ctx->config != NULL ? ctx->config->name : NULL,
-        .target = ctx->target != NULL ? ctx->target->name : NULL,
+        .target = ctx->targets != NULL && fl_array_length(ctx->targets) == 1 ? ctx->targets[0]->name : NULL,
         .script_mode = (ctx->executor != NULL ? sbs_executor_is_script_mode(ctx->executor) : false),
+    }, &result);
+
+    return copy;
+}
+
+SbsContext* sbs_context_copy_args(const SbsContext *ctx, SbsContextArgs *args)
+{
+    SbsResult result;
+
+    SbsContext *copy = sbs_context_new(ctx->file, &(SbsContextArgs) {
+        .preset = args->preset ? args->preset : ( ctx->preset != NULL ? ctx->preset->name : NULL ),
+        .env = args->env ? args->env : (ctx->env != NULL ? ctx->env->name : NULL),
+        .toolchain = args->toolchain ? args->toolchain : (ctx->toolchain != NULL ? ctx->toolchain->name : NULL),
+        .config = args->config ? args->config : (ctx->config != NULL ? ctx->config->name : NULL),
+        .target = args->target ? args->target : (ctx->targets != NULL && fl_array_length(ctx->targets) == 1 ? ctx->targets[0]->name : NULL),
+        .script_mode = (ctx->executor != NULL ? sbs_executor_is_script_mode(ctx->executor) : false), // TODO: Fix this
     }, &result);
 
     return copy;

@@ -27,6 +27,7 @@ typedef enum SbsResult {
     SBS_RES_EXECUTOR,
     
     SBS_RES_ACTION_FAILED,
+    SBS_RES_TARGET_FAILED,
 
     SBS_RES_UNK_OS,
     SBS_RES_UNK_ARCH,

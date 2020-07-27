@@ -1,6 +1,5 @@
 v0.2.0:
-    [ ] Make "toolchain" an array to allow multiple toolset combinations
-    [ ] Make "target" in presets an array object to run multiple targets at once
+    [ ] In presets, make "toolchain" property an array to allow multiple toolset combinations
     [ ] sbs run command to run actions
     [ ] Change working directory
     [ ] Defining and using variables
@@ -19,6 +18,7 @@ v0.2.0:
         Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
     [ ] Linux support: in the latest version the Linux support is incomplete
     [ ] Update grammar file
+    [x] In presets, make "target" property an array object to run multiple targets at once
     [x] Rename "for" keyword to "if" within sections. In the current context it makes (a lot) of sense to use the conditional
     [x] Scripting mode
         [x] Basic support

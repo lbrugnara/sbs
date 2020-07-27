@@ -3,7 +3,7 @@ compile sbs-objects {
     includes: [
         "../fllib/include"
     ],
-    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
+    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/${sbs.target}",
     sources: [
         "src/.*[.]c$"
     ]
@@ -46,7 +46,12 @@ executable sbs-tests {
     objects: [ sbs-objects, sbs-tests-objects ],
     defines: [ "SBS_TESTS" ]
 
+    if env(win-cmd) {
+        objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.lib" ]
+    }
+
     if env(linux-bash) {
+        objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.a" ]
         libraries: [
             { name: "m" },
             { name: "pthread" }

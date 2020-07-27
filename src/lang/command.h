@@ -3,11 +3,13 @@
 
 #include "../utils.h"
 
+typedef enum SbsValueCommandType {
+    SBS_COMMAND_STRING,
+    SBS_COMMAND_NAME
+} SbsValueCommandType;
+
 typedef struct SbsValueCommand {
-    enum {
-        SBS_COMMAND_STRING,
-        SBS_COMMAND_NAME
-    } type;
+    SbsValueCommandType type;
     const char *value;
 } SbsValueCommand;
 

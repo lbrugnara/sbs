@@ -2,29 +2,22 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "action.h"
+#include "build.h"
 #include "../result.h"
-#include "../runtime/context.h"
 #include "../runtime/resolvers/action.h"
 
-static bool run_command(SbsContext *context, const char *actioncmd)
+static bool run_command(SbsBuild *build, const char *actioncmd)
 {
-    // TODO: Implement proper string interpolation
-    char *command = fl_cstring_dup(actioncmd);
-    command = fl_cstring_replace_realloc(command, "${sbs.os}", sbs_host_os_to_str(context->host->os));
-    command = fl_cstring_replace_realloc(command, "${sbs.arch}", sbs_host_arch_to_str(context->host->arch));
-    command = fl_cstring_replace_realloc(command, "${sbs.env}", context->env->name);
-    command = fl_cstring_replace_realloc(command, "${sbs.config}", context->config->name);
-    command = fl_cstring_replace_realloc(command, "${sbs.target}", context->target->name);
-    command = fl_cstring_replace_realloc(command, "${sbs.toolchain}", context->toolchain->name);
+    char *command = sbs_context_interpolate_string(build->context, actioncmd);
 
-    bool result = sbs_executor_run_command(context->executor, command);
+    bool result = sbs_executor_run_command(build->context->executor, command);
 
     fl_cstring_free(command);
 
     return result;
 }
 
-static bool run_actions(SbsContext *context, SbsValueCommand *actions)
+static bool run_actions(SbsBuild *build, SbsValueCommand *actions)
 {
     if (!actions)
         return true;
@@ -38,12 +31,12 @@ static bool run_actions(SbsContext *context, SbsValueCommand *actions)
 
         if (action->type == SBS_COMMAND_STRING)
         {
-            if (!run_command(context, action->value))
+            if (!run_command(build, action->value))
                 return false;
         }
         else
         {
-            SbsAction *action_obj = sbs_action_resolve(context, action->value);
+            SbsAction *action_obj = sbs_action_resolve(build->context, action->value);
 
             if (!action_obj)
                 continue;
@@ -51,7 +44,7 @@ static bool run_actions(SbsContext *context, SbsValueCommand *actions)
             bool result = true;
             for (size_t i=0; i < fl_array_length(action_obj->commands); i++)
             {
-                if (!run_command(context, action_obj->commands[i]))
+                if (!run_command(build, action_obj->commands[i]))
                 {
                     result = false;
                     break;
@@ -68,67 +61,47 @@ static bool run_actions(SbsContext *context, SbsValueCommand *actions)
     return true;
 }
 
-static bool run_env_actions(SbsContext *context, SbsBuildActionType type)
+SbsResult sbs_build_run_env_actions(SbsBuild *build, SbsBuildActionType type)
 {
-    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? context->env->actions.before : context->env->actions.after;
+    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? build->context->env->actions.before : build->context->env->actions.after;
 
     if (!actions)
-        return true;
+        return SBS_RES_OK;
 
-    return run_actions(context, actions);
+    if(run_actions(build, actions))
+        return SBS_RES_OK;
+
+    return SBS_RES_ACTION_FAILED;
 }
 
-static bool run_target_actions(SbsContext *context, SbsBuildActionType type)
+SbsResult sbs_build_run_target_actions(SbsBuild *build, SbsBuildActionType type)
 {
-    if (!context->target)
-        return true;
+    if (!build->current_target)
+        return SBS_RES_OK;
 
-    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? context->target->actions.before : context->target->actions.after;    
+    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? build->current_target->actions.before : build->current_target->actions.after;    
 
     if (!actions)
-        return true;
+        return SBS_RES_OK;
 
-    return run_actions(context, actions);
+    if(run_actions(build, actions))
+        return SBS_RES_OK;
+
+    return SBS_RES_ACTION_FAILED;
 }
 
-static bool run_preset_actions(SbsContext *context, SbsBuildActionType type)
+SbsResult sbs_build_run_preset_actions(SbsBuild *build, SbsBuildActionType type)
 {
-    if (!context->preset)
-        return true;
+    if (!build->context->preset)
+        return SBS_RES_OK;
 
-    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? context->preset->actions.before : context->preset->actions.after;    
+    SbsValueCommand *actions = type == SBS_BUILD_ACTION_BEFORE ? build->context->preset->actions.before : build->context->preset->actions.after;    
 
     if (!actions)
-        return true;
+        return SBS_RES_OK;
 
-    return run_actions(context, actions);
-}
+    if(run_actions(build, actions))
+        return SBS_RES_OK;
 
-
-SbsResult sbs_build_action_run(SbsContext *context, SbsBuildActionType type, bool run_target)
-{
-    if (type == SBS_BUILD_ACTION_BEFORE)
-    {
-        if (!run_preset_actions(context, SBS_BUILD_ACTION_BEFORE))
-            return SBS_RES_ACTION_FAILED;
-
-        if (!run_env_actions(context, SBS_BUILD_ACTION_BEFORE))
-            return SBS_RES_ACTION_FAILED;
-
-        if (run_target && !run_target_actions(context, SBS_BUILD_ACTION_BEFORE))
-            return SBS_RES_ACTION_FAILED;
-    }
-    else
-    {
-        if (run_target && !run_target_actions(context, SBS_BUILD_ACTION_AFTER))
-            return SBS_RES_ACTION_FAILED;
-
-        if (!run_env_actions(context, SBS_BUILD_ACTION_AFTER))
-            return SBS_RES_ACTION_FAILED;
-        
-        if (!run_preset_actions(context, SBS_BUILD_ACTION_AFTER))
-            return SBS_RES_ACTION_FAILED;
-    }
-    
-    return SBS_RES_OK;
+    return SBS_RES_ACTION_FAILED;
 }

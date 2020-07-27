@@ -3,10 +3,10 @@
 
 # This preset builds the sbs build system in release mode
 preset release {
-    env: [ win-cmd, linux-bash ],
+    envs: [ win-cmd, linux-bash ],
     toolchain: clang,
     config: clang-release,
-    target: sbs,
+    targets: [ sbs, sbs-tests ],
     actions: {
         before: [ copy-fllib ]
     }
@@ -14,10 +14,10 @@ preset release {
 
 # This preset builds the sbs build system in debug mode
 preset debug {
-    env: [ win-cmd, linux-bash ],
+    envs: [ win-cmd, linux-bash ],
     toolchain: clang,
     config: clang-debug,
-    target: sbs,
+    targets: [ sbs, sbs-tests ],
     actions: {
         before: [ copy-fllib ]
     }
@@ -25,7 +25,7 @@ preset debug {
 
 # This preset builds the sbs build system in debug mode
 preset tests {
-    env: [ win-cmd, linux-bash ],
+    envs: [ win-cmd, linux-bash ],
     toolchain: clang,
     config: clang-debug,
     target: sbs-tests,
@@ -37,7 +37,7 @@ preset tests {
 # This is a dummy preset to hack my own build system. We get a clean action for free by running:
 # sbs build -e=<win-cmd|linux-bash> clean
 preset clean {
-    env: [ win-cmd, linux-bash ],
+    envs: [ win-cmd, linux-bash ],
     toolchain: dummy,
     config: dummy,
     target: dummy,
@@ -47,7 +47,7 @@ preset clean {
 }
 
 preset copy-fllib {
-    env: [ win-cmd, linux-bash ],
+    envs: [ win-cmd, linux-bash ],
     toolchain: dummy,
     config: dummy,
     target: dummy,
@@ -57,7 +57,7 @@ preset copy-fllib {
 }
 
 preset install {
-    env: [ win-cmd, linux-bash ],
+    envs: [ win-cmd, linux-bash ],
     toolchain: dummy,
     config: dummy,
     target: dummy,

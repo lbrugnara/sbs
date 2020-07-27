@@ -6,7 +6,7 @@
 #include "Test.h"
 
 // Tests
-#include "lang/tests.h"
+#include "parser/tests.h"
 #include "integration/tests.h"
 
 int main(int argc, char **argv) 

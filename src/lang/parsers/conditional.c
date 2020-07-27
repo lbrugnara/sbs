@@ -56,35 +56,35 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "$sbs.os";
+        var_name = "sbs.os";
     }
     else if (sbs_token_equals(token, "arch"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "$sbs.arch";
+        var_name = "sbs.arch";
     }
     else if (sbs_token_equals(token, "toolchain"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "$sbs.toolchain";
+        var_name = "sbs.toolchain";
     }
     else if (sbs_token_equals(token, "config"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "$sbs.config";
+        var_name = "sbs.config";
     }
     else if (sbs_token_equals(token, "target"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "$sbs.target";
+        var_name = "sbs.target";
     }
     else // if (sbs_token_equals(token, "env")) For compatibility, if we find a for section without a keyword, it is tied to the environment
     {
-        var_name = "$sbs.env";
+        var_name = "sbs.env";
         if (sbs_token_equals(token, "env"))
         {
             sbs_parser_consume(parser, token->type);

@@ -218,13 +218,7 @@ static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile
     if (output_file_fullpath[strlen(output_file_fullpath) - 1] != build->context->env->host->dir_separator)
         fl_cstring_append_char(&output_file_fullpath, build->context->env->host->dir_separator);
 
-    // TODO: Implement proper string interpolation
-    output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.os}", sbs_host_os_to_str(build->context->host->os));
-    output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.arch}", sbs_host_arch_to_str(build->context->host->arch));
-    output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.env}", build->context->env->name);
-    output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.config}", build->context->config->name);
-    output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.target}", build->context->target->name);
-    output_file_fullpath = fl_cstring_replace_realloc(output_file_fullpath, "${sbs.toolchain}", build->context->toolchain->name);
+    output_file_fullpath = sbs_context_interpolate_string_realloc(build->context, output_file_fullpath);
 
     // Append the source path structure
     fl_cstring_append(&output_file_fullpath, source_file_path);
@@ -245,7 +239,7 @@ static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile
 
 char** sbs_build_compile(SbsBuild *build)
 {
-    SbsTargetCompile *target_compile = (SbsTargetCompile*) build->context->target;
+    SbsTargetCompile *target_compile = (SbsTargetCompile*) build->current_target;
 
     if (!target_compile || !target_compile->sources)
         return NULL;

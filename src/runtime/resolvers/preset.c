@@ -14,10 +14,10 @@ SbsPreset* sbs_preset_resolve(SbsContext *context, const char *preset_name)
 
     SbsPreset *preset_object = sbs_preset_new(preset_section->name);
 
-    preset_object->env = sbs_string_array_extend(preset_object->env, preset_section->env);
+    preset_object->envs = sbs_string_array_extend(preset_object->envs, preset_section->envs);
     preset_object->toolchain = preset_section->toolchain ? fl_cstring_dup(preset_section->toolchain) : NULL;
     preset_object->config = preset_section->config ? fl_cstring_dup(preset_section->config) : NULL;
-    preset_object->target = preset_section->target ? fl_cstring_dup(preset_section->target) : NULL;
+    preset_object->targets = sbs_string_array_extend(preset_object->targets, preset_section->targets);
     
     preset_object->actions.before = sbs_value_command_array_extend(preset_object->actions.before, preset_section->actions.before);
     preset_object->actions.after = sbs_value_command_array_extend(preset_object->actions.after, preset_section->actions.after);

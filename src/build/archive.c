@@ -19,13 +19,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *arch
     if (output_filename[strlen(output_filename) - 1] != build->context->env->host->dir_separator)
         fl_cstring_append_char(&output_filename, build->context->env->host->dir_separator);
 
-    // TODO: Implement proper string interpolation
-    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.os}", sbs_host_os_to_str(build->context->host->os));
-    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.arch}", sbs_host_arch_to_str(build->context->host->arch));
-    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.env}", build->context->env->name);
-    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.config}", build->context->config->name);
-    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.target}", build->context->target->name);
-    output_filename = fl_cstring_replace_realloc(output_filename, "${sbs.toolchain}", build->context->toolchain->name);
+    output_filename = sbs_context_interpolate_string_realloc(build->context, output_filename);
 
     fl_io_dir_create_recursive(output_filename);
 
@@ -37,7 +31,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *arch
 
 char** sbs_build_target_archive(SbsBuild *build)
 {
-    SbsTargetArchive *target_archive = (SbsTargetArchive*) build->context->target;
+    SbsTargetArchive *target_archive = (SbsTargetArchive*) build->current_target;
     const SbsConfigArchive *config_archive = &build->context->config->archive;
 
     // Collect all the archive flags in the configuration hierarchy
@@ -77,17 +71,16 @@ char** sbs_build_target_archive(SbsBuild *build)
     {
         if (target_archive->objects[i].type == SBS_COMMAND_NAME)
         {
-            SbsContext *tmpctx = sbs_context_copy(build->context);
-            sbs_target_free(tmpctx->target);
-            tmpctx->target = sbs_target_resolve(build->context, target_archive->objects[i].value, (const SbsTarget*) target_archive);
+            SbsTarget *dep_target = sbs_target_resolve(build->context, target_archive->objects[i].value, (const SbsTarget*) target_archive);
 
             // target_objects is an array of pointers to char allocated by the target
             char **target_objects = sbs_build_target(&(SbsBuild) {
-                .context = tmpctx,
-                .script_mode = build->script_mode
+                .context = build->context,
+                .script_mode = build->script_mode,
+                .current_target = dep_target
             });
 
-            sbs_context_free(tmpctx);
+            sbs_target_free(dep_target);
 
             // Something odd happened if it is null, we need to leave with error
             if (target_objects == NULL)

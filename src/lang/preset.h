@@ -5,10 +5,10 @@
 
 typedef struct SbsSectionPreset {
     const char *name;
-    char **env;
+    char **envs;
     const char *toolchain;
     const char *config;
-    const char *target;
+    char **targets;
     SbsPropertyActions actions;
 } SbsSectionPreset;
 

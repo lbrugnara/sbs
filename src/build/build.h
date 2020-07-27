@@ -16,6 +16,7 @@
 typedef struct SbsBuild {
     SbsContext *context;
     bool script_mode;
+    SbsTarget *current_target;
 } SbsBuild;
 
 SbsResult sbs_build_run(const SbsFile *file, SbsContextArgs *arguments);
