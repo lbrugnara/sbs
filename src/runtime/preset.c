@@ -22,8 +22,8 @@ void sbs_preset_free(SbsPreset *preset)
     if (preset->toolchains)
         fl_array_free_each_pointer(preset->toolchains, (FlArrayFreeElementFunc) fl_cstring_free);
 
-    if (preset->config)
-        fl_cstring_free(preset->config);
+    if (preset->configs)
+        fl_array_free_each_pointer(preset->configs, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (preset->targets)
         fl_array_free_each_pointer(preset->targets, (FlArrayFreeElementFunc) fl_cstring_free);

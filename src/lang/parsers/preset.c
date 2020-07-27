@@ -65,11 +65,18 @@ SbsSectionPreset* sbs_section_preset_parse(SbsParser *parser)
             preset->toolchains = fl_array_new(sizeof(char**), 1);
             preset->toolchains[0] = sbs_parse_identifier(parser);
         }
-        else if (token->type == SBS_TOKEN_CONFIG)
+        else if (sbs_token_equals(token, "configs"))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            preset->configs = sbs_parse_identifier_array(parser);
+        }
+        else if (sbs_token_equals(token, "config"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_CONFIG);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            preset->config = sbs_parse_identifier(parser);
+            preset->configs = fl_array_new(sizeof(char**), 1);
+            preset->configs[0] = sbs_parse_identifier(parser);
         }
         else if (sbs_token_equals(token, "targets"))
         {

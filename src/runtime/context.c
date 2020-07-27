@@ -74,29 +74,46 @@ static inline bool resolve_target(SbsContext *context, const char *targetarg, Sb
 
 static inline bool resolve_config(SbsContext *context, const char *configarg, SbsResult *result)
 {
-    const char *configuration_name = context->preset && context->preset->config ? context->preset->config : NULL;
-
-    if (configarg)
-        configuration_name = configarg;
-
-    if (!configuration_name)
+    if (configarg == NULL)
     {
-        *result = sbs_result_print_reason(SBS_RES_MISSING_CONFIG_ARG);
-        return false;
+        // If the user did not provide a config name, the "configs" property within the preset must be
+        // valid and it must contain at least 1 config
+        if (context->preset == NULL || context->preset->configs == NULL || fl_array_length(context->preset->configs) == 0)
+        {
+            *result = sbs_result_print_reason(SBS_RES_MISSING_CONFIG_ARG);
+            return false;
+        }
+
+        for (size_t i = 0; i < fl_array_length(context->preset->configs); i++)
+        {
+            char *config_name = context->preset->configs[i];
+
+            SbsConfiguration *tmp = sbs_config_resolve(context, config_name);
+            if (tmp == NULL)
+            {
+                *result = sbs_result_print_reason(SBS_RES_INVALID_CONFIG, config_name);
+                return false;
+            }
+
+            context->config = tmp;
+            break;
+        }
+
+        if (context->config == NULL)
+        {
+            *result = sbs_result_print_reason(SBS_RES_MISMATCH_CONFIG);
+            return false;
+        }
     }
-
-    if (!fl_hashtable_has_key(context->file->configurations, configuration_name))
+    else
     {
-        *result = sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
-        return false;
-    }
-
-    // Resolve configuration
-    context->config = sbs_config_resolve(context, configuration_name);
-    if (context->config == NULL)
-    {
-        *result = sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configuration_name);
-        return false;
+        // Resolve configuration
+        context->config = sbs_config_resolve(context, configarg);
+        if (context->config == NULL)
+        {
+            *result = sbs_result_print_reason(SBS_RES_INVALID_CONFIG, configarg);
+            return false;
+        }
     }
 
     fl_hashtable_add(context->symbols->variables, "sbs.config", context->config->name);

@@ -7,7 +7,7 @@ typedef struct SbsSectionPreset {
     const char *name;
     char **envs;
     char **toolchains;
-    const char *config;
+    char **configs;
     char **targets;
     SbsPropertyActions actions;
 } SbsSectionPreset;

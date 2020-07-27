@@ -5,7 +5,7 @@
 preset release {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang, gcc, msvc ],
-    config: clang-release,
+    configs: [ clang-release, msvc-release ],
     targets: [ sbs, sbs-tests ],
     actions: {
         before: [ copy-fllib ]
@@ -16,7 +16,7 @@ preset release {
 preset debug {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang, gcc, msvc ],
-    config: clang-debug,
+    configs: [ clang-debug, msvc-debug ],
     targets: [ sbs, sbs-tests ],
     actions: {
         before: [ copy-fllib ]
@@ -27,7 +27,7 @@ preset debug {
 preset tests {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang, gcc, msvc ],
-    config: clang-debug,
+    configs: [ clang-debug, msvc-debug ],
     target: sbs-tests,
     actions: {
         before: [ copy-fllib ]
