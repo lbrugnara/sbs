@@ -6,7 +6,7 @@
 typedef struct SbsPreset {
     char *name;
     char **envs;
-    const char *toolchain;
+    char **toolchains;
     const char *config;
     char **targets;
     SbsPropertyActions actions;

@@ -52,11 +52,18 @@ SbsSectionPreset* sbs_section_preset_parse(SbsParser *parser)
             preset->envs = fl_array_new(sizeof(char**), 1);
             preset->envs[0] = sbs_parse_identifier(parser);
         }
-        else if (token->type == SBS_TOKEN_TOOLCHAIN)
+        else if (sbs_token_equals(token, "toolchains"))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            preset->toolchains = sbs_parse_identifier_array(parser);
+        }
+        else if (sbs_token_equals(token, "toolchain"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_TOOLCHAIN);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            preset->toolchain = sbs_parse_identifier(parser);
+            preset->toolchains = fl_array_new(sizeof(char**), 1);
+            preset->toolchains[0] = sbs_parse_identifier(parser);
         }
         else if (token->type == SBS_TOKEN_CONFIG)
         {

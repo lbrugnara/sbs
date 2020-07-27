@@ -31,6 +31,14 @@ static inline bool resolve_target(SbsContext *context, const char *targetarg, Sb
 {
     if (targetarg == NULL)
     {
+        // If the user did not provide a target name, the "targets" property within the preset must be
+        // valid and it must contain at least 1 target
+        if (context->preset == NULL || context->preset->targets == NULL || fl_array_length(context->preset->targets) == 0)
+        {
+            *result = sbs_result_print_reason(SBS_RES_MISSING_TARGET_ARG);
+            return false;
+        }
+
         context->targets = fl_array_new(sizeof(SbsTarget*), fl_array_length(context->preset->targets));
         for (size_t i = 0; i < fl_array_length(context->preset->targets); i++)
         {
@@ -54,7 +62,7 @@ static inline bool resolve_target(SbsContext *context, const char *targetarg, Sb
         {
             *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, targetarg);
             return false;
-        }   
+        }
 
         context->targets = fl_array_new(sizeof(SbsTarget*), 1);
         context->targets[0] = tmp;
@@ -98,31 +106,49 @@ static inline bool resolve_config(SbsContext *context, const char *configarg, Sb
 
 static inline bool resolve_toolchain(SbsContext *context, const char *toolchainarg, SbsResult *result)
 {
-    const char *toolchain_name = context->preset && context->preset->toolchain ? context->preset->toolchain : NULL;
-
-    if (toolchainarg)
-        toolchain_name = toolchainarg;
-
-    if (!toolchain_name)
+    if (toolchainarg == NULL)
     {
-        *result = sbs_result_print_reason(SBS_RES_MISSING_TOOLCHAIN_ARG);
-        return false;
-    }
+        // If the user did not provide a toolchain name, the "toolchains" property within the preset must be
+        // valid and it must contain at least 1 toolchain
+        if (context->preset == NULL || context->preset->toolchains == NULL || fl_array_length(context->preset->toolchains) == 0)
+        {
+            *result = sbs_result_print_reason(SBS_RES_MISSING_TOOLCHAIN_ARG);
+            return false;
+        }
 
-    // Check if the resources exist
-    if (!fl_hashtable_has_key(context->file->toolchains, toolchain_name))
-    {
-        *result = sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchain_name);
-        return false;
-    }
+        for (size_t i = 0; i < fl_array_length(context->preset->toolchains); i++)
+        {
+            const char *toolchain_name = context->preset->toolchains[i];
 
-    // Resolve toolchain
-    context->toolchain = sbs_toolchain_resolve(context, toolchain_name);
-    if (context->toolchain == NULL)
-    {
-        *result = sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchain_name);
-        return false;
+            // Resolve toolchain
+            SbsToolchain *tmp = sbs_toolchain_resolve(context, toolchain_name);
+            if (tmp == NULL)
+            {
+                *result = sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchain_name);
+                return false;
+            }
+
+            context->toolchain = tmp;
+            break;
+        }
+
+        if (context->toolchain == NULL)
+        {
+            *result = sbs_result_print_reason(SBS_RES_MISMATCH_TOOLCHAIN);
+            return false;
+        }
     }
+    else
+    {
+        // Resolve toolchain
+        context->toolchain = sbs_toolchain_resolve(context, toolchainarg);
+
+        if (context->toolchain == NULL)
+        {
+            *result = sbs_result_print_reason(SBS_RES_INVALID_TOOLCHAIN, toolchainarg);
+            return false;
+        }
+    }    
 
     fl_hashtable_add(context->symbols->variables, "sbs.toolchain", context->toolchain->name);
 
@@ -131,11 +157,9 @@ static inline bool resolve_toolchain(SbsContext *context, const char *toolchaina
 
 static inline bool resolve_env(SbsContext *context, const char *envarg, SbsResult *result)
 {
-    const char *env_name = NULL;
-
     if (envarg == NULL)
     {
-        // If the user did not provide an environment name, the "env" property within the preset must be
+        // If the user did not provide an environment name, the "envs" property within the preset must be
         // valid and it must contain at least 1 environment
         if (context->preset == NULL || context->preset->envs == NULL || fl_array_length(context->preset->envs) == 0)
         {
@@ -176,7 +200,7 @@ static inline bool resolve_env(SbsContext *context, const char *envarg, SbsResul
         
         if (context->env == NULL)
         {
-            *result = sbs_result_print_reason(SBS_RES_INVALID_ENV, env_name);
+            *result = sbs_result_print_reason(SBS_RES_INVALID_ENV, envarg);
             return false;
         }
     }

@@ -19,6 +19,9 @@ static char *reason[] = {
     [SBS_RES_INVALID_FILE] =            "Build file '%s' does not exist\n",
 
     [SBS_RES_MISMATCH_ENV] =            "There's no environment for the current OS and processor architecture\n",
+    [SBS_RES_MISMATCH_TOOLCHAIN] =      "There's no toolchain for the current environment\n",
+    [SBS_RES_MISMATCH_CONFIG] =         "There's no configuration for the current toolchain\n",
+    [SBS_RES_MISMATCH_TARGET] =         "There's no target\n",
 
     [SBS_RES_MISSING_ENV_ARG] =         "An environment name is required for this command to run\n",
     [SBS_RES_MISSING_TOOLCHAIN_ARG] =   "A toolchain name is required for this command to run\n",
@@ -30,7 +33,8 @@ static char *reason[] = {
     [SBS_RES_UNK_OS] =                  "sbs is not supported on this operating system\n",
     [SBS_RES_UNK_ARCH] =                "sbs does not support the current processor architecture\n",
 
-    [SBS_RES_ACTION_FAILED] =           "An action has failed\n"
+    [SBS_RES_ACTION_FAILED] =           "An action has failed\n",
+    [SBS_RES_TARGET_FAILED] =           "Target %s has failed\n"
 };
 
 const char* sbs_result_get_reason(SbsResult result, ...)

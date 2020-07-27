@@ -19,8 +19,8 @@ void sbs_section_preset_free(SbsSectionPreset *preset)
     if (preset->envs)
         fl_array_free_each_pointer(preset->envs, (FlArrayFreeElementFunc) fl_cstring_free);
 
-    if (preset->toolchain)
-        fl_cstring_free(preset->toolchain);
+    if (preset->toolchains)
+        fl_array_free_each_pointer(preset->toolchains, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (preset->config)
         fl_cstring_free(preset->config);

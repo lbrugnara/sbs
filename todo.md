@@ -1,5 +1,10 @@
 v0.2.0:
-    [ ] In presets, make "toolchain" property an array to allow multiple toolset combinations
+    [ ] A builtin action-like function to search for binaries.
+        [ ] Basic support to search within the PATH
+        [ ] Detect installed toolchains: search for the binaries using the executor?
+        [x] In presets, make "toolchain" property an array to allow multiple toolset combinations
+        [ ] In presets, make "config" property an array to allow multiple toolset combinations
+        [ ] Implement "fallbacks" when a combination of envs-toolchains-configs is not valid...
     [ ] sbs run command to run actions
     [ ] Change working directory
     [ ] Defining and using variables
@@ -46,9 +51,6 @@ backlog:
         (it could be an script that generates a big .c file and that .c file is the dependency of a compile target)
     [ ] A CLI command to show the dependency graph
     [ ] Use a headers node within the compile target to specify .c files dependencies (without using resolve_c_file_dependencies?)
-    [ ] A builtin action-like function to search for binaries.
-        [ ] Basic support to search within the PATH
-        [ ] Detect installed toolchains: search for the binaries using the executor?
     [ ] Hash based dependencies instead of timestamp based
         [ ] Check flags and defines to invalidate the build
     [ ] -j argument for multithreading

@@ -4,7 +4,7 @@
 # This preset builds the sbs build system in release mode
 preset release {
     envs: [ win-cmd, linux-bash ],
-    toolchain: clang,
+    toolchains: [ clang, gcc, msvc ],
     config: clang-release,
     targets: [ sbs, sbs-tests ],
     actions: {
@@ -15,7 +15,7 @@ preset release {
 # This preset builds the sbs build system in debug mode
 preset debug {
     envs: [ win-cmd, linux-bash ],
-    toolchain: clang,
+    toolchains: [ clang, gcc, msvc ],
     config: clang-debug,
     targets: [ sbs, sbs-tests ],
     actions: {
@@ -26,7 +26,7 @@ preset debug {
 # This preset builds the sbs build system in debug mode
 preset tests {
     envs: [ win-cmd, linux-bash ],
-    toolchain: clang,
+    toolchains: [ clang, gcc, msvc ],
     config: clang-debug,
     target: sbs-tests,
     actions: {
