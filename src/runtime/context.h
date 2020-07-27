@@ -13,15 +13,6 @@
 #include "target.h"
 #include "toolchain.h"
 
-typedef struct SbsContextArgs {
-    char *env;
-    char *toolchain;
-    char *config;
-    char *target;
-    char *preset;
-    bool script_mode;
-} SbsContextArgs;
-
 typedef struct SbsContext {
     const SbsFile *file;
     SbsHostInfo *host;
@@ -34,10 +25,9 @@ typedef struct SbsContext {
     SbsPreset *preset;
 } SbsContext;
 
-SbsContext* sbs_context_new(const SbsFile *file, SbsContextArgs *args, enum SbsResult *result);
+SbsContext* sbs_context_new(const SbsFile *file);
 void sbs_context_free(SbsContext *context);
 SbsContext* sbs_context_copy(const SbsContext *ctx);
-SbsContext* sbs_context_copy_args(const SbsContext *ctx, SbsContextArgs *args);
 
 inline char* sbs_context_interpolate_string_realloc(SbsContext *context, char *interpolated_string)
 {

@@ -74,5 +74,8 @@ SbsEnv* sbs_env_resolve(SbsContext *context, const char *env_name)
     env_object->actions.before = sbs_value_command_array_extend(env_object->actions.before, env_section->actions.before);
     env_object->actions.after = sbs_value_command_array_extend(env_object->actions.after, env_section->actions.after);
 
+    // TODO: Allow override of the architecture using arguments
+    env_object->host = sbs_host_new(env_object->os, sbs_host_arch());
+
     return env_object;
 }

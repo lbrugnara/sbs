@@ -7,6 +7,53 @@
 #include "shared.h"
 #include "action.h"
 #include "../runtime/context.h"
+#include "../runtime/triplet.h"
+#include "../runtime/resolvers/target.h"
+
+static inline bool resolve_target(SbsContext *context, const char *targetarg, SbsResult *result)
+{
+    if (targetarg == NULL)
+    {
+        // If the user did not provide a target name, the "targets" property within the preset must be
+        // valid and it must contain at least 1 target
+        if (context->preset == NULL || context->preset->targets == NULL || fl_array_length(context->preset->targets) == 0)
+        {
+            *result = sbs_result_print_reason(SBS_RES_MISSING_TARGET_ARG);
+            return false;
+        }
+
+        context->targets = fl_array_new(sizeof(SbsTarget*), fl_array_length(context->preset->targets));
+        for (size_t i = 0; i < fl_array_length(context->preset->targets); i++)
+        {
+            char *target_name = context->preset->targets[i];
+
+            // Resolve target
+            SbsTarget *tmp = sbs_target_resolve(context, target_name, NULL);
+            if (tmp == NULL)
+            {
+                *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
+                return false;
+            }   
+
+            context->targets[i] = tmp;
+        }
+    }
+    else
+    {
+        SbsTarget *tmp = sbs_target_resolve(context, targetarg, NULL);
+        if (tmp == NULL)
+        {
+            *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, targetarg);
+            return false;
+        }
+
+        context->targets = fl_array_new(sizeof(SbsTarget*), 1);
+        context->targets[0] = tmp;
+        fl_hashtable_add(context->symbols->variables, "sbs.target", targetarg);
+    }
+
+    return true;
+}
 
 char** sbs_build_target(SbsBuild *build)
 {
@@ -32,22 +79,35 @@ char** sbs_build_target(SbsBuild *build)
     return result;
 }
 
-SbsResult sbs_build_run(const SbsFile *file, SbsContextArgs *args)
+SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
 {
     // We track the build command result with this variable
     SbsResult result = SBS_RES_OK;
 
-    // These are all the resources needed to run the build process
-    // At this point we resolved all the resources needed to run the build
+    // Get all the available combinations of environments, toolchains, and configurations.
+    SbsTriplet **triplets = sbs_triplet_find(file, args->preset, args->env, args->toolchain, args->config, args->script_mode);
+
+    if (triplets == NULL || fl_array_length(triplets) == 0)
+    {
+        result = SBS_RES_ERROR;
+        goto error_before_targets;
+    }
+
+    // TODO: By now, we assume the first triplet is the correct one
+    SbsTriplet *triplet = triplets[0];
+
+    // Resolve all the targets
+    if (!resolve_target(triplet->context, args->target, &result))
+        goto error_before_targets;
+
+    // Create the build object needed by the build process
     SbsBuild build = {
-        .context = sbs_context_new(file, args, &result),
-        .script_mode = args->script_mode,
+        .context = triplet->context,
+        .script_mode = args->script_mode
     };
 
-    if (result != SBS_RES_OK)
-        return result;
-
-    // At this point we resolved all the resources needed to run the build
+    // At this point we resolved all the resources needed to run the build, so
+    // we start executing the build actions:
     result = sbs_build_run_preset_actions(&build, SBS_BUILD_ACTION_BEFORE);
 
     if (result != SBS_RES_OK)
@@ -117,7 +177,8 @@ error_after_targets:
         fl_array_free(targets_result);
 
 error_before_targets:
-    sbs_context_free(build.context);
+    if (triplets != NULL)
+        fl_array_free_each_pointer(triplets, (FlArrayFreeElementFunc) sbs_triplet_free);
 
     return result;
 }

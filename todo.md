@@ -1,10 +1,13 @@
 v0.2.0:
-    [ ] A builtin action-like function to search for binaries.
+    [ ] Advanced support for triplets
+        [ ] Use the executor to find environment's shell binaries
+        [ ] Use the executor to find toolchain's executable files
+        [ ] Add a preconditions property that can contain actions and is evaluated in the process of getting all the available triplets
+            Notes: for env? for toolchian? both?
+        [ ] A builtin action-like function to search for binaries.
         [ ] Basic support to search within the PATH
-        [ ] Detect installed toolchains: search for the binaries using the executor?
         [x] In presets, make "toolchain" property an array to allow multiple toolset combinations
-        [ ] In presets, make "config" property an array to allow multiple toolset combinations
-        [ ] Implement "fallbacks" when a combination of envs-toolchains-configs is not valid...
+        [x] In presets, make "config" property an array to allow multiple toolset combinations
     [ ] sbs run command to run actions
     [ ] Change working directory
     [ ] Defining and using variables
@@ -23,6 +26,7 @@ v0.2.0:
         Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
     [ ] Linux support: in the latest version the Linux support is incomplete
     [ ] Update grammar file
+    [x] Initial support for tiplets: collect all the combinations of environments, toolchains, and configurations available in the host machine
     [x] In presets, make "target" property an array object to run multiple targets at once
     [x] Rename "for" keyword to "if" within sections. In the current context it makes (a lot) of sense to use the conditional
     [x] Scripting mode

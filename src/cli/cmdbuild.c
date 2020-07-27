@@ -58,7 +58,7 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
     }
 
     char *build_file_path = NULL;
-    SbsContextArgs args = { 0 };
+    SbsBuildArgs args = { 0 };
     SbsArgsResult parsed_args = SBS_ARGS_OK;
     // args+2: skip program name and "build" argument
     sbs_args_parse(argv+2, {
