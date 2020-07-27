@@ -24,6 +24,7 @@ typedef struct SbsToolchain {
     SbsToolchainArchiver archiver;
 } SbsToolchain;
 
+SbsToolchain* sbs_toolchain_new(const char *name);
 void sbs_toolchain_free(SbsToolchain *toolchain);
 
 #endif /* SBS_RUNTIME_TOOLCHAIN_H */

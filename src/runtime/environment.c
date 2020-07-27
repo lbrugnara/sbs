@@ -3,6 +3,13 @@
 #include <fllib/Cstring.h>
 #include "environment.h"
 
+SbsEnv* sbs_env_new(const char *name)
+{
+    SbsEnv *env = fl_malloc(sizeof(SbsEnv));
+    env->name = fl_cstring_dup(name);
+    return env;
+}
+
 void sbs_env_free(SbsEnv *env)
 {
     if (!env)

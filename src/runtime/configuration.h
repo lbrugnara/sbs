@@ -29,6 +29,7 @@ typedef struct SbsConfiguration {
     SbsConfigExecutable executable;
 } SbsConfiguration;
 
+SbsConfiguration* sbs_config_new(const char *name);
 void sbs_config_free(SbsConfiguration *config);
 
 #endif /* SBS_RUNTIME_CONFIGURATION_H */

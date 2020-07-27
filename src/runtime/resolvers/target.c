@@ -1,4 +1,3 @@
-#include <fllib/Mem.h>
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include <fllib/containers/Hashtable.h>
@@ -8,7 +7,7 @@
 #include "../../lang/command.h"
 #include "../../lang/target.h"
 
-static void merge_base_target(SbsContext *context, SbsTarget *extend, const SbsSectionTarget *source)
+static void resolve_base_node_target(SbsTarget *extend, const SbsNodeTarget *source)
 {
     extend->output_dir = sbs_string_set(extend->output_dir, source->output_dir);
 
@@ -16,32 +15,74 @@ static void merge_base_target(SbsContext *context, SbsTarget *extend, const SbsS
     extend->actions.after = sbs_value_command_array_extend(extend->actions.after, source->actions.after);
 }
 
-static void merge_compile_target(SbsTargetCompile *extend, const SbsSectionCompile *source, const SbsTarget *parent)
+static SbsTargetCompile* resolve_compile_target(SbsContext *context, const SbsSectionCompile *compile_section, const SbsTarget *parent)
 {
-    extend->includes = sbs_string_array_extend(extend->includes, source->includes);
-    extend->sources = sbs_string_array_extend(extend->sources, source->sources);
-    extend->defines = sbs_string_array_extend(extend->defines, source->defines);
+    SbsTargetCompile *compile_target = sbs_target_compile_new(compile_section->base.name);
 
-    if (parent == NULL)
-        return;
-
-    if (parent->type == SBS_TARGET_EXECUTABLE)
+    for (size_t i = 0; i < fl_array_length(compile_section->entries); i++)
     {
-        SbsTargetExecutable *executable = (SbsTargetExecutable*) parent;
-        extend->defines = sbs_string_array_extend(extend->defines, executable->defines);
+        const SbsNodeCompile *compile_entry = compile_section->entries[i];
+
+        if (compile_entry->base.for_clause && !sbs_expression_eval(context->symbols, compile_entry->base.for_clause->expr))
+            continue;
+
+        resolve_base_node_target((SbsTarget*) compile_target, (const SbsNodeTarget*) compile_entry);
+
+        compile_target->includes = sbs_string_array_extend(compile_target->includes, compile_entry->includes);
+        compile_target->sources = sbs_string_array_extend(compile_target->sources, compile_entry->sources);
+        compile_target->defines = sbs_string_array_extend(compile_target->defines, compile_entry->defines);
+
+        if (parent == NULL)
+            continue;
+
+        if (parent->type == SBS_TARGET_EXECUTABLE)
+        {
+            SbsTargetExecutable *executable = (SbsTargetExecutable*) parent;
+            compile_target->defines = sbs_string_array_extend(compile_target->defines, executable->defines);
+        }
     }
+
+    return compile_target;
 }
 
-static void merge_archive_target(SbsTargetArchive *extend, const SbsSectionArchive *source)
+static SbsTargetArchive* resolve_archive_target(SbsContext *context, const SbsSectionArchive *archive_section)
 {
-    extend->output_name = sbs_string_set(extend->output_name, source->output_name);
-    extend->objects = sbs_value_source_array_extend(extend->objects, source->objects);
+    SbsTargetArchive *archive_target = sbs_target_archive_new(archive_section->base.name);
+
+    for (size_t i = 0; i < fl_array_length(archive_section->entries); i++)
+    {
+        const SbsNodeArchive *archive_entry = archive_section->entries[i];
+
+        if (archive_entry->base.for_clause && !sbs_expression_eval(context->symbols, archive_entry->base.for_clause->expr))
+            continue;
+
+        resolve_base_node_target((SbsTarget*) archive_target, (const SbsNodeTarget*) archive_entry);
+
+        archive_target->output_name = sbs_string_set(archive_target->output_name, archive_entry->output_name);
+        archive_target->objects = sbs_value_source_array_extend(archive_target->objects, archive_entry->objects);
+    }
+
+    return archive_target;
 }
 
-static void merge_shared_target(SbsTargetShared *extend, const SbsSectionShared *source)
+static SbsTargetShared* resolve_shared_target(SbsContext *context, const SbsSectionShared *shared_section)
 {
-    extend->output_name = sbs_string_set(extend->output_name, source->output_name);
-    extend->objects = sbs_value_source_array_extend(extend->objects, source->objects);
+    SbsTargetShared *shared_target = sbs_target_shared_new(shared_section->base.name);
+
+    for (size_t i = 0; i < fl_array_length(shared_section->entries); i++)
+    {
+        const SbsNodeShared *shared_entry = shared_section->entries[i];
+
+        if (shared_entry->base.for_clause && !sbs_expression_eval(context->symbols, shared_entry->base.for_clause->expr))
+            continue;
+
+        resolve_base_node_target((SbsTarget*) shared_target, (const SbsNodeTarget*) shared_entry);
+
+        shared_target->output_name = sbs_string_set(shared_target->output_name, shared_entry->output_name);
+        shared_target->objects = sbs_value_source_array_extend(shared_target->objects, shared_entry->objects);
+    }
+
+    return shared_target;
 }
 
 static void convert_library_node_to_library(SbsPropertyLibrary *dest, const SbsPropertyLibrary *src_obj)
@@ -63,12 +104,26 @@ static void convert_library_node_to_library(SbsPropertyLibrary *dest, const SbsP
     memcpy(dest, &copy, sizeof(SbsPropertyLibrary));
 }
 
-static void merge_executable_target(SbsTargetExecutable *extend, const SbsSectionExecutable *source)
+static SbsTargetExecutable* resolve_executable_target(SbsContext *context, const SbsSectionExecutable *executable_section)
 {
-    extend->output_name = sbs_string_set(extend->output_name, source->output_name);
-    extend->objects = sbs_value_source_array_extend(extend->objects, source->objects);
-    extend->libraries = sbs_array_extend(extend->libraries, source->libraries, (SbsArrayCopyElementFn) convert_library_node_to_library);
-    extend->defines = sbs_string_array_extend(extend->defines, source->defines);
+    SbsTargetExecutable *executable_target = sbs_target_executable_new(executable_section->base.name);
+
+    for (size_t i = 0; i < fl_array_length(executable_section->entries); i++)
+    {
+        const SbsNodeExecutable *executable_entry = executable_section->entries[i];
+
+        if (executable_entry->base.for_clause && !sbs_expression_eval(context->symbols, executable_entry->base.for_clause->expr))
+            continue;
+
+        resolve_base_node_target((SbsTarget*) executable_target, (const SbsNodeTarget*) executable_entry);
+
+        executable_target->output_name = sbs_string_set(executable_target->output_name, executable_entry->output_name);
+        executable_target->objects = sbs_value_source_array_extend(executable_target->objects, executable_entry->objects);
+        executable_target->libraries = sbs_array_extend(executable_target->libraries, executable_entry->libraries, (SbsArrayCopyElementFn) convert_library_node_to_library);
+        executable_target->defines = sbs_string_array_extend(executable_target->defines, executable_entry->defines);
+    }
+
+    return executable_target;
 }
 
 SbsTarget* sbs_target_resolve(SbsContext *context, const char *target_name, const SbsTarget *parent)
@@ -78,56 +133,23 @@ SbsTarget* sbs_target_resolve(SbsContext *context, const char *target_name, cons
     if (!abs_target_section)
         return NULL;
 
-    SbsTarget *target = NULL;
     switch (abs_target_section->type)
     {
         case SBS_TARGET_COMPILE:
-            target = fl_malloc(sizeof(SbsTargetCompile));
-            break;
+            return (SbsTarget*) resolve_compile_target(context, (SbsSectionCompile*) abs_target_section, parent);
+
         case SBS_TARGET_ARCHIVE:
-            target = fl_malloc(sizeof(SbsTargetArchive));
-            break;
+            return (SbsTarget*) resolve_archive_target(context, (SbsSectionArchive*) abs_target_section);
+
         case SBS_TARGET_SHARED:
-            target = fl_malloc(sizeof(SbsTargetShared));
-            break;
+            return (SbsTarget*) resolve_shared_target(context, (SbsSectionShared*) abs_target_section);
+
         case SBS_TARGET_EXECUTABLE:
-            target = fl_malloc(sizeof(SbsTargetExecutable));
-            break;
+            return (SbsTarget*) resolve_executable_target(context, (SbsSectionExecutable*) abs_target_section);
+
         default:
-            return NULL;
+            break;
     }
 
-    target->name = fl_cstring_dup(abs_target_section->name);
-    target->type = abs_target_section->type;
-    
-
-    for(size_t i=0; i < fl_array_length(abs_target_section->entries); i++)
-    {
-        SbsSectionTarget *target_section = abs_target_section->entries[i];
-
-        if (target_section->for_clause && !sbs_expression_eval(context->symbols, target_section->for_clause->expr))
-            continue;
-
-        merge_base_target(context, target, target_section);
-
-        switch (abs_target_section->type)
-        {
-            case SBS_TARGET_COMPILE:
-                merge_compile_target((SbsTargetCompile*) target, (SbsSectionCompile*) target_section, parent);
-                break;
-            case SBS_TARGET_ARCHIVE:
-                merge_archive_target((SbsTargetArchive*) target, (SbsSectionArchive*) target_section);
-                break;
-            case SBS_TARGET_SHARED:
-                merge_shared_target((SbsTargetShared*) target, (SbsSectionShared*) target_section);
-                break;
-            case SBS_TARGET_EXECUTABLE:
-                merge_executable_target((SbsTargetExecutable*) target, (SbsSectionExecutable*) target_section);
-                break;
-            default:
-                return NULL;
-        }
-    }
-
-    return target;
+    return NULL;
 }

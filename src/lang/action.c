@@ -34,3 +34,23 @@ void sbs_property_actions_free(SbsPropertyActions *actions)
     if (actions->after)
         fl_array_free_each(actions->after, (FlArrayFreeElementFunc) sbs_value_command_free);
 }
+
+SbsSectionAction* sbs_section_action_new(const struct FlSlice *name)
+{
+    SbsSectionAction *action_section = fl_malloc(sizeof(SbsSectionAction));
+
+    action_section->name = sbs_slice_to_str(name);
+    action_section->nodes = fl_array_new(sizeof(SbsNodeAction*), 0);
+
+    return action_section;
+}
+
+SbsNodeAction* sbs_section_action_add_node(SbsSectionAction *action_section)
+{
+    SbsNodeAction *action_node = fl_malloc(sizeof(SbsNodeAction));
+    action_node->commands = fl_array_new(sizeof(SbsValueCommand), 0);
+
+    action_section->nodes = fl_array_append(action_section->nodes, &action_node);
+
+    return action_node;
+}

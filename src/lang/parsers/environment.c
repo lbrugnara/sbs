@@ -25,15 +25,11 @@
  */
 SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
 {
-    SbsSectionEnv *env = fl_malloc(sizeof(SbsSectionEnv));
-
     // Consume 'env'
     sbs_parser_consume(parser, SBS_TOKEN_ENV);
     
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-
-    env->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
+    SbsSectionEnv *env = sbs_section_env_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 

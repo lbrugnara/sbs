@@ -49,47 +49,42 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
         return node;
     }
 
-    SbsVariableExpr *var_node = fl_malloc(sizeof(SbsVariableExpr));
-    var_node->kind = SBS_EXPR_VARIABLE;
-
-    SbsArrayExpr *array_node = fl_malloc(sizeof(SbsArrayExpr));
-    array_node->kind = SBS_EXPR_ARRAY;
-    array_node->items = fl_array_new(sizeof(SbsExpression*), 0);
-
+    const char *var_name = NULL;
     bool is_compat_env = false;
+
     if (sbs_token_equals(token, "os"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_node->name = fl_cstring_dup("$sbs.os");
+        var_name = "$sbs.os";
     }
     else if (sbs_token_equals(token, "arch"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_node->name = fl_cstring_dup("$sbs.arch");
+        var_name = "$sbs.arch";
     }
     else if (sbs_token_equals(token, "toolchain"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_node->name = fl_cstring_dup("$sbs.toolchain");
+        var_name = "$sbs.toolchain";
     }
     else if (sbs_token_equals(token, "config"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_node->name = fl_cstring_dup("$sbs.config");
+        var_name = "$sbs.config";
     }
     else if (sbs_token_equals(token, "target"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_node->name = fl_cstring_dup("$sbs.target");
+        var_name = "$sbs.target";
     }
     else // if (sbs_token_equals(token, "env")) For compatibility, if we find a for section without a keyword, it is tied to the environment
     {
-        var_node->name = fl_cstring_dup("$sbs.env");
+        var_name = "$sbs.env";
         if (sbs_token_equals(token, "env"))
         {
             sbs_parser_consume(parser, token->type);
@@ -100,6 +95,9 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
             is_compat_env = true;
         }
     }
+
+    SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(var_name);
+    SbsArrayExpr *array_node = sbs_expression_make_array();
 
     while (sbs_parser_has_input(parser))
     {
@@ -113,12 +111,10 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
         for (size_t i=0; i < fl_array_length(identifiers); i++)
         {
             // TODO: We assume strings here...
-            SbsValueExpr *str = fl_malloc(sizeof(SbsValueExpr));
-            str->kind = SBS_EXPR_VALUE;
-            str->type = SBS_EXPR_VALUE_TYPE_STR;
+            SbsValueExpr *str = sbs_expression_make_value(SBS_EXPR_VALUE_TYPE_STR);
             str->value.s = identifiers[i];
 
-            array_node->items = fl_array_append(array_node->items, &str);
+            sbs_expression_array_add_item(array_node, (SbsExpression*) str);
         }
 
         fl_array_free(identifiers);
@@ -127,25 +123,23 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
     if (!is_compat_env)
         sbs_parser_consume(parser, SBS_TOKEN_RPAREN);
 
-    return sbs_expression_make_binary(SBS_EVAL_OP_IN_ARRAY, (SbsExpression*) var_node, (SbsExpression*) array_node);
+    return (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_IN_ARRAY, var_node, (SbsExpression*) array_node);
 }
 
 
 static SbsExpression* parse_unary_expression(SbsParser *parser)
 {
-    SbsUnaryExpr *unary_node = fl_malloc(sizeof(SbsUnaryExpr));
-    unary_node->kind = SBS_EXPR_UNARY;
-    unary_node->op = SBS_EVAL_OP_ID;
-
+    SbsExpression *unary_node = NULL;
+    SbsEvalOperatorKind op = SBS_EVAL_OP_ID;
+    
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_OP_NOT)
     {
         sbs_parser_consume(parser, SBS_TOKEN_OP_NOT);
-        unary_node->op = SBS_EVAL_OP_NOT;
+        op = SBS_EVAL_OP_NOT;
     }
 
-    unary_node->node = parse_inlist_expression(parser);
-
-    return (SbsExpression*) unary_node;
+    SbsExpression *node = parse_inlist_expression(parser);
+    return (SbsExpression*) sbs_expression_make_unary(op, node);
 }
 
 static SbsExpression* parse_and_expression(SbsParser *parser)
@@ -158,13 +152,7 @@ static SbsExpression* parse_and_expression(SbsParser *parser)
 
         SbsExpression *right = parse_unary_expression(parser);
 
-        SbsBinaryExpr *binode = fl_malloc(sizeof(SbsBinaryExpr));
-        binode->kind = SBS_EXPR_BINARY;
-        binode->op = SBS_EVAL_OP_AND;
-        binode->left = node;
-        binode->right = right;
-
-        node = (SbsExpression*) binode;
+        node = (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_AND, node, right);
     }
 
     return node;
@@ -180,13 +168,7 @@ static SbsExpression* parse_or_expression(SbsParser *parser)
 
         SbsExpression *right = parse_and_expression(parser);
 
-        SbsBinaryExpr *binode = fl_malloc(sizeof(SbsBinaryExpr));
-        binode->kind = SBS_EXPR_BINARY;
-        binode->op = SBS_EVAL_OP_OR;
-        binode->left = node;
-        binode->right = right;
-
-        node = (SbsExpression*) binode;
+        node = (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_OR, node, right);
     }
 
     return node;
@@ -196,7 +178,7 @@ SbsSectionFor* sbs_section_for_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_FOR);
 
-    SbsSectionFor *for_section = fl_malloc(sizeof(SbsSectionFor));
+    SbsSectionFor *for_section = sbs_section_for_new();
     for_section->expr = parse_or_expression(parser);
 
     return for_section;

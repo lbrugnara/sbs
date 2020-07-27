@@ -1,4 +1,3 @@
-#include <fllib/Mem.h>
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include <fllib/containers/Hashtable.h>
@@ -77,8 +76,7 @@ SbsConfiguration* sbs_config_resolve(SbsContext *context, const char *config_nam
     if (!config_section)
         return NULL;
 
-    SbsConfiguration *configuration = fl_malloc(sizeof(SbsConfiguration));
-    configuration->name = fl_cstring_dup(config_section->name);
+    SbsConfiguration *configuration = sbs_config_new(config_section->name);
 
     if (!try_resolve_config_with_hierarchy(context, configuration, config_section))
     {

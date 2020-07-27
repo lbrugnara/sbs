@@ -53,21 +53,14 @@ SbsSectionAction* sbs_section_action_parse(SbsParser *parser)
     sbs_parser_consume(parser, SBS_TOKEN_ACTION);
     
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-
-    SbsSectionAction *action_section = fl_malloc(sizeof(SbsSectionAction));
-    action_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
-    action_section->nodes = fl_array_new(sizeof(SbsNodeAction*), 0);
+    SbsSectionAction *action_section = sbs_section_action_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE)
     {
-        SbsNodeAction *action_node = fl_malloc(sizeof(SbsNodeAction));
-        action_node->commands = fl_array_new(sizeof(SbsValueCommand), 0);
-
-        action_section->nodes = fl_array_append(action_section->nodes, &action_node);
+        SbsNodeAction *action_node = sbs_section_action_add_node(action_section);
         
         if (token->type == SBS_TOKEN_FOR)
         {

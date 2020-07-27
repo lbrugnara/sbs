@@ -16,6 +16,7 @@ typedef struct SbsEnv {
     SbsHostArch *arch;
 } SbsEnv;
 
+SbsEnv* sbs_env_new(const char *name);
 void sbs_env_free(SbsEnv *env);
 
 #endif /* SBS_RUNTIME_ENVIRONMENT_H */

@@ -19,6 +19,7 @@ typedef struct SbsFile {
     FlHashtable *presets;
 } SbsFile;
 
+SbsFile* sbs_file_new(const char *filename);
 void sbs_file_free(SbsFile *file);
 
 #endif /* SBS_LANG_FILE_H */

@@ -267,84 +267,6 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
     return success;
 }
 
-static void map_init_env(FlHashtable **envs)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_section_env_free
-    };
-    
-    *envs = fl_hashtable_new_args(new_args);
-}
-
-static void map_init_action(FlHashtable **actions)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_section_action_free
-    };
-    
-    *actions = fl_hashtable_new_args(new_args);
-}
-
-static void map_init_config(FlHashtable **config_map)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_section_config_free
-    };
-    
-    *config_map = fl_hashtable_new_args(new_args);
-}
-
-static void map_init_preset(FlHashtable **presets)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_section_preset_free
-    };
-    
-    *presets = fl_hashtable_new_args(new_args);
-}
-
-static void map_init_target(FlHashtable **targets)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_section_target_free
-    };
-    
-    *targets = fl_hashtable_new_args(new_args);
-}
-
-static void map_init_toolchain(FlHashtable **toolchains)
-{
-    struct FlHashtableArgs new_args = {
-        .hash_function = fl_hashtable_hash_string, 
-        .key_allocator = fl_container_allocator_string,
-        .key_comparer = fl_container_equals_string,
-        .key_cleaner = fl_container_cleaner_pointer,
-        .value_cleaner = (void(*)(void*))sbs_section_toolchain_free
-    };
-    
-    *toolchains = fl_hashtable_new_args(new_args);
-}
-
 /*
  * Function: sbs_file_parse
  *  This function reads and parses all the build file's content
@@ -358,20 +280,13 @@ static void map_init_toolchain(FlHashtable **toolchains)
  */
 SbsFile* sbs_file_parse(const char *filename)
 {
-    const char *source = (const char*)fl_io_file_read_all_text(filename);
+    const char *source = (const char*) fl_io_file_read_all_text(filename);
 
     if (source == NULL)
         return NULL;
 
     // Create the SbsFile object
-    SbsFile *file = fl_malloc(sizeof(SbsFile));
-    file->filename = fl_cstring_dup(filename);
-    map_init_action(&file->actions);
-    map_init_config(&file->configurations);
-    map_init_env(&file->envs);
-    map_init_preset(&file->presets);
-    map_init_target(&file->targets);
-    map_init_toolchain(&file->toolchains);
+    SbsFile *file = sbs_file_new(filename);
 
     SbsLexer lexer = sbs_lexer_new(source, strlen(source));
     SbsParser parser = {

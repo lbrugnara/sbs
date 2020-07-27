@@ -24,15 +24,11 @@
  */
 SbsSectionPreset* sbs_section_preset_parse(SbsParser *parser)
 {
-    SbsSectionPreset *preset = fl_malloc(sizeof(SbsSectionPreset));
-
     // Consume the 'preset' token
     sbs_parser_consume(parser, SBS_TOKEN_PRESET);
 
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-
-    preset->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
+    SbsSectionPreset *preset = sbs_section_preset_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
     const SbsToken *token = NULL;
 

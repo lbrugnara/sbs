@@ -56,3 +56,22 @@ void sbs_section_config_free(SbsSectionConfig *configuration)
 
     fl_free(configuration);
 }
+
+SbsSectionConfig* sbs_section_config_new(const struct FlSlice *name)
+{
+    SbsSectionConfig *configuration = fl_malloc(sizeof(SbsSectionConfig));
+
+    configuration->name = sbs_slice_to_str(name);
+    configuration->entries = fl_array_new(sizeof(SbsNodeConfig*), 0);
+
+    return configuration;
+}
+
+SbsNodeConfig* sbs_section_config_add_node(SbsSectionConfig *config_section)
+{
+    struct SbsNodeConfig *config_node = fl_malloc(sizeof(struct SbsNodeConfig));
+
+    config_section->entries = fl_array_append(config_section->entries, &config_node);
+
+    return config_node;
+}

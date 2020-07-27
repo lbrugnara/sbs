@@ -7,8 +7,9 @@ typedef struct SbsSectionFor {
     SbsExpression *expr;
 } SbsSectionFor;
 
-void sbs_section_for_free(SbsSectionFor *section);
+SbsSectionFor* sbs_section_for_new(void);
 SbsSectionFor* sbs_section_for_copy(SbsSectionFor *section);
-SbsSectionFor* sbs_section_for_extend(SbsSectionFor *child_section, SbsSectionFor *parent_section);
+SbsSectionFor* sbs_section_for_merge(SbsSectionFor *child_section, SbsSectionFor *parent_section);
+void sbs_section_for_free(SbsSectionFor *section);
 
 #endif /* SBS_LANG_FOR_H */

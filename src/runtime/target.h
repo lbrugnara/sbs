@@ -49,6 +49,10 @@ typedef struct SbsTargetExecutable {
     char **defines;
 } SbsTargetExecutable;
 
+SbsTargetCompile* sbs_target_compile_new(const char *name);
+SbsTargetArchive* sbs_target_archive_new(const char *name);
+SbsTargetShared* sbs_target_shared_new(const char *name);
+SbsTargetExecutable* sbs_target_executable_new(const char *name);
 void sbs_target_free(SbsTarget *target);
 
 #endif /* SBS_RUNTIME_TARGET_H */

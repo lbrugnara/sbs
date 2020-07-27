@@ -1,4 +1,3 @@
-#include <fllib/Mem.h>
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "toolchain.h"
@@ -119,17 +118,11 @@ static void parse_toolchain_entry(SbsParser *parser, SbsNodeToolchain *toolchain
  */
 SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser)
 {
-    SbsSectionToolchain *toolchain = fl_malloc(sizeof(SbsSectionToolchain));
-
-    toolchain->entries = fl_array_new(sizeof(SbsNodeToolchain*), 0);
-
     // Consume 'toolchain'
     sbs_parser_consume(parser, SBS_TOKEN_TOOLCHAIN);
     
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-
-    toolchain->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
+    SbsSectionToolchain *toolchain = sbs_section_toolchain_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
         toolchain->for_clause = sbs_section_for_parse(parser);
@@ -138,8 +131,8 @@ SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser)
 
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
-        SbsNodeToolchain *toolchain_entry = fl_malloc(sizeof(SbsNodeToolchain));
-        toolchain->entries = fl_array_append(toolchain->entries, &toolchain_entry);
+        SbsNodeToolchain *toolchain_entry = sbs_section_toolchain_add_node(toolchain);
+
         if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
         {
             const SbsToken *token = sbs_parser_peek(parser);

@@ -12,9 +12,8 @@ SbsPreset* sbs_preset_resolve(SbsContext *context, const char *preset_name)
     if (!preset_section)
         return NULL;
 
-    SbsPreset *preset_object = fl_malloc(sizeof(SbsPreset));
+    SbsPreset *preset_object = sbs_preset_new(preset_section->name);
 
-    preset_object->name = fl_cstring_dup(preset_section->name);
     preset_object->env = sbs_string_array_extend(preset_object->env, preset_section->env);
     preset_object->toolchain = preset_section->toolchain ? fl_cstring_dup(preset_section->toolchain) : NULL;
     preset_object->config = preset_section->config ? fl_cstring_dup(preset_section->config) : NULL;

@@ -438,8 +438,60 @@ SbsExpression* sbs_expression_copy(SbsExpression *node)
     return NULL;
 }
 
-SbsExpression* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right)
+SbsValueExpr* sbs_expression_make_value(SbsValueExprType type)
 {
+    SbsValueExpr *value = fl_malloc(sizeof(SbsValueExpr));
+
+    value->kind = SBS_EXPR_VALUE;
+    value->type = type;
+
+    return value;
+}
+
+SbsArrayExpr* sbs_expression_make_array(void)
+{
+    SbsArrayExpr *array_node = fl_malloc(sizeof(SbsArrayExpr));
+
+    array_node->kind = SBS_EXPR_ARRAY;
+    array_node->items = fl_array_new(sizeof(SbsExpression*), 0);
+
+    return array_node;
+}
+
+void sbs_expression_array_add_item(SbsArrayExpr *array, SbsExpression *item)
+{
+    array->items = fl_array_append(array->items, &item);
+}
+
+SbsVariableExpr* sbs_expression_make_variable(const char *name)
+{
+    SbsVariableExpr *var_node = fl_malloc(sizeof(SbsVariableExpr));
+
+    var_node->kind = SBS_EXPR_VARIABLE;
+    var_node->name = fl_cstring_dup(name);
+
+    return var_node;
+}
+
+SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *left)
+{
+    if (op != SBS_EVAL_OP_ID && op != SBS_EVAL_OP_NOT)
+        return NULL;
+
+    SbsUnaryExpr *unary_node = fl_malloc(sizeof(SbsUnaryExpr));
+
+    unary_node->kind = SBS_EXPR_UNARY;
+    unary_node->op = op;
+    unary_node->node = left;
+
+    return unary_node;
+}
+
+SbsBinaryExpr* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right)
+{
+    if (op != SBS_EVAL_OP_AND && op != SBS_EVAL_OP_OR && op != SBS_EVAL_OP_IN_ARRAY)
+        return NULL;
+
     SbsBinaryExpr *binode = fl_malloc(sizeof(SbsBinaryExpr));
 
     binode->kind = SBS_EXPR_BINARY;
@@ -447,5 +499,5 @@ SbsExpression* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression 
     binode->left = left;
     binode->right = right;
 
-    return (SbsExpression*) binode;
+    return binode;
 }

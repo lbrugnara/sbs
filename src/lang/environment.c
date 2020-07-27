@@ -34,3 +34,12 @@ void sbs_section_env_free(SbsSectionEnv *env)
 
     free(env);
 }
+
+SbsSectionEnv* sbs_section_env_new(const struct FlSlice *name)
+{
+    SbsSectionEnv *env = fl_malloc(sizeof(SbsSectionEnv));
+
+    env->name = sbs_slice_to_str(name);
+
+    return env;
+}

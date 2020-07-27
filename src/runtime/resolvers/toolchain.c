@@ -16,8 +16,7 @@ SbsToolchain* sbs_toolchain_resolve(SbsContext *context, const char *toolchain_n
     if (toolchain_section->for_clause && !sbs_expression_eval(context->symbols, toolchain_section->for_clause->expr))
         return NULL;
 
-    SbsToolchain *toolchain_object = fl_malloc(sizeof(SbsToolchain));
-    toolchain_object->name = fl_cstring_dup(toolchain_section->name);
+    SbsToolchain *toolchain_object = sbs_toolchain_new(toolchain_section->name);
 
     for (size_t i=0; i < fl_array_length(toolchain_section->entries); i++)
     {

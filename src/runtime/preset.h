@@ -12,6 +12,7 @@ typedef struct SbsPreset {
     SbsPropertyActions actions;
 } SbsPreset;
 
+SbsPreset* sbs_preset_new(const char *name);
 void sbs_preset_free(SbsPreset *preset);
 
 #endif /* SBS_RUNTIME_PRESET_H */

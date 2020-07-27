@@ -25,14 +25,16 @@ typedef struct SbsExpression {
     SbsExprKind kind;
 } SbsExpression;
 
+typedef enum SbsValueExprType {
+    SBS_EXPR_VALUE_TYPE_UNK,
+    SBS_EXPR_VALUE_TYPE_BOOL,
+    SBS_EXPR_VALUE_TYPE_STR,
+    SBS_EXPR_VALUE_TYPE_ARRAY,
+} SbsValueExprType;
+
 typedef struct SbsValueExpr {
     SbsExprKind kind;
-    enum {
-        SBS_EXPR_VALUE_TYPE_UNK,
-        SBS_EXPR_VALUE_TYPE_BOOL,
-        SBS_EXPR_VALUE_TYPE_STR,
-        SBS_EXPR_VALUE_TYPE_ARRAY,
-    } type;
+    SbsValueExprType type;
     union {
         bool b;
         char *s;
@@ -42,7 +44,7 @@ typedef struct SbsValueExpr {
 
 typedef struct SbsVariableExpr {
     SbsExprKind kind;
-    char *name;
+    const char *name;
 } SbsVariableExpr;
 
 typedef struct SbsArrayExpr {
@@ -73,6 +75,12 @@ void sbs_eval_context_free(SbsEvalContext *context);
 bool sbs_expression_eval(SbsEvalContext *context, SbsExpression *node);
 void sbs_expression_free(SbsExpression *node);
 SbsExpression* sbs_expression_copy(SbsExpression *node);
-SbsExpression* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right);
+
+SbsValueExpr* sbs_expression_make_value(SbsValueExprType type);
+SbsArrayExpr* sbs_expression_make_array(void);
+void sbs_expression_array_add_item(SbsArrayExpr *array, SbsExpression *item);
+SbsVariableExpr* sbs_expression_make_variable(const char *name);
+SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *left);
+SbsBinaryExpr* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right);
 
 #endif /* SBS_RUNTIME_EVAL_H */

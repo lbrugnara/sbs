@@ -15,6 +15,7 @@ typedef struct SbsSectionEnv {
     SbsPropertyActions actions;
 } SbsSectionEnv;
 
+SbsSectionEnv* sbs_section_env_new(const struct FlSlice *name);
 void sbs_section_env_free(SbsSectionEnv *env);
 
 #endif /* SBS_LANG_ENVIRONMENT_H */

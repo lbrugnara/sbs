@@ -3,6 +3,15 @@
 #include <fllib/Cstring.h>
 #include "preset.h"
 
+SbsSectionPreset* sbs_section_preset_new(const struct FlSlice *name)
+{
+    SbsSectionPreset *preset = fl_malloc(sizeof(SbsSectionPreset));
+
+    preset->name = sbs_slice_to_str(name);
+
+    return preset;
+}
+
 void sbs_section_preset_free(SbsSectionPreset *preset)
 {
     fl_cstring_free(preset->name);

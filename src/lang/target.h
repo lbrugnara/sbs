@@ -13,49 +13,78 @@ typedef enum SbsSectionTargetType {
     SBS_TARGET_EXECUTABLE,
 } SbsSectionTargetType;
 
-typedef struct SbsSectionTarget {
+typedef struct SbsNodeTarget {
     SbsPropertyActions actions;
     const char *output_dir;
     SbsSectionFor *for_clause;
-} SbsSectionTarget;
+} SbsNodeTarget;
 
-typedef struct SbsSectionCompile {
-    SbsSectionTarget base;
+typedef struct SbsNodeCompile {
+    SbsNodeTarget base;
     char **includes;
     char **sources;
     char **defines;
-} SbsSectionCompile;
+} SbsNodeCompile;
 
-typedef struct SbsSectionArchive {
-    SbsSectionTarget base;
+typedef struct SbsNodeArchive {
+    SbsNodeTarget base;
     const char *output_name;
     SbsValueSource *objects;
-} SbsSectionArchive;
+} SbsNodeArchive;
 
-typedef struct SbsSectionShared {
-    SbsSectionTarget base;
+typedef struct SbsNodeShared {
+    SbsNodeTarget base;
     const char *output_name;
     SbsValueSource *objects;
-} SbsSectionShared;
+} SbsNodeShared;
 
 typedef struct SbsPropertyLibrary {
     char *path;
     char *name;
 } SbsPropertyLibrary;
 
-typedef struct SbsSectionExecutable {
-    SbsSectionTarget base;
+typedef struct SbsNodeExecutable {
+    SbsNodeTarget base;
     const char *output_name;
     SbsPropertyLibrary *libraries;
     SbsValueSource *objects;
     char **defines;
-} SbsSectionExecutable;
+} SbsNodeExecutable;
 
 typedef struct SbsAbstractSectionTarget {
     const char *name;
-    SbsSectionTarget **entries;
     SbsSectionTargetType type;
 } SbsAbstractSectionTarget;
+
+typedef struct SbsSectionCompile {
+    SbsAbstractSectionTarget base;
+    SbsNodeCompile **entries;
+} SbsSectionCompile;
+
+typedef struct SbsSectionArchive {
+    SbsAbstractSectionTarget base;
+    SbsNodeArchive **entries;
+} SbsSectionArchive;
+
+typedef struct SbsSectionShared {
+    SbsAbstractSectionTarget base;
+    SbsNodeShared **entries;
+} SbsSectionShared;
+
+typedef struct SbsSectionExecutable {
+    SbsAbstractSectionTarget base;
+    SbsNodeExecutable **entries;
+} SbsSectionExecutable;
+
+SbsSectionCompile* sbs_section_compile_new(const struct FlSlice *name);
+SbsSectionArchive* sbs_section_archive_new(const struct FlSlice *name);
+SbsSectionShared* sbs_section_shared_new(const struct FlSlice *name);
+SbsSectionExecutable* sbs_section_executable_new(const struct FlSlice *name);
+
+SbsNodeCompile* sbs_section_compile_add_node(SbsSectionCompile *target_section);
+SbsNodeArchive* sbs_section_archive_add_node(SbsSectionArchive *target_section);
+SbsNodeShared* sbs_section_shared_add_node(SbsSectionShared *target_section);
+SbsNodeExecutable* sbs_section_executable_add_node(SbsSectionExecutable *target_section);
 
 void sbs_section_target_free(SbsAbstractSectionTarget *target_section);
 

@@ -59,6 +59,8 @@ typedef struct SbsPropertyActions {
     SbsValueCommand *after;
 } SbsPropertyActions;
 
+SbsSectionAction* sbs_section_action_new(const struct FlSlice *name);
+SbsNodeAction* sbs_section_action_add_node(SbsSectionAction *action_section);
 void sbs_section_action_free(SbsSectionAction *action_section);
 void sbs_property_actions_free(SbsPropertyActions *actions);
 

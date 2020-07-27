@@ -8,7 +8,7 @@ toolchain msvc for env(win-cmd) {
         define_flag: "/D"
     }    
 
-    # We use LLVM's archiver
+    # We use MS's archiver
     archiver: {
         bin: "lib.exe"
     },

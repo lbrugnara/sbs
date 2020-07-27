@@ -4,6 +4,46 @@
 #include "target.h"
 #include "../lang/command.h"
 
+SbsTargetCompile* sbs_target_compile_new(const char *name)
+{
+    SbsTargetCompile *compile_target = fl_malloc(sizeof(SbsTargetCompile));
+
+    compile_target->type = SBS_TARGET_COMPILE;
+    compile_target->name = fl_cstring_dup(name);
+
+    return compile_target;
+}
+
+SbsTargetArchive* sbs_target_archive_new(const char *name)
+{
+    SbsTargetArchive *archive_target = fl_malloc(sizeof(SbsTargetArchive));
+
+    archive_target->type = SBS_TARGET_ARCHIVE;
+    archive_target->name = fl_cstring_dup(name);
+
+    return archive_target;
+}
+
+SbsTargetShared* sbs_target_shared_new(const char *name)
+{
+    SbsTargetShared *shared_target = fl_malloc(sizeof(SbsTargetShared));
+
+    shared_target->type = SBS_TARGET_SHARED;
+    shared_target->name = fl_cstring_dup(name);
+
+    return shared_target;
+}
+
+SbsTargetExecutable* sbs_target_executable_new(const char *name)
+{
+    SbsTargetExecutable *executable_target = fl_malloc(sizeof(SbsTargetExecutable));
+
+    executable_target->type = SBS_TARGET_EXECUTABLE;
+    executable_target->name = fl_cstring_dup(name);
+
+    return executable_target;
+}
+
 static void free_library(void *obj)
 {
     if (!obj)

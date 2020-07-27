@@ -8,31 +8,25 @@ SbsValueVariable* sbs_parse_variable(SbsParser *parser)
 {
     const SbsToken *var_token = sbs_parser_consume(parser, SBS_TOKEN_VARIABLE);
     
-    const char *namespace = NULL;
-    const char *name = NULL;
+    SbsValueVariable *variable = NULL;
 
     for (size_t i = var_token->value.length - 1; true; )
     {
         if (((const char*) var_token->value.sequence)[i] == '.')
         {
-            name = fl_cstring_dup_n((const char*) var_token->value.sequence + i + 1, var_token->value.length - (i + 1));
-            namespace = fl_cstring_dup_n((const char*) var_token->value.sequence, i);
+            const struct FlSlice name = fl_slice_new(var_token->value.sequence, 1, i + 1, var_token->value.length - (i + 1));
+            const struct FlSlice namespace = fl_slice_new(var_token->value.sequence, 1, 0, i);
+            variable = sbs_value_variable_new(&name, &namespace);
             break;
         }
         else if (i == 0)
         {
-            name = fl_cstring_dup_n((const char*) var_token->value.sequence, var_token->value.length);
+            variable = sbs_value_variable_new(&var_token->value, NULL);
             break;
         }
         i--;
     }
 
-    if (name == NULL)
-        return NULL;
-    
-    SbsValueVariable *variable = fl_malloc(sizeof(SbsValueVariable));
-    variable->namespace = namespace;
-    variable->name = name;
     return variable;
 }
 

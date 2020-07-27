@@ -4,6 +4,13 @@
 #include "../utils.h"
 #include "../runtime/eval.h"
 
+SbsSectionFor* sbs_section_for_new(void)
+{
+    SbsSectionFor *for_section = fl_malloc(sizeof(SbsSectionFor));
+
+    return for_section;
+}
+
 void sbs_section_for_free(SbsSectionFor *section)
 {
     sbs_expression_free(section->expr);
@@ -19,7 +26,7 @@ SbsSectionFor* sbs_section_for_copy(SbsSectionFor *section)
     return copy;
 }
 
-SbsSectionFor* sbs_section_for_extend(SbsSectionFor *child_section, SbsSectionFor *parent_section)
+SbsSectionFor* sbs_section_for_merge(SbsSectionFor *child_section, SbsSectionFor *parent_section)
 {
     if (!parent_section)
         return child_section;
@@ -30,7 +37,7 @@ SbsSectionFor* sbs_section_for_extend(SbsSectionFor *child_section, SbsSectionFo
     }
     else
     {
-        child_section->expr = sbs_expression_make_binary(SBS_EVAL_OP_AND, child_section->expr, sbs_expression_copy(parent_section->expr));
+        child_section->expr = (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_AND, child_section->expr, sbs_expression_copy(parent_section->expr));
     }
 
     return child_section;

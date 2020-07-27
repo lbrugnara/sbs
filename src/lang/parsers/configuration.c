@@ -185,17 +185,11 @@ static void parse_config_body(SbsParser *parser, struct SbsNodeConfig *configura
  */
 SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
 {
-    SbsSectionConfig *configuration = fl_malloc(sizeof(SbsSectionConfig));
-
-    configuration->entries = fl_array_new(sizeof(SbsNodeConfig*), 0);
-
     // Consume 'configuration'
     sbs_parser_consume(parser, SBS_TOKEN_CONFIG);
     
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-
-    configuration->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
+    SbsSectionConfig *configuration = sbs_section_config_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
     // TODO: Improve this:
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_EXTENDS)
@@ -219,8 +213,7 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
     {
         const SbsToken *token = sbs_parser_peek(parser);
 
-        struct SbsNodeConfig *config_node = fl_malloc(sizeof(struct SbsNodeConfig));
-        configuration->entries = fl_array_append(configuration->entries, &config_node);
+        struct SbsNodeConfig *config_node = sbs_section_config_add_node(configuration);
 
         if (token->type == SBS_TOKEN_FOR)
         {

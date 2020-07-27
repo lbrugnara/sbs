@@ -3,6 +3,15 @@
 #include <fllib/Cstring.h>
 #include "preset.h"
 
+SbsPreset* sbs_preset_new(const char *name)
+{
+    SbsPreset *preset = fl_malloc(sizeof(SbsPreset));
+
+    preset->name = fl_cstring_dup(name);
+
+    return preset;
+}
+
 void sbs_preset_free(SbsPreset *preset)
 {
     fl_cstring_free(preset->name);

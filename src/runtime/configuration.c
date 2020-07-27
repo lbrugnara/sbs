@@ -3,6 +3,15 @@
 #include <fllib/Cstring.h>
 #include "configuration.h"
 
+SbsConfiguration* sbs_config_new(const char *name)
+{
+    SbsConfiguration *configuration = fl_malloc(sizeof(SbsConfiguration));
+
+    configuration->name = fl_cstring_dup(name);
+
+    return configuration;
+}
+
 void sbs_config_free(SbsConfiguration *config)
 {
     fl_cstring_free(config->name);

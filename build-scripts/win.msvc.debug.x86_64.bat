@@ -1,8 +1,8 @@
 mkdir obj\\x86_64 
-if not exist .\\include (md .\\include)
-if exist ..\\fllib\\include\\fllib.h (copy ..\\fllib\\include\\fllib.h .\\include\\)
-if not exist .\\lib\\fllib\\win-cmd\\x86_64\\msvc\\msvc-debug (md .\\lib\\fllib\\win-cmd\\x86_64\\msvc\\msvc-debug)
-if exist ..\\fllib\\build\\win-cmd\\x86_64\\msvc\\msvc-debug\\libfl.lib (copy ..\\fllib\\build\\win-cmd\\x86_64\\msvc\\msvc-debug\\libfl.lib .\\lib\\fllib\\win-cmd\\x86_64\\msvc\\msvc-debug\\)
+if not exist .\include (md .\include)
+if exist ..\fllib\include\fllib.h (copy ..\fllib\include\fllib.h .\include\ )
+if not exist .\lib\fllib\win-cmd\x86_64\msvc\msvc-debug (            md .\lib\fllib\win-cmd\x86_64\msvc\msvc-debug )
+if exist ..\fllib\build\win-cmd\x86_64\msvc\msvc-debug\libfl.lib (             copy ..\fllib\build\win-cmd\x86_64\msvc\msvc-debug\libfl.lib                  .\lib\fllib\win-cmd\x86_64\msvc\msvc-debug\ )
 cl.exe  /I..\fllib\include  /Zi /W1 /c .\src\build\action.c /Fo.\\obj\win-cmd\x86_64\msvc\msvc-debug\src\build\action.o /Od /DEBUG:FULL 
 cl.exe  /I..\fllib\include  /Zi /W1 /c .\src\build\archive.c /Fo.\\obj\win-cmd\x86_64\msvc\msvc-debug\src\build\archive.o /Od /DEBUG:FULL 
 cl.exe  /I..\fllib\include  /Zi /W1 /c .\src\build\build.c /Fo.\\obj\win-cmd\x86_64\msvc\msvc-debug\src\build\build.o /Od /DEBUG:FULL 

@@ -4,7 +4,26 @@
 #include "toolchain.h"
 #include "../utils.h"
 
-static void sbs_toolchain_entry_free(SbsNodeToolchain *toolchain_entry)
+SbsSectionToolchain* sbs_section_toolchain_new(const struct FlSlice *name)
+{
+    SbsSectionToolchain *toolchain = fl_malloc(sizeof(SbsSectionToolchain));
+
+    toolchain->name = sbs_slice_to_str(name);
+    toolchain->entries = fl_array_new(sizeof(SbsNodeToolchain*), 0);
+
+    return toolchain;
+}
+
+SbsNodeToolchain* sbs_section_toolchain_add_node(SbsSectionToolchain *toolchain_section)
+{
+    SbsNodeToolchain *toolchain_entry = fl_malloc(sizeof(SbsNodeToolchain));
+
+    toolchain_section->entries = fl_array_append(toolchain_section->entries, &toolchain_entry);
+
+    return toolchain_entry;
+}
+
+static void sbs_node_toolchain_free(SbsNodeToolchain *toolchain_entry)
 {
     if (toolchain_entry->compiler.bin)
         fl_cstring_free(toolchain_entry->compiler.bin);
@@ -38,7 +57,7 @@ void sbs_section_toolchain_free(SbsSectionToolchain *toolchain)
     fl_cstring_free(toolchain->name);
 
     if (toolchain->entries)
-        fl_array_free_each_pointer(toolchain->entries, (FlArrayFreeElementFunc) sbs_toolchain_entry_free);
+        fl_array_free_each_pointer(toolchain->entries, (FlArrayFreeElementFunc) sbs_node_toolchain_free);
 
     if (toolchain->for_clause)
         sbs_section_for_free(toolchain->for_clause);

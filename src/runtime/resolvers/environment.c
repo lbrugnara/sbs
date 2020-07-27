@@ -62,9 +62,8 @@ SbsEnv* sbs_env_resolve(SbsContext *context, const char *env_name)
     if (!env_section)
         return NULL;
 
-    SbsEnv *env_object = fl_malloc(sizeof(SbsEnv));
+    SbsEnv *env_object = sbs_env_new(env_section->name);
 
-    env_object->name = sbs_string_set(env_object->name, env_section->name);
     env_object->type = sbs_string_set(env_object->type, env_section->type);
     env_object->terminal = sbs_string_set(env_object->terminal, env_section->terminal);
     env_object->args = sbs_string_array_extend(env_object->args, env_section->args);

@@ -4,6 +4,21 @@
 #include "action.h"
 #include "../utils.h"
 
+SbsAction* sbs_action_new(const char *name)
+{
+    SbsAction *action = fl_malloc(sizeof(SbsAction));
+
+    action->name = fl_cstring_dup(name);
+    action->commands = fl_array_new(sizeof(char*), 0);
+
+    return action;
+}
+
+void sbs_action_add_command(SbsAction *action, char *cmd)
+{
+    action->commands = fl_array_append(action->commands, &cmd);
+}
+
 void sbs_action_free(SbsAction *action)
 {
     if (action->name)

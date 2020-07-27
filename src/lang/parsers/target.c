@@ -10,10 +10,10 @@
 #include "../../utils.h"
 
 static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionTargetType target_type);
-static void parse_compile_body(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionCompile *target);
-static void parse_archive_body(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionArchive *target);
-static void parse_shared_body(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionShared *target);
-static void parse_executable_body(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionExecutable *target);
+static void parse_compile_body(SbsParser *parser, SbsSectionCompile *target_section, SbsNodeCompile *target);
+static void parse_archive_body(SbsParser *parser, SbsSectionArchive *target_section, SbsNodeArchive *target);
+static void parse_shared_body(SbsParser *parser, SbsSectionShared *target_section, SbsNodeShared *target);
+static void parse_executable_body(SbsParser *parser, SbsSectionExecutable *target_section, SbsNodeExecutable *target);
 
 static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionTargetType target_type)
 {
@@ -24,32 +24,33 @@ static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *targe
     
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-    // Parse the configuration info
-    SbsSectionTarget *target_entry = NULL;
-
     if (target_type == SBS_TARGET_COMPILE)
     {
-        target_entry = fl_malloc(sizeof(SbsSectionCompile));
-        target_section->entries = fl_array_append(target_section->entries, &target_entry);
-        parse_compile_body(parser, target_section, (SbsSectionCompile*)target_entry);
+        SbsSectionCompile *compile_section = (SbsSectionCompile*) target_section;
+        SbsNodeCompile *compile_entry = sbs_section_compile_add_node(compile_section);
+        compile_entry->base.for_clause = for_clause;
+        parse_compile_body(parser, compile_section, compile_entry);
     }
     else if (target_type == SBS_TARGET_ARCHIVE)
     {
-        target_entry = fl_malloc(sizeof(SbsSectionArchive));
-        target_section->entries = fl_array_append(target_section->entries, &target_entry);
-        parse_archive_body(parser, target_section, (SbsSectionArchive*)target_entry);
+        SbsSectionArchive *archive_section = (SbsSectionArchive*) target_section;
+        SbsNodeArchive *archive_entry = sbs_section_archive_add_node(archive_section);
+        archive_entry->base.for_clause = for_clause;
+        parse_archive_body(parser, archive_section, archive_entry);
     }
     else if (target_type == SBS_TARGET_SHARED)
     {
-        target_entry = fl_malloc(sizeof(SbsSectionShared));
-        target_section->entries = fl_array_append(target_section->entries, &target_entry);
-        parse_shared_body(parser, target_section, (SbsSectionShared*)target_entry);
+        SbsSectionShared *shared_section = (SbsSectionShared*) target_section;
+        SbsNodeShared *shared_entry = sbs_section_shared_add_node(shared_section);
+        shared_entry->base.for_clause = for_clause;
+        parse_shared_body(parser, shared_section, shared_entry);
     }
     else if (target_type == SBS_TARGET_EXECUTABLE)
     {
-        target_entry = fl_malloc(sizeof(SbsSectionExecutable));
-        target_section->entries = fl_array_append(target_section->entries, &target_entry);
-        parse_executable_body(parser, target_section, (SbsSectionExecutable*)target_entry);
+        SbsSectionExecutable *executable_section = (SbsSectionExecutable*) target_section;
+        SbsNodeExecutable *executable_entry = sbs_section_executable_add_node(executable_section);
+        executable_entry->base.for_clause = for_clause;
+        parse_executable_body(parser, executable_section, executable_entry);
     }
     else
     {
@@ -57,8 +58,6 @@ static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *targe
     }
 
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
-
-    target_entry->for_clause = for_clause;
 }
 
 /*
@@ -87,13 +86,13 @@ static SbsPropertyLibrary* parse_library_array(SbsParser *parser)
 
         while ((token = sbs_parser_peek(parser))->type != SBS_TOKEN_RBRACE)
         {
-            if (fl_slice_equals_sequence(&token->value, (FlByte*)"path", 4))
+            if (sbs_token_equals(token, "path"))
             {
                 sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                 sbs_parser_consume(parser, SBS_TOKEN_COLON);
                 library.path = sbs_parse_string(parser);
             }
-            else if (fl_slice_equals_sequence(&token->value, (FlByte*)"name", 4))
+            else if (sbs_token_equals(token, "name"))
             {
                 sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                 sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -117,35 +116,35 @@ static SbsPropertyLibrary* parse_library_array(SbsParser *parser)
     return libraries;
 }
 
-static void parse_compile_body(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionCompile *target)
+static void parse_compile_body(SbsParser *parser, SbsSectionCompile *target_section, SbsNodeCompile *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
         const SbsToken *token = sbs_parser_peek(parser);
         
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"includes", 8))
+        if (sbs_token_equals(token, "includes"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->includes = sbs_parse_string_array(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"sources", 7))
+        else if (sbs_token_equals(token, "sources"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->sources = sbs_parse_string_array(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"output_dir", 10))
+        else if (sbs_token_equals(token, "output_dir"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->base.output_dir = sbs_parse_string(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
+        else if (sbs_token_equals(token, "actions"))
         {
             target->base.actions = sbs_property_actions_parse(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"defines", 7))
+        else if (sbs_token_equals(token, "defines"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -153,7 +152,7 @@ static void parse_compile_body(SbsParser *parser, SbsAbstractSectionTarget *targ
         }
         else if (token->type == SBS_TOKEN_FOR)
         {
-            parse_for_section(parser, target_section, SBS_TARGET_COMPILE);
+            parse_for_section(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_COMPILE);
         }
         else
         {
@@ -182,59 +181,49 @@ static void parse_compile_body(SbsParser *parser, SbsAbstractSectionTarget *targ
  */
 SbsAbstractSectionTarget* sbs_target_parse_compile(SbsParser *parser)
 {
-    SbsAbstractSectionTarget *target_section = fl_malloc(sizeof(SbsAbstractSectionTarget));
-    target_section->type = SBS_TARGET_COMPILE;
-    target_section->entries = fl_array_new(sizeof(SbsSectionTarget*), 0);
-
     // Consume the 'compile' token
     sbs_parser_consume(parser, SBS_TOKEN_COMPILE);
     
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
-
-    target_section->name = fl_cstring_dup_n((const char*) identifier->value.sequence, identifier->value.length);
-
-    SbsSectionCompile *target_entry = fl_malloc(sizeof(SbsSectionCompile));
-    target_section->entries = fl_array_append(target_section->entries, &target_entry);
-    sbs_parser_consume(parser, SBS_TOKEN_LBRACE);    
-    parse_compile_body(parser, target_section, target_entry);
+    SbsSectionCompile *target_section = sbs_section_compile_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
+    sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
+    parse_compile_body(parser, target_section, sbs_section_compile_add_node(target_section));
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
     return (SbsAbstractSectionTarget*) target_section;
 }
 
-static void parse_archive_body(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionArchive *target)
+static void parse_archive_body(SbsParser *parser, SbsSectionArchive *target_section, SbsNodeArchive *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
         const SbsToken *token = sbs_parser_peek(parser);
-        //const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"objects", 7))
+        if (sbs_token_equals(token, "objects"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->objects = sbs_value_source_array_prase(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"output_name", 11))
+        else if (sbs_token_equals(token, "output_name"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->output_name = sbs_parse_string(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"output_dir", 10))
+        else if (sbs_token_equals(token, "output_dir"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->base.output_dir = sbs_parse_string(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
+        else if (sbs_token_equals(token, "actions"))
         {
             target->base.actions = sbs_property_actions_parse(parser);
         }
         else if (token->type == SBS_TOKEN_FOR)
         {
-            parse_for_section(parser, target_section, SBS_TARGET_ARCHIVE);
+            parse_for_section(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_ARCHIVE);
         }
         else
         {
@@ -262,59 +251,50 @@ static void parse_archive_body(SbsParser *parser, SbsAbstractSectionTarget *targ
  */
 SbsAbstractSectionTarget* sbs_target_parse_archive(SbsParser *parser)
 {
-    SbsAbstractSectionTarget *target_section = fl_malloc(sizeof(SbsAbstractSectionTarget));
-    target_section->type = SBS_TARGET_ARCHIVE;
-    target_section->entries = fl_array_new(sizeof(SbsSectionTarget*), 0);
-
     // Consume 'target'
     sbs_parser_consume(parser, SBS_TOKEN_ARCHIVE);
     
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    SbsSectionArchive *target_section = sbs_section_archive_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
-    target_section->name = fl_cstring_dup_n((const char*)identifier->value.sequence, identifier->value.length);
-
-    SbsSectionArchive *target_entry = fl_malloc(sizeof(SbsSectionArchive));
-    target_section->entries = fl_array_append(target_section->entries, &target_entry);
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-    parse_archive_body(parser, target_section, target_entry);
+    parse_archive_body(parser, target_section, sbs_section_archive_add_node(target_section));
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-    return (SbsAbstractSectionTarget*)target_section;
+    return (SbsAbstractSectionTarget*) target_section;
 }
 
-static void parse_shared_body(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionShared *target)
+static void parse_shared_body(SbsParser *parser, SbsSectionShared *target_section, SbsNodeShared *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
         const SbsToken *token = sbs_parser_peek(parser);
-        //const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"objects", 7))
+        if (sbs_token_equals(token, "objects"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->objects = sbs_value_source_array_prase(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"output_name", 11))
+        else if (sbs_token_equals(token, "output_name"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->output_name = sbs_parse_string(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"output_dir", 10))
+        else if (sbs_token_equals(token, "output_dir"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->base.output_dir = sbs_parse_string(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
+        else if (sbs_token_equals(token, "actions"))
         {
             target->base.actions = sbs_property_actions_parse(parser);
         }
         else if (token->type == SBS_TOKEN_FOR)
         {
-            parse_for_section(parser, target_section, SBS_TARGET_SHARED);
+            parse_for_section(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_SHARED);
         }
         else
         {
@@ -342,63 +322,54 @@ static void parse_shared_body(SbsParser *parser, SbsAbstractSectionTarget *targe
  */
 SbsAbstractSectionTarget* sbs_target_parse_shared(SbsParser *parser)
 {
-    SbsAbstractSectionTarget *target_section = fl_malloc(sizeof(SbsAbstractSectionTarget));
-    target_section->type = SBS_TARGET_SHARED;
-    target_section->entries = fl_array_new(sizeof(SbsSectionTarget*), 0);
-
     // Consume 'target'
     sbs_parser_consume(parser, SBS_TOKEN_SHARED);
     
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    SbsSectionShared *target_section = sbs_section_shared_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
-    target_section->name = fl_cstring_dup_n((const char*) identifier->value.sequence, identifier->value.length);
-
-    SbsSectionShared *target_entry = fl_malloc(sizeof(SbsSectionShared));
-    target_section->entries = fl_array_append(target_section->entries, &target_entry);
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-    parse_shared_body(parser, target_section, target_entry);
+    parse_shared_body(parser, target_section, sbs_section_shared_add_node(target_section));
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
-    return (SbsAbstractSectionTarget*)target_section;
+    return (SbsAbstractSectionTarget*) target_section;
 }
 
-static void parse_executable_body(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionExecutable *target)
+static void parse_executable_body(SbsParser *parser, SbsSectionExecutable *target_section, SbsNodeExecutable *target)
 {
     while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
     {
         const SbsToken *token = sbs_parser_peek(parser);
-        //const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
 
-        if (fl_slice_equals_sequence(&token->value, (FlByte*)"objects", 7))
+        if (sbs_token_equals(token, "objects"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->objects = sbs_value_source_array_prase(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"output_name", 11))
+        else if (sbs_token_equals(token, "output_name"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->output_name = sbs_parse_string(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"output_dir", 10))
+        else if (sbs_token_equals(token, "output_dir"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->base.output_dir = sbs_parse_string(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"actions", 7))
+        else if (sbs_token_equals(token, "actions"))
         {
             target->base.actions = sbs_property_actions_parse(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"libraries", 9))
+        else if (sbs_token_equals(token, "libraries"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->libraries = parse_library_array(parser);
         }
-        else if (fl_slice_equals_sequence(&token->value, (FlByte*)"defines", 7))
+        else if (sbs_token_equals(token, "defines"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
@@ -406,7 +377,7 @@ static void parse_executable_body(SbsParser *parser, SbsAbstractSectionTarget *t
         }
         else if (token->type == SBS_TOKEN_FOR)
         {
-            parse_for_section(parser, target_section, SBS_TARGET_EXECUTABLE);
+            parse_for_section(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_EXECUTABLE);
         }
         else
         {
@@ -434,22 +405,14 @@ static void parse_executable_body(SbsParser *parser, SbsAbstractSectionTarget *t
  */
 SbsAbstractSectionTarget* sbs_target_parse_executable(SbsParser *parser)
 {
-    SbsAbstractSectionTarget *target_section = fl_malloc(sizeof(SbsAbstractSectionTarget));
-    target_section->type = SBS_TARGET_EXECUTABLE;
-    target_section->entries = fl_array_new(sizeof(SbsSectionTarget*), 0);
-
     // Consume 'target'
     sbs_parser_consume(parser, SBS_TOKEN_EXECUTABLE);
     
     // Consume IDENTIFIER
-    const SbsToken *identifier = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    SbsSectionExecutable *target_section = sbs_section_executable_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
-    target_section->name = fl_cstring_dup_n((const char*) identifier->value.sequence, identifier->value.length);
-
-    SbsSectionExecutable *target_entry = fl_malloc(sizeof(SbsSectionExecutable));
-    target_section->entries = fl_array_append(target_section->entries, &target_entry);
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-    parse_executable_body(parser, target_section, target_entry);
+    parse_executable_body(parser, target_section, sbs_section_executable_add_node(target_section));
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
 
     return (SbsAbstractSectionTarget*) target_section;

@@ -3,6 +3,15 @@
 #include <fllib/Cstring.h>
 #include "toolchain.h"
 
+SbsToolchain* sbs_toolchain_new(const char *name)
+{
+    SbsToolchain *toolchain_object = fl_malloc(sizeof(SbsToolchain));
+
+    toolchain_object->name = fl_cstring_dup(name);
+
+    return toolchain_object;
+}
+
 void sbs_toolchain_free(SbsToolchain *toolchain)
 {
     if (toolchain->name)

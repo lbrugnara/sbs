@@ -4,6 +4,164 @@
 #include "target.h"
 #include "../utils.h"
 
+SbsSectionCompile* sbs_section_compile_new(const struct FlSlice *name)
+{
+    SbsSectionCompile *target_section = fl_malloc(sizeof(SbsSectionCompile));
+
+    target_section->base.type = SBS_TARGET_COMPILE;
+    target_section->base.name = sbs_slice_to_str(name);
+    target_section->entries = fl_array_new(sizeof(SbsNodeCompile*), 0);
+
+    return target_section;
+}
+
+SbsSectionArchive* sbs_section_archive_new(const struct FlSlice *name)
+{
+    SbsSectionArchive *target_section = fl_malloc(sizeof(SbsSectionArchive));
+
+    target_section->base.type = SBS_TARGET_ARCHIVE;
+    target_section->base.name = sbs_slice_to_str(name);
+    target_section->entries = fl_array_new(sizeof(SbsNodeArchive*), 0);
+
+    return target_section;
+}
+
+SbsSectionShared* sbs_section_shared_new(const struct FlSlice *name)
+{
+    SbsSectionShared *target_section = fl_malloc(sizeof(SbsSectionShared));
+
+    target_section->base.type = SBS_TARGET_SHARED;
+    target_section->base.name = sbs_slice_to_str(name);
+    target_section->entries = fl_array_new(sizeof(SbsNodeShared*), 0);
+
+    return target_section;
+}
+
+SbsSectionExecutable* sbs_section_executable_new(const struct FlSlice *name)
+{
+    SbsSectionExecutable *target_section = fl_malloc(sizeof(SbsSectionExecutable));
+
+    target_section->base.type = SBS_TARGET_EXECUTABLE;
+    target_section->base.name = sbs_slice_to_str(name);
+    target_section->entries = fl_array_new(sizeof(SbsNodeExecutable*), 0);
+
+    return target_section;
+}
+
+SbsNodeCompile* sbs_section_compile_add_node(SbsSectionCompile *target_section)
+{
+    SbsNodeCompile *target_entry = fl_malloc(sizeof(SbsNodeCompile));
+
+    target_section->entries = fl_array_append(target_section->entries, &target_entry);
+
+    return target_entry;
+}
+
+SbsNodeArchive* sbs_section_archive_add_node(SbsSectionArchive *target_section)
+{
+    SbsNodeArchive *target_entry = fl_malloc(sizeof(SbsNodeArchive));
+
+    target_section->entries = fl_array_append(target_section->entries, &target_entry);
+
+    return target_entry;
+}
+
+SbsNodeShared* sbs_section_shared_add_node(SbsSectionShared *target_section)
+{
+    SbsNodeShared *target_entry = fl_malloc(sizeof(SbsNodeShared));
+
+    target_section->entries = fl_array_append(target_section->entries, &target_entry);
+
+    return target_entry;
+}
+
+SbsNodeExecutable* sbs_section_executable_add_node(SbsSectionExecutable *target_section)
+{
+    SbsNodeExecutable *target_entry = fl_malloc(sizeof(SbsNodeExecutable));
+
+    target_section->entries = fl_array_append(target_section->entries, &target_entry);
+
+    return target_entry;
+}
+
+static void sbs_node_compile_free(SbsNodeCompile *target_entry)
+{
+    sbs_property_actions_free(&target_entry->base.actions);
+
+    if (target_entry->base.for_clause)
+        sbs_section_for_free(target_entry->base.for_clause);
+
+    if (target_entry->base.output_dir)
+        fl_cstring_free(target_entry->base.output_dir);
+            
+    if (target_entry->sources)
+        fl_array_free_each_pointer(target_entry->sources, (FlArrayFreeElementFunc) fl_cstring_free);
+
+    if (target_entry->includes)
+        fl_array_free_each_pointer(target_entry->includes, (FlArrayFreeElementFunc) fl_cstring_free);
+
+    if (target_entry->defines)
+        fl_array_free_each_pointer(target_entry->defines, (FlArrayFreeElementFunc) fl_cstring_free);
+
+    fl_free(target_entry);
+}
+
+static void sbs_section_compile_free(SbsSectionCompile *target_section)
+{
+    if (target_section->entries)
+        fl_array_free_each_pointer(target_section->entries, (FlArrayFreeElementFunc) sbs_node_compile_free);
+}
+
+static void sbs_node_archive_free(SbsSectionTargetType target_type, SbsNodeArchive *target_entry)
+{
+    sbs_property_actions_free(&target_entry->base.actions);
+
+    if (target_entry->base.for_clause)
+        sbs_section_for_free(target_entry->base.for_clause);
+
+    if (target_entry->base.output_dir)
+        fl_cstring_free(target_entry->base.output_dir);
+
+    if (target_entry->objects)
+        fl_array_free_each(target_entry->objects, (FlArrayFreeElementFunc) sbs_value_command_free);
+
+    if (target_entry->output_name)
+        fl_cstring_free(target_entry->output_name);    
+
+    fl_free(target_entry);
+}
+
+static void sbs_section_archive_free(SbsSectionArchive *target_section)
+{
+    if (target_section->entries)
+        fl_array_free_each_pointer(target_section->entries, (FlArrayFreeElementFunc) sbs_node_archive_free);
+}
+
+static void sbs_node_shared_free(SbsNodeShared *target_entry)
+{
+    sbs_property_actions_free(&target_entry->base.actions);
+
+    if (target_entry->base.for_clause)
+        sbs_section_for_free(target_entry->base.for_clause);
+
+    if (target_entry->base.output_dir)
+        fl_cstring_free(target_entry->base.output_dir);
+    
+    if (target_entry->objects)
+        fl_array_free_each(target_entry->objects, (FlArrayFreeElementFunc) sbs_value_command_free);
+
+    if (target_entry->output_name)
+        fl_cstring_free(target_entry->output_name);
+
+    fl_free(target_entry);
+}
+
+static void sbs_section_shared_free(SbsSectionShared *target_section)
+{
+    if (target_section->entries)
+        fl_array_free_each_pointer(target_section->entries, (FlArrayFreeElementFunc) sbs_node_shared_free);
+}
+
 static void free_library_node(void *obj)
 {
     if (!obj)
@@ -18,92 +176,57 @@ static void free_library_node(void *obj)
         fl_cstring_free(lib->path);
 }
 
-static void sbs_target_entry_free(SbsSectionTargetType target_type, SbsSectionTarget *target_entry)
+static void sbs_node_executable_free(SbsNodeExecutable *target_entry)
 {
-    sbs_property_actions_free(&target_entry->actions);
+    sbs_property_actions_free(&target_entry->base.actions);
 
-    if (target_entry->output_dir)
-        fl_cstring_free(target_entry->output_dir);
+    
+    if (target_entry->base.for_clause)
+        sbs_section_for_free(target_entry->base.for_clause);
 
-    switch (target_type)
-    {
-        case SBS_TARGET_COMPILE:
-        {
-            SbsSectionCompile *compile = (SbsSectionCompile*)target_entry;
-            
-            if (compile->sources)
-                fl_array_free_each_pointer(compile->sources, (FlArrayFreeElementFunc) fl_cstring_free);
+    if (target_entry->base.output_dir)
+        fl_cstring_free(target_entry->base.output_dir);
 
-            if (compile->includes)
-                fl_array_free_each_pointer(compile->includes, (FlArrayFreeElementFunc) fl_cstring_free);
+    if (target_entry->objects)
+        fl_array_free_each(target_entry->objects, (FlArrayFreeElementFunc) sbs_value_command_free);
 
-            if (compile->defines)
-                fl_array_free_each_pointer(compile->defines, (FlArrayFreeElementFunc) fl_cstring_free);
+    if (target_entry->libraries)
+        fl_array_free_each(target_entry->libraries, free_library_node);
 
-            break;
-        }
-        case SBS_TARGET_ARCHIVE:
-        {
-            SbsSectionArchive *archive = (SbsSectionArchive*)target_entry;
+    if (target_entry->output_name)
+        fl_cstring_free(target_entry->output_name);
 
-            if (archive->objects)
-                fl_array_free_each(archive->objects, (FlArrayFreeElementFunc) sbs_value_command_free);
-
-            if (archive->output_name)
-                fl_cstring_free(archive->output_name);
-
-            break;
-        }
-        case SBS_TARGET_SHARED:
-        {
-            SbsSectionShared *shared = (SbsSectionShared*)target_entry;
-
-            if (shared->objects)
-                fl_array_free_each(shared->objects, (FlArrayFreeElementFunc) sbs_value_command_free);
-
-            if (shared->output_name)
-                fl_cstring_free(shared->output_name);
-
-            break;
-        }
-        case SBS_TARGET_EXECUTABLE:
-        {
-            SbsSectionExecutable *executable = (SbsSectionExecutable*)target_entry;
-
-            if (executable->objects)
-                fl_array_free_each(executable->objects, (FlArrayFreeElementFunc) sbs_value_command_free);
-
-            if (executable->libraries)
-                fl_array_free_each(executable->libraries, free_library_node);
-
-            if (executable->output_name)
-                fl_cstring_free(executable->output_name);
-
-            if (executable->defines)
-                fl_array_free_each_pointer(executable->defines, (FlArrayFreeElementFunc) fl_cstring_free);
-
-            break;
-        }
-    }
-
-    if (target_entry->for_clause)
-        sbs_section_for_free(target_entry->for_clause);
+    if (target_entry->defines)
+        fl_array_free_each_pointer(target_entry->defines, (FlArrayFreeElementFunc) fl_cstring_free);
 
     fl_free(target_entry);
 }
 
+static void sbs_section_executable_free(SbsSectionExecutable *target_section)
+{
+    if (target_section->entries)
+        fl_array_free_each_pointer(target_section->entries, (FlArrayFreeElementFunc) sbs_node_executable_free);
+}
+
 void sbs_section_target_free(SbsAbstractSectionTarget *target_section)
 {
-    fl_cstring_free(target_section->name);
+    if (target_section->name)
+        fl_cstring_free(target_section->name);
 
-    if (target_section->entries)
+    switch (target_section->type)
     {
-        for (size_t i = 0; i < fl_array_length(target_section->entries); i++)
-        {
-           SbsSectionTarget *target_entry = target_section->entries[i];
-           sbs_target_entry_free(target_section->type, target_entry);
-        }
-        fl_array_free(target_section->entries);
+        case SBS_TARGET_COMPILE:
+            sbs_section_compile_free((SbsSectionCompile*) target_section);
+            break;
+        case SBS_TARGET_ARCHIVE:
+            sbs_section_archive_free((SbsSectionArchive*) target_section);
+            break;
+        case SBS_TARGET_SHARED:
+            sbs_section_shared_free((SbsSectionShared*) target_section);
+            break;
+        case SBS_TARGET_EXECUTABLE:
+            sbs_section_executable_free((SbsSectionExecutable*) target_section);
+            break;
     }
 
     fl_free(target_section);

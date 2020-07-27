@@ -1,4 +1,3 @@
-#include <fllib/Mem.h>
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include <fllib/containers/Hashtable.h>
@@ -12,9 +11,7 @@ SbsAction* sbs_action_resolve(SbsContext *context, const char *action_name)
     if (!action_section)
         return NULL;
 
-    SbsAction *action_object = fl_malloc(sizeof(SbsAction));
-    action_object->name = fl_cstring_dup(action_section->name);
-    action_object->commands = fl_array_new(sizeof(char*), 0);
+    SbsAction *action_object = sbs_action_new(action_section->name);
 
     for (size_t i=0; i < fl_array_length(action_section->nodes); i++)
     {
@@ -29,8 +26,7 @@ SbsAction* sbs_action_resolve(SbsContext *context, const char *action_name)
 
             if (command.type == SBS_COMMAND_STRING)
             {
-                char *cmd = fl_cstring_dup(command.value);
-                action_object->commands = fl_array_append(action_object->commands, &cmd);
+                sbs_action_add_command(action_object, fl_cstring_dup(command.value));
             }
             else
             {
@@ -71,9 +67,8 @@ SbsAction** sbs_action_resolve_all(SbsContext *context, SbsValueCommand *actions
         }
         else
         {
-            SbsAction *action_object = fl_malloc(sizeof(SbsAction));
-            action_object->commands = fl_array_new(sizeof(char*), 1);
-            action_object->commands[0] = fl_cstring_dup(action.value);
+            SbsAction *action_object = sbs_action_new(NULL);
+            sbs_action_add_command(action_object, fl_cstring_dup(action.value));
             resolved_actions[i] = action_object;
         }
     }
