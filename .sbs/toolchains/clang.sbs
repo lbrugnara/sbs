@@ -9,7 +9,7 @@ toolchain clang {
     }    
 
     # Windows specifics
-    for env(win-cmd) {
+    if env(win-cmd) {
         # We use LLVM's archiver
         archiver: {
             bin: "llvm-lib.exe"
@@ -23,7 +23,7 @@ toolchain clang {
     },
 
     # Linux specifics
-    for env(linux-bash) {
+    if env(linux-bash) {
         archiver: {
             bin: "ar"
         },

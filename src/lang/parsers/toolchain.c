@@ -3,7 +3,7 @@
 #include "toolchain.h"
 #include "helpers.h"
 #include "parser.h"
-#include "for.h"
+#include "conditional.h"
 #include "../../utils.h"
 
 static void parse_toolchain_entry(SbsParser *parser, SbsNodeToolchain *toolchain)
@@ -125,7 +125,7 @@ SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser)
     SbsSectionToolchain *toolchain = sbs_section_toolchain_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
-        toolchain->for_clause = sbs_section_for_parse(parser);
+        toolchain->condition = sbs_stmt_conditional_parse(parser);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
@@ -133,12 +133,12 @@ SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser)
     {
         SbsNodeToolchain *toolchain_entry = sbs_section_toolchain_add_node(toolchain);
 
-        if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
+        if (sbs_parser_peek(parser)->type == SBS_TOKEN_IF)
         {
             const SbsToken *token = sbs_parser_peek(parser);
 
             // Parse the for declaration
-            toolchain_entry->for_clause = sbs_section_for_parse(parser);
+            toolchain_entry->condition = sbs_stmt_conditional_parse(parser);
             // Parse the toolchain info
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
             parse_toolchain_entry(parser, toolchain_entry);

@@ -27,7 +27,7 @@ config clang-config for toolchain(clang, gcc) {
     },    
 
     # Specific overrides for linux envs
-    for env(linux-bash) {
+    if env(linux-bash) {
         compile: { flags: [ "-fPIC" ] },
         archive: { extension: ".a", flags: [ "rcs" ] },
         shared: {
@@ -41,7 +41,7 @@ config clang-config for toolchain(clang, gcc) {
     },
 
     # Specific overrides for Windows envs
-    for env(win-cmd) {
+    if env(win-cmd) {
         archive: {
             extension: ".lib",
             flags: [ "/NOLOGO", "/OUT:${sbs.output_file}" ]
@@ -61,7 +61,7 @@ config clang-config for toolchain(clang, gcc) {
 config clang-debug extends clang-config {
     compile: { flags: [ "-ggdb", "-O0", "-DFL_DEBUG" ] }
 
-    for env(win-cmd) {
+    if env(win-cmd) {
         shared: { flags: [ "/DEBUG:FULL" ] },
         executable: { flags: [ "/DEBUG:FULL" ] }
     }

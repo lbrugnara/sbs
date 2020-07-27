@@ -2,13 +2,13 @@
 #include "action.h"
 #include "helpers.h"
 #include "parser.h"
-#include "for.h"
+#include "conditional.h"
 #include "command.h"
 
 static void parse_action_body(SbsParser *parser, SbsNodeAction *current_node)
 {
     const SbsToken *token = NULL;
-    while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_FOR)
+    while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_IF)
     { 
         if (token->type == SBS_TOKEN_COMMAND_STRING)
         {
@@ -62,9 +62,9 @@ SbsSectionAction* sbs_section_action_parse(SbsParser *parser)
     {
         SbsNodeAction *action_node = sbs_section_action_add_node(action_section);
         
-        if (token->type == SBS_TOKEN_FOR)
+        if (token->type == SBS_TOKEN_IF)
         {
-            action_node->for_clause = sbs_section_for_parse(parser);
+            action_node->condition = sbs_stmt_conditional_parse(parser);
 
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
             parse_action_body(parser, action_node);

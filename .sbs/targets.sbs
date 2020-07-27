@@ -15,11 +15,11 @@ executable sbs {
     output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
     objects: [ sbs-objects ],
 
-    for env(win-cmd) {
+    if env(win-cmd) {
         objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.lib" ]
     }
 
-    for env(linux-bash) {
+    if env(linux-bash) {
         objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.a" ]
         libraries: [
             { name: "m" },
@@ -46,7 +46,7 @@ executable sbs-tests {
     objects: [ sbs-objects, sbs-tests-objects ],
     defines: [ "SBS_TESTS" ]
 
-    for env(linux-bash) {
+    if env(linux-bash) {
         libraries: [
             { name: "m" },
             { name: "pthread" }

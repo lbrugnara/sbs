@@ -6,7 +6,7 @@
 #include "source.h"
 #include "helpers.h"
 #include "parser.h"
-#include "for.h"
+#include "conditional.h"
 #include "../../utils.h"
 
 static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionTargetType target_type);
@@ -20,7 +20,7 @@ static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *targe
     const SbsToken *token = sbs_parser_peek(parser);
 
     // Parse the for declaration
-    SbsSectionFor *for_clause = sbs_section_for_parse(parser);
+    SbsStmtConditional *condition = sbs_stmt_conditional_parse(parser);
     
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
@@ -28,28 +28,28 @@ static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *targe
     {
         SbsSectionCompile *compile_section = (SbsSectionCompile*) target_section;
         SbsNodeCompile *compile_entry = sbs_section_compile_add_node(compile_section);
-        compile_entry->base.for_clause = for_clause;
+        compile_entry->base.condition = condition;
         parse_compile_body(parser, compile_section, compile_entry);
     }
     else if (target_type == SBS_TARGET_ARCHIVE)
     {
         SbsSectionArchive *archive_section = (SbsSectionArchive*) target_section;
         SbsNodeArchive *archive_entry = sbs_section_archive_add_node(archive_section);
-        archive_entry->base.for_clause = for_clause;
+        archive_entry->base.condition = condition;
         parse_archive_body(parser, archive_section, archive_entry);
     }
     else if (target_type == SBS_TARGET_SHARED)
     {
         SbsSectionShared *shared_section = (SbsSectionShared*) target_section;
         SbsNodeShared *shared_entry = sbs_section_shared_add_node(shared_section);
-        shared_entry->base.for_clause = for_clause;
+        shared_entry->base.condition = condition;
         parse_shared_body(parser, shared_section, shared_entry);
     }
     else if (target_type == SBS_TARGET_EXECUTABLE)
     {
         SbsSectionExecutable *executable_section = (SbsSectionExecutable*) target_section;
         SbsNodeExecutable *executable_entry = sbs_section_executable_add_node(executable_section);
-        executable_entry->base.for_clause = for_clause;
+        executable_entry->base.condition = condition;
         parse_executable_body(parser, executable_section, executable_entry);
     }
     else
@@ -150,7 +150,7 @@ static void parse_compile_body(SbsParser *parser, SbsSectionCompile *target_sect
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->defines = sbs_parse_string_array(parser);
         }
-        else if (token->type == SBS_TOKEN_FOR)
+        else if (token->type == SBS_TOKEN_IF)
         {
             parse_for_section(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_COMPILE);
         }
@@ -221,7 +221,7 @@ static void parse_archive_body(SbsParser *parser, SbsSectionArchive *target_sect
         {
             target->base.actions = sbs_property_actions_parse(parser);
         }
-        else if (token->type == SBS_TOKEN_FOR)
+        else if (token->type == SBS_TOKEN_IF)
         {
             parse_for_section(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_ARCHIVE);
         }
@@ -292,7 +292,7 @@ static void parse_shared_body(SbsParser *parser, SbsSectionShared *target_sectio
         {
             target->base.actions = sbs_property_actions_parse(parser);
         }
-        else if (token->type == SBS_TOKEN_FOR)
+        else if (token->type == SBS_TOKEN_IF)
         {
             parse_for_section(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_SHARED);
         }
@@ -375,7 +375,7 @@ static void parse_executable_body(SbsParser *parser, SbsSectionExecutable *targe
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->defines = sbs_parse_string_array(parser);
         }
-        else if (token->type == SBS_TOKEN_FOR)
+        else if (token->type == SBS_TOKEN_IF)
         {
             parse_for_section(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_EXECUTABLE);
         }

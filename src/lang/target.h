@@ -4,7 +4,7 @@
 #include <fllib.h>
 #include "action.h"
 #include "source.h"
-#include "for.h"
+#include "conditional.h"
 
 typedef enum SbsSectionTargetType {
     SBS_TARGET_COMPILE,
@@ -16,7 +16,7 @@ typedef enum SbsSectionTargetType {
 typedef struct SbsNodeTarget {
     SbsPropertyActions actions;
     const char *output_dir;
-    SbsSectionFor *for_clause;
+    SbsStmtConditional *condition;
 } SbsNodeTarget;
 
 typedef struct SbsNodeCompile {

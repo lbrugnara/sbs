@@ -1,7 +1,7 @@
 #ifndef SBS_LANG_ACTION_H
 #define SBS_LANG_ACTION_H
 
-#include "for.h"
+#include "conditional.h"
 #include "command.h"
 
 /*
@@ -13,13 +13,13 @@
  * typedef struct
  * {
  * 		char **commands;
- * 		SbsSectionFor *for_clause;
+ * 		SbsStmtConditional *condition;
  * } SbsNodeAction;
  * 
  */
 typedef struct SbsNodeAction {
     SbsValueCommand *commands;
-    SbsSectionFor *for_clause;
+    SbsStmtConditional *condition;
 } SbsNodeAction;
 
 /*

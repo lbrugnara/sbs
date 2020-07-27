@@ -1,5 +1,4 @@
 v0.2.0:
-    [ ] Rename "for" keyword to "if" within sections. In the current context it makes (a lot) of sense to use the conditional
     [ ] Make "toolchain" an array to allow multiple toolset combinations
     [ ] Make "target" in presets an array object to run multiple targets at once
     [ ] sbs run command to run actions
@@ -20,6 +19,7 @@ v0.2.0:
         Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
     [ ] Linux support: in the latest version the Linux support is incomplete
     [ ] Update grammar file
+    [x] Rename "for" keyword to "if" within sections. In the current context it makes (a lot) of sense to use the conditional
     [x] Scripting mode
         [x] Basic support
     [x] Expression evaluator to run "for" declarations

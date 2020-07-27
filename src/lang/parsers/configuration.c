@@ -4,7 +4,7 @@
 #include "configuration.h"
 #include "helpers.h"
 #include "parser.h"
-#include "for.h"
+#include "conditional.h"
 #include "../../utils.h"
 
 static void parse_compile_block(SbsParser *parser, SbsNodeConfigCompile *compile)
@@ -115,7 +115,7 @@ static void parse_config_body(SbsParser *parser, struct SbsNodeConfig *configura
 {
     const SbsToken *token = NULL;
 
-    while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_FOR)
+    while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_IF)
     {
         if (sbs_token_equals(token, "compile"))
         {
@@ -197,11 +197,11 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
         configuration->extends = sbs_parse_extends_declaration(parser);
 
         if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
-            configuration->for_clause = sbs_section_for_parse(parser);
+            configuration->condition = sbs_stmt_conditional_parse(parser);
     }
     else if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
     {
-        configuration->for_clause = sbs_section_for_parse(parser);
+        configuration->condition = sbs_stmt_conditional_parse(parser);
 
         if (sbs_parser_peek(parser)->type == SBS_TOKEN_EXTENDS)
             configuration->extends = sbs_parse_extends_declaration(parser);
@@ -215,10 +215,10 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
 
         struct SbsNodeConfig *config_node = sbs_section_config_add_node(configuration);
 
-        if (token->type == SBS_TOKEN_FOR)
+        if (token->type == SBS_TOKEN_IF)
         {
             // Parse the for declaration
-            config_node->for_clause = sbs_section_for_parse(parser);
+            config_node->condition = sbs_stmt_conditional_parse(parser);
 
             // Parse the configuration info
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);

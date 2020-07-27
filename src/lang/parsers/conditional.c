@@ -1,5 +1,5 @@
 #include <stddef.h>
-#include "for.h"
+#include "conditional.h"
 #include "parser.h"
 
 static char** parse_identifiers(SbsParser *parser);
@@ -174,12 +174,23 @@ static SbsExpression* parse_or_expression(SbsParser *parser)
     return node;
 }
 
-SbsSectionFor* sbs_section_for_parse(SbsParser *parser)
+SbsStmtConditional* sbs_stmt_conditional_parse(SbsParser *parser)
 {
-    sbs_parser_consume(parser, SBS_TOKEN_FOR);
+    if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
+    {
+        sbs_parser_consume(parser, SBS_TOKEN_FOR);
+    }
+    else if (sbs_parser_peek(parser)->type == SBS_TOKEN_IF)
+    {
+        sbs_parser_consume(parser, SBS_TOKEN_IF);
+    }
+    else
+    {
+        return NULL;
+    }
 
-    SbsSectionFor *for_section = sbs_section_for_new();
-    for_section->expr = parse_or_expression(parser);
+    SbsStmtConditional *conditional = sbs_stmt_conditional_new();
+    conditional->expr = parse_or_expression(parser);
 
-    return for_section;
+    return conditional;
 }

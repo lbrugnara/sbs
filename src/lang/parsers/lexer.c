@@ -23,6 +23,7 @@ const char *token_type_string[] = {
     
     [SBS_TOKEN_EXTENDS] = "EXTENDS",
     [SBS_TOKEN_FOR] = "FOR",
+    [SBS_TOKEN_IF] = "IF",
 
     [SBS_TOKEN_OP_AND] = "AND",
     [SBS_TOKEN_OP_OR] = "OR",
@@ -449,6 +450,10 @@ SbsToken sbs_lexer_next(SbsLexer *lexer)
             else if (fl_slice_equals_sequence(&value, (FlByte*)"for", 3))
             {
                 type = SBS_TOKEN_FOR;
+            }
+            else if (fl_slice_equals_sequence(&value, (FlByte*)"if", 2))
+            {
+                type = SBS_TOKEN_IF;
             }
             else if (fl_slice_equals_sequence(&value, (FlByte*)"and", 3))
             {

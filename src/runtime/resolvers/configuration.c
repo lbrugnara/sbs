@@ -39,7 +39,7 @@ static void merge_executable_config(SbsConfigExecutable *extend, const SbsNodeCo
 
 static bool try_resolve_config_with_hierarchy(SbsContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)
 {
-    if (config_section->for_clause && !sbs_expression_eval(context->symbols, config_section->for_clause->expr))
+    if (config_section->condition && !sbs_expression_eval(context->symbols, config_section->condition->expr))
         return false;
 
     if (config_section->extends)
@@ -56,7 +56,7 @@ static bool try_resolve_config_with_hierarchy(SbsContext *context, SbsConfigurat
     {
         struct SbsNodeConfig *config_node = config_section->entries[i];
 
-        if (config_node->for_clause && !sbs_expression_eval(context->symbols, config_node->for_clause->expr))
+        if (config_node->condition && !sbs_expression_eval(context->symbols, config_node->condition->expr))
             continue;
         
 

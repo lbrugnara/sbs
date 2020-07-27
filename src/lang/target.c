@@ -88,8 +88,8 @@ static void sbs_node_compile_free(SbsNodeCompile *target_entry)
 {
     sbs_property_actions_free(&target_entry->base.actions);
 
-    if (target_entry->base.for_clause)
-        sbs_section_for_free(target_entry->base.for_clause);
+    if (target_entry->base.condition)
+        sbs_stmt_conditional_free(target_entry->base.condition);
 
     if (target_entry->base.output_dir)
         fl_cstring_free(target_entry->base.output_dir);
@@ -116,8 +116,8 @@ static void sbs_node_archive_free(SbsSectionTargetType target_type, SbsNodeArchi
 {
     sbs_property_actions_free(&target_entry->base.actions);
 
-    if (target_entry->base.for_clause)
-        sbs_section_for_free(target_entry->base.for_clause);
+    if (target_entry->base.condition)
+        sbs_stmt_conditional_free(target_entry->base.condition);
 
     if (target_entry->base.output_dir)
         fl_cstring_free(target_entry->base.output_dir);
@@ -141,8 +141,8 @@ static void sbs_node_shared_free(SbsNodeShared *target_entry)
 {
     sbs_property_actions_free(&target_entry->base.actions);
 
-    if (target_entry->base.for_clause)
-        sbs_section_for_free(target_entry->base.for_clause);
+    if (target_entry->base.condition)
+        sbs_stmt_conditional_free(target_entry->base.condition);
 
     if (target_entry->base.output_dir)
         fl_cstring_free(target_entry->base.output_dir);
@@ -181,8 +181,8 @@ static void sbs_node_executable_free(SbsNodeExecutable *target_entry)
     sbs_property_actions_free(&target_entry->base.actions);
 
     
-    if (target_entry->base.for_clause)
-        sbs_section_for_free(target_entry->base.for_clause);
+    if (target_entry->base.condition)
+        sbs_stmt_conditional_free(target_entry->base.condition);
 
     if (target_entry->base.output_dir)
         fl_cstring_free(target_entry->base.output_dir);

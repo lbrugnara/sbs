@@ -21,6 +21,7 @@ typedef enum SbsTokenType {
     
     SBS_TOKEN_EXTENDS,
     SBS_TOKEN_FOR,
+    SBS_TOKEN_IF,
 
     SBS_TOKEN_OP_AND,
     SBS_TOKEN_OP_OR,

@@ -46,8 +46,8 @@ static void sbs_node_toolchain_free(SbsNodeToolchain *toolchain_entry)
     if (toolchain_entry->linker.lib_flag)
         fl_cstring_free(toolchain_entry->linker.lib_flag);
 
-    if (toolchain_entry->for_clause)
-        sbs_section_for_free(toolchain_entry->for_clause);
+    if (toolchain_entry->condition)
+        sbs_stmt_conditional_free(toolchain_entry->condition);
     
     fl_free(toolchain_entry);
 }
@@ -59,8 +59,8 @@ void sbs_section_toolchain_free(SbsSectionToolchain *toolchain)
     if (toolchain->entries)
         fl_array_free_each_pointer(toolchain->entries, (FlArrayFreeElementFunc) sbs_node_toolchain_free);
 
-    if (toolchain->for_clause)
-        sbs_section_for_free(toolchain->for_clause);
+    if (toolchain->condition)
+        sbs_stmt_conditional_free(toolchain->condition);
 
     fl_free(toolchain);
 }

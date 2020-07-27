@@ -10,8 +10,8 @@ static void action_node_free(SbsNodeAction *action_node)
     if (action_node->commands)
         fl_array_free_each(action_node->commands, (FlArrayFreeElementFunc) sbs_value_command_free);
 
-    if (action_node->for_clause)
-        sbs_section_for_free(action_node->for_clause);
+    if (action_node->condition)
+        sbs_stmt_conditional_free(action_node->condition);
 
     fl_free(action_node);
 }

@@ -1,39 +1,39 @@
 #include <stddef.h>
 #include <fllib/Cstring.h>
-#include "for.h"
+#include "conditional.h"
 #include "../utils.h"
 #include "../runtime/eval.h"
 
-SbsSectionFor* sbs_section_for_new(void)
+SbsStmtConditional* sbs_stmt_conditional_new(void)
 {
-    SbsSectionFor *for_section = fl_malloc(sizeof(SbsSectionFor));
+    SbsStmtConditional *for_section = fl_malloc(sizeof(SbsStmtConditional));
 
     return for_section;
 }
 
-void sbs_section_for_free(SbsSectionFor *section)
+void sbs_stmt_conditional_free(SbsStmtConditional *section)
 {
     sbs_expression_free(section->expr);
     fl_free(section);
 }
 
-SbsSectionFor* sbs_section_for_copy(SbsSectionFor *section)
+SbsStmtConditional* sbs_stmt_conditional_copy(SbsStmtConditional *section)
 {
-    SbsSectionFor *copy = fl_malloc(sizeof(SbsSectionFor));
+    SbsStmtConditional *copy = fl_malloc(sizeof(SbsStmtConditional));
 
     copy->expr = sbs_expression_copy(section->expr);
 
     return copy;
 }
 
-SbsSectionFor* sbs_section_for_merge(SbsSectionFor *child_section, SbsSectionFor *parent_section)
+SbsStmtConditional* sbs_stmt_conditional_merge(SbsStmtConditional *child_section, SbsStmtConditional *parent_section)
 {
     if (!parent_section)
         return child_section;
 
     if (child_section == NULL)
     {
-        child_section = sbs_section_for_copy(parent_section);
+        child_section = sbs_stmt_conditional_copy(parent_section);
     }
     else
     {

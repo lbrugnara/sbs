@@ -3,7 +3,7 @@
 
 #include <fllib.h>
 #include "environment.h"
-#include "for.h"
+#include "conditional.h"
 
 typedef struct SbsNodeToolchainCompiler {
     const char *bin;
@@ -25,12 +25,12 @@ typedef struct SbsNodeToolchain {
     SbsNodeToolchainCompiler compiler;
     SbsNodeToolchainLinker linker;
     SbsNodeToolchainArchiver archiver;
-    SbsSectionFor *for_clause;
+    SbsStmtConditional *condition;
 } SbsNodeToolchain;
 
 typedef struct SbsSectionToolchain {
     const char *name;
-    SbsSectionFor *for_clause;
+    SbsStmtConditional *condition;
     SbsNodeToolchain **entries;
 } SbsSectionToolchain;
 

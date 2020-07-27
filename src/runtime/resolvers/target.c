@@ -23,7 +23,7 @@ static SbsTargetCompile* resolve_compile_target(SbsContext *context, const SbsSe
     {
         const SbsNodeCompile *compile_entry = compile_section->entries[i];
 
-        if (compile_entry->base.for_clause && !sbs_expression_eval(context->symbols, compile_entry->base.for_clause->expr))
+        if (compile_entry->base.condition && !sbs_expression_eval(context->symbols, compile_entry->base.condition->expr))
             continue;
 
         resolve_base_node_target((SbsTarget*) compile_target, (const SbsNodeTarget*) compile_entry);
@@ -53,7 +53,7 @@ static SbsTargetArchive* resolve_archive_target(SbsContext *context, const SbsSe
     {
         const SbsNodeArchive *archive_entry = archive_section->entries[i];
 
-        if (archive_entry->base.for_clause && !sbs_expression_eval(context->symbols, archive_entry->base.for_clause->expr))
+        if (archive_entry->base.condition && !sbs_expression_eval(context->symbols, archive_entry->base.condition->expr))
             continue;
 
         resolve_base_node_target((SbsTarget*) archive_target, (const SbsNodeTarget*) archive_entry);
@@ -73,7 +73,7 @@ static SbsTargetShared* resolve_shared_target(SbsContext *context, const SbsSect
     {
         const SbsNodeShared *shared_entry = shared_section->entries[i];
 
-        if (shared_entry->base.for_clause && !sbs_expression_eval(context->symbols, shared_entry->base.for_clause->expr))
+        if (shared_entry->base.condition && !sbs_expression_eval(context->symbols, shared_entry->base.condition->expr))
             continue;
 
         resolve_base_node_target((SbsTarget*) shared_target, (const SbsNodeTarget*) shared_entry);
@@ -112,7 +112,7 @@ static SbsTargetExecutable* resolve_executable_target(SbsContext *context, const
     {
         const SbsNodeExecutable *executable_entry = executable_section->entries[i];
 
-        if (executable_entry->base.for_clause && !sbs_expression_eval(context->symbols, executable_entry->base.for_clause->expr))
+        if (executable_entry->base.condition && !sbs_expression_eval(context->symbols, executable_entry->base.condition->expr))
             continue;
 
         resolve_base_node_target((SbsTarget*) executable_target, (const SbsNodeTarget*) executable_entry);

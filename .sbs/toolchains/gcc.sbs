@@ -9,7 +9,7 @@ toolchain gcc {
     }    
 
     # Linux specifics
-    for env(linux-bash) {
+    if env(linux-bash) {
         archiver: {
             bin: "ar"
         },
