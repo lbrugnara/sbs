@@ -22,7 +22,7 @@ action copy-fllib {
 
         # Copy the fllib library
         `if exist ..\fllib\build\${sbs.env}\${sbs.arch}\${sbs.toolchain}\${sbs.config}\libfl.lib ( \
-            copy ..\fllib\build\${sbs.env}\${sbs.arch}\${sbs.toolchain}\${sbs.config}\libfl.lib \
+            copy /Y ..\fllib\build\${sbs.env}\${sbs.arch}\${sbs.toolchain}\${sbs.config}\libfl.lib \
                  .\lib\fllib\${sbs.env}\${sbs.arch}\${sbs.toolchain}\${sbs.config}\ )`,
     }
 
@@ -41,9 +41,9 @@ action copy-fllib {
 action install {
     if env(win-cmd) {
         `if exist .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe (                      \
-            copy .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\fllib\\ &           \
-            copy .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\zenit\\ &           \
-            copy .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\gkit\\              \
+            copy /Y .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\fllib\\ &           \
+            copy /Y .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\zenit\\ &           \
+            copy /Y .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\gkit\\              \
         )`
     }
 

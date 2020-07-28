@@ -5,7 +5,10 @@
     #include <windows.h>
     #include <wow64apiset.h>
 #elif defined(SBS_HOST_OS_LINUX)
-
+    #define _GNU_SOURCE
+    #include <unistd.h>
+    #include <stdio.h>
+    #include <fllib/Cstring.h>
 #endif
 
 SbsHostInfo* sbs_host_new(SbsHostOs os, SbsHostArch arch)
@@ -109,8 +112,29 @@ SbsHostArch sbs_host_arch(void)
 }
 #elif defined(SBS_HOST_OS_LINUX)
 {
-    // TODO:
-    return SBS_ARCH_UNK;
+    FILE *pf = popen("uname -a", "r");
+
+    if (!pf) 
+        return SBS_ARCH_UNK;
+
+    char buffer[1024] = { 0 };
+    if (fgets(buffer, 1024, pf) == NULL)
+        return SBS_ARCH_UNK;
+
+    SbsHostArch arch = SBS_ARCH_UNK;
+
+    if (fl_cstring_contains(buffer, "x86_64"))
+    {
+        arch = SBS_ARCH_X86_64;
+    }
+    else if (fl_cstring_contains(buffer, "i386") || fl_cstring_contains(buffer, "i686"))
+    {
+        arch = SBS_ARCH_X86;
+    }
+
+    pclose(pf);
+
+    return arch;
 }
 #else
 {

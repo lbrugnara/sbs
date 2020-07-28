@@ -16,7 +16,7 @@ typedef struct SbsValueCommand {
 void sbs_value_command_free(SbsValueCommand *str);
 void sbs_value_command_copy(SbsValueCommand *dest, const SbsValueCommand *src_obj);
 
-inline SbsValueCommand* sbs_value_command_array_extend(SbsValueCommand *dest, SbsValueCommand const * const src)
+static inline SbsValueCommand* sbs_value_command_array_extend(SbsValueCommand *dest, SbsValueCommand const * const src)
 {
     return sbs_array_extend(dest, src, (SbsArrayCopyElementFn) sbs_value_command_copy);
 }

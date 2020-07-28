@@ -59,7 +59,7 @@ config clang-config for toolchain(clang, gcc) {
 
 # The debug configuration adds flags to generate debug information
 config clang-debug extends clang-config {
-    compile: { flags: [ "-ggdb", "-O0", "-DFL_DEBUG" ] }
+    compile: { flags: [ "-ggdb", "-O0" ] }
 
     if env(win-cmd) {
         shared: { flags: [ "/DEBUG:FULL" ] },

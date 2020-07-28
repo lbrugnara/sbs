@@ -38,8 +38,8 @@ preset tests {
 # sbs build -e=<win-cmd|linux-bash> clean
 preset clean {
     envs: [ win-cmd, linux-bash ],
-    toolchain: dummy,
-    config: dummy,
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
     target: dummy,
     actions: {
         before: [ clean ]
@@ -48,8 +48,8 @@ preset clean {
 
 preset copy-fllib {
     envs: [ win-cmd, linux-bash ],
-    toolchain: dummy,
-    config: dummy,
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
     target: dummy,
     actions: {
         before: [ copy-fllib ]
@@ -58,8 +58,8 @@ preset copy-fllib {
 
 preset install {
     envs: [ win-cmd, linux-bash ],
-    toolchain: dummy,
-    config: dummy,
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
     target: dummy,
     actions: {
         before: [ install ]

@@ -2,7 +2,7 @@
 config msvc-config for toolchain(msvc) {
     compile: {
         extension: ".o",
-        flags: [ "/Zi", "/W1", "/c ${sbs.input_file}", "/Fo.\\${sbs.output_file}" ]
+        flags: [ "/W1", "/c ${sbs.input_file}", "/Fo.\\${sbs.output_file}" ]
     },    
     archive: {
         extension: ".lib",
@@ -21,7 +21,8 @@ config msvc-config for toolchain(msvc) {
 # Configurations extending from msvc-config inherit all the for clauses too, which means
 # both msvc-debug and msvc-release are available just for the msvc toolchain
 config msvc-debug extends msvc-config {
-    compile: { flags : [  "/Od", "/DEBUG:FULL" ] }
+    compile: { flags : [  "/Od", "/Z7", "/DEBUG:FULL" ] },
+    executable: { flags : [  "/DEBUG:FULL" ] },
 }
 
 

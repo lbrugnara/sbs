@@ -8,6 +8,7 @@ v0.2.0:
         [ ] Basic support to search within the PATH
         [x] In presets, make "toolchain" property an array to allow multiple toolset combinations
         [x] In presets, make "config" property an array to allow multiple toolset combinations
+    [ ] Executable targets should support sources too?
     [ ] sbs run command to run actions
     [ ] Change working directory
     [ ] Defining and using variables
@@ -26,6 +27,7 @@ v0.2.0:
         Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
     [ ] Linux support: in the latest version the Linux support is incomplete
     [ ] Update grammar file
+    [x] Check flags and defines to invalidate the build
     [x] Initial support for tiplets: collect all the combinations of environments, toolchains, and configurations available in the host machine
     [x] In presets, make "target" property an array object to run multiple targets at once
     [x] Rename "for" keyword to "if" within sections. In the current context it makes (a lot) of sense to use the conditional
@@ -56,7 +58,6 @@ backlog:
     [ ] A CLI command to show the dependency graph
     [ ] Use a headers node within the compile target to specify .c files dependencies (without using resolve_c_file_dependencies?)
     [ ] Hash based dependencies instead of timestamp based
-        [ ] Check flags and defines to invalidate the build
     [ ] -j argument for multithreading
     [ ] Scripting mode: Argument to request just the specific target without resolving dependencies?
         Example: just invoking a linker command using the shared or executable target

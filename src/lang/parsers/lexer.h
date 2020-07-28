@@ -70,7 +70,7 @@ SbsToken sbs_lexer_next(SbsLexer *lexer);
 
 SbsToken* sbs_lexer_tokenize(SbsLexer *lexer);
 
-inline char* sbs_token_to_str(const SbsToken *token)
+static inline char* sbs_token_to_str(const SbsToken *token)
 {
     return fl_cstring_dup_n((const char*) token->value.sequence, token->value.length);
 }

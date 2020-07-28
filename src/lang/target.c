@@ -112,7 +112,7 @@ static void sbs_section_compile_free(SbsSectionCompile *target_section)
         fl_array_free_each_pointer(target_section->entries, (FlArrayFreeElementFunc) sbs_node_compile_free);
 }
 
-static void sbs_node_archive_free(SbsSectionTargetType target_type, SbsNodeArchive *target_entry)
+static void sbs_node_archive_free(SbsNodeArchive *target_entry)
 {
     sbs_property_actions_free(&target_entry->base.actions);
 

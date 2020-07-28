@@ -48,6 +48,9 @@ char** sbs_build_target_archive(SbsBuild *build)
     // Build the target's output filename
     char *output_filename = build_output_filename(build, config_archive, target_archive->output_dir, target_archive->output_name);
 
+    // Get the target command's file
+    char *archive_tc_file = fl_cstring_vdup("%s.stc", output_filename);
+
     // We add the filename to the output vector that will return the target's result
     char **output = fl_array_new(sizeof(char*), 1);
     output[0] = output_filename;
@@ -69,7 +72,7 @@ char** sbs_build_target_archive(SbsBuild *build)
     bool success = true;
     for (size_t i = 0; i < n_objects; i++)
     {
-        if (target_archive->objects[i].type == SBS_COMMAND_NAME)
+        if (target_archive->objects[i].type == SBS_SOURCE_NAME)
         {
             SbsTarget *dep_target = sbs_target_resolve(build->context, target_archive->objects[i].value, (const SbsTarget*) target_archive);
 
@@ -125,7 +128,7 @@ char** sbs_build_target_archive(SbsBuild *build)
         }        
     }
 
-    if (success && (needs_archive || build->script_mode))
+    if (success)
     {
         if (build->context->toolchain->archiver.bin != NULL)
         {
@@ -138,8 +141,30 @@ char** sbs_build_target_archive(SbsBuild *build)
             for (size_t i=0; i < fl_vector_length(archive_objects); i++)
                 fl_cstring_append(fl_cstring_append(&command, " "), *(char**) fl_vector_ref_get(archive_objects, i));
 
-            // Exec
-            success = sbs_executor_run_command(build->context->executor, command) && success;
+            if (fl_io_file_exists(archive_tc_file))
+            {
+                char *previous_command = fl_io_file_read_all_text(archive_tc_file);
+
+                if (previous_command != NULL && !flm_cstring_equals(previous_command, command))
+                    needs_archive = true;
+
+                fl_cstring_free(previous_command);
+            }
+
+            if (needs_archive || build->script_mode)
+            {
+                // Exec
+                success = sbs_executor_run_command(build->context->executor, command) && success;
+
+                // Update the last flags used for this translation unit
+                if (success && !build->script_mode)
+                    fl_io_file_write_all_text(archive_tc_file, command);
+            }
+            else
+            {
+                fprintf(stdout, "File '%s' has not changed. Skipping target...\n", output_filename);
+            }
+            
 
             fl_cstring_free(command);
             fl_cstring_free(archive_flags);
@@ -150,15 +175,12 @@ char** sbs_build_target_archive(SbsBuild *build)
             fprintf(stdout, "Toolchain '%s' does not have an archiver executable defined for environment '%s'", build->context->toolchain->name, build->context->env->name);
         }
     }
-    else if (success)
-    {
-        fprintf(stdout, "File '%s' has not changed. Skipping target...\n", output_filename);
-    }
     else
     {
         fprintf(stdout, "A dependency of '%s' is missing or not valid, could not build output file.\n", output_filename);
     }
 
+    fl_cstring_free(archive_tc_file);
     fl_vector_free(archive_objects);
     fl_cstring_free(flags);
 

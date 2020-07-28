@@ -119,7 +119,10 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
 
     // If the preset argument is present, make sure it exists
     if (args.preset != NULL && !fl_hashtable_has_key(file->presets, args.preset))
+    {
+        sbs_file_free(file);
         return SBS_RES_INVALID_PRESET;
+    }
     
     // Run the build process and leave
     SbsResult result = sbs_build_run(file, &args);

@@ -48,6 +48,9 @@ SbsTriplet** sbs_triplet_find(const SbsFile *file, const char *preset, const cha
     // Create a context object to resolve the triplets
     SbsContext *context = sbs_context_new(file);
 
+    if (context == NULL)
+        return NULL;
+
     // Check if the build uses a preset and in that case make sure it is a valid preset
     if (preset != NULL && !resolve_preset(context, preset))
         goto preset_error;

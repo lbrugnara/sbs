@@ -93,8 +93,17 @@ static void resolve_c_file_dependencies(SbsBuild *build, const char *target_file
             // Skip the starting angle
             include++;
 
-            char *angle_end = fl_cstring_find(include, ">");
-            if (!angle_end)
+            char *angle_end = include;
+            
+            while (true)
+            {
+                if (*angle_end == '\n' || *angle_end == '>')
+                    break;
+                
+                angle_end++;
+            }
+
+            if (!angle_end || *angle_end != '>')
                 break;
 
             *angle_end = '\0';
@@ -300,6 +309,9 @@ char** sbs_build_compile(SbsBuild *build)
         // Get the object file path
         char *object_file = build_object_filename(build, config_compile, source_file, target_compile->output_dir);
 
+        /// Get the target command's file
+        char *object_tc_file = fl_cstring_vdup("%s.stc", object_file);
+
         // Add the object_file to the list of objects (no need to free object_file, it outlives this function)
         objects[i] = object_file;
 
@@ -343,35 +355,50 @@ char** sbs_build_compile(SbsBuild *build)
             }
         }
 
-        if (needs_compile || build->script_mode)
+        if (build->context->toolchain->compiler.bin)
         {
-            if (build->context->toolchain->compiler.bin)
+            // Replace the special ${sbs.input_file} and ${sbs.output_file} variables in the falgs
+            char *compilation_unit_flags = fl_cstring_replace(flags, "${sbs.input_file}", source_file);
+            compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${sbs.output_file}", object_file);
+
+            // Build the compile command
+            char *command = fl_cstring_vdup("%s %s %s %s", build->context->toolchain->compiler.bin, defines, includes, compilation_unit_flags);
+
+            if (fl_io_file_exists(object_tc_file))
             {
-                // Replace the special ${sbs.input_file} and ${sbs.output_file} variables in the falgs
-                char *compilation_unit_flags = fl_cstring_replace(flags, "${sbs.input_file}", source_file);
-                compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${sbs.output_file}", object_file);
+                char *previous_command = fl_io_file_read_all_text(object_tc_file);
 
-                // Build the compile command
-                char *command = fl_cstring_vdup("%s %s %s %s", build->context->toolchain->compiler.bin, defines, includes, compilation_unit_flags);
+                if (previous_command != NULL && !flm_cstring_equals(previous_command, command))
+                    needs_compile = true;
 
+                fl_cstring_free(previous_command);
+            }
+
+            if (needs_compile || build->script_mode)
+            {
                 // Exec
                 success = sbs_executor_run_command(build->context->executor, command) && success;
                 
-                // clean
-                fl_cstring_free(command);
-                fl_cstring_free(compilation_unit_flags);
+                // Update the last flags used for this translation unit
+                if (success && !build->script_mode)
+                    fl_io_file_write_all_text(object_tc_file, command);
             }
             else
             {
-                success = false;
-                fprintf(stdout, "Toolchain '%s' does not have a compiler executable defined for environment '%s'", build->context->toolchain->name, build->context->env->name);
+                fprintf(stdout, "File '%s' has not changed. Skipping compilation...\n", source_file);
             }
+            
+            // clean
+            fl_cstring_free(command);
+            fl_cstring_free(compilation_unit_flags);
         }
         else
         {
-            fprintf(stdout, "File '%s' has not changed. Skipping compilation...\n", source_file);
+            success = false;
+            fprintf(stdout, "Toolchain '%s' does not have a compiler executable defined for environment '%s'", build->context->toolchain->name, build->context->env->name);
         }
 
+        fl_cstring_free(object_tc_file);
         fl_cstring_free(source_file);
     }
 

@@ -29,7 +29,7 @@ SbsContext* sbs_context_new(const SbsFile *file);
 void sbs_context_free(SbsContext *context);
 SbsContext* sbs_context_copy(const SbsContext *ctx);
 
-inline char* sbs_context_interpolate_string_realloc(SbsContext *context, char *interpolated_string)
+static inline char* sbs_context_interpolate_string_realloc(SbsContext *context, char *interpolated_string)
 {
     // TODO: Implement proper string interpolation
     char **keys = fl_hashtable_keys(context->symbols->variables);
@@ -48,7 +48,7 @@ inline char* sbs_context_interpolate_string_realloc(SbsContext *context, char *i
     return interpolated_string;
 }
 
-inline char* sbs_context_interpolate_string(SbsContext *context, const char *str)
+static inline char* sbs_context_interpolate_string(SbsContext *context, const char *str)
 {
     return sbs_context_interpolate_string_realloc(context, fl_cstring_dup(str));
 }
