@@ -11,14 +11,18 @@ v0.2.0:
     [ ] Executable targets should support sources too?
     [ ] sbs run command to run actions
     [ ] Change working directory
+    [ ] Environments review the API and the properties
+        [ ] Expose builtin variables (like $sbs.shell)
     [ ] Defining and using variables
-        [ ] Variables should only be defined/declared at the top-level? Maybe not
-        [ ] Add more builtin variables like $sbs.compiler, $sbs.linker, etc
-        [ ] ${env:<name>} syntax to get environment variables
+        [x] Define variables at the top-level scope
+            Notes: Variables should only be defined/declared at the top-level?
+        [x] Add builtin variables: $sbs.compiler, $sbs.archiver, $sbs.linker
+        [x] $env.<name> syntax to get environment variables
             [ ] Check that "system" executor and custom executors correctly set and retrieve ENV variables
         [ ] Allow defining/extending variable in the command line
             Example: a $my.flags variable within a compile's flag property can be extended/overridden by a command line argument
         [x] Textual replacement 
+    [ ] String interpolation for variables and probably a ternary if or something like that
     [ ] sbs init command (scaffolding): Add basic elements and common toolchains
         [ ] Init specific "identifier"? -e=my-env1,my-env2 --> my-env1{} my-env2{}
         [ ] Default win-cmd, linux-bash, osx-bash envs??
@@ -39,7 +43,6 @@ v0.2.0:
     [x] Detect host OS and architecture (basic)
 
 v0.2.x:
-    [ ] String interpolation for variables and probably a ternary if or something like that
         Examples: 
             - "/path/to/libsomething.${sbs.env == "win-cmd" ? "lib" : "a"}" <-- The "win-cmd" must be a string because we don't have context for it
             - "/path/to/libsomething.${env(win-cmd) ? "lib" : "a"}" <-- win-cmd is expected to be an env (this one could work right away)

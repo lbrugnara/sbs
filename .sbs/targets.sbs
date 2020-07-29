@@ -1,9 +1,12 @@
+$triplet = "${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}",
+$lib_dir = "./lib"
+
 # The sbs-objects target compiles all the source files
 compile sbs-objects {
     includes: [
         "../fllib/include"
     ],
-    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/${sbs.target}",
+    output_dir: "obj/${triplet}/${sbs.target}",
     sources: [
         "src/.*[.]c$"
     ]
@@ -12,15 +15,15 @@ compile sbs-objects {
 # This target creates the sbs executable
 executable sbs {
     output_name: "sbs",
-    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
+    output_dir: "build/${triplet}/",
     objects: [ sbs-objects ],
 
     if $sbs.env == win-cmd {
-        objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.lib" ]
+        objects: [ "${lib_dir}/fllib/${triplet}/libfl.lib" ]
     }
 
     if $sbs.env == linux-bash {
-        objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.a" ]
+        objects: [ "${lib_dir}/fllib/${triplet}/libfl.a" ]
         libraries: [
             { name: "m" },
             { name: "pthread" }
@@ -33,7 +36,7 @@ compile sbs-tests-objects {
     includes: [
         "../fllib/include"
     ],
-    output_dir: "obj/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
+    output_dir: "obj/${triplet}/",
     sources: [
         "tests/.*[.]c$"
     ]
@@ -42,16 +45,16 @@ compile sbs-tests-objects {
 # This target creates the sbs executable
 executable sbs-tests {
     output_name: "tests",
-    output_dir: "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/",
+    output_dir: "build/${triplet}/",
     objects: [ sbs-objects, sbs-tests-objects ],
     defines: [ "SBS_TESTS" ]
 
     if $sbs.env == win-cmd {
-        objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.lib" ]
+        objects: [ "${lib_dir}/fllib/${triplet}/libfl.lib" ]
     }
 
     if $sbs.env == linux-bash {
-        objects: [ "./lib/fllib/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/libfl.a" ]
+        objects: [ "${lib_dir}/fllib/${triplet}/libfl.a" ]
         libraries: [
             { name: "m" },
             { name: "pthread" }

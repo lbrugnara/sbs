@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "conditional.h"
 #include "parser.h"
+#include "variable.h"
 
 static char** parse_identifiers(SbsParser *parser);
 static SbsExpression* parse_inlist_expression(SbsParser *parser);
@@ -50,41 +51,48 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
     }
 
     const char *var_name = NULL;
+    const char *var_namespace = NULL;
     bool is_compat_env = false;
 
     if (sbs_token_equals(token, "os"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "sbs.os";
+        var_name = "os";
+        var_namespace = "sbs";
     }
     else if (sbs_token_equals(token, "arch"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "sbs.arch";
+        var_name = "arch";
+        var_namespace = "sbs";
     }
     else if (sbs_token_equals(token, "toolchain"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "sbs.toolchain";
+        var_name = "toolchain";
+        var_namespace = "sbs";
     }
     else if (sbs_token_equals(token, "config"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "sbs.config";
+        var_name = "config";
+        var_namespace = "sbs";
     }
     else if (sbs_token_equals(token, "target"))
     {
         sbs_parser_consume(parser, token->type);
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        var_name = "sbs.target";
+        var_name = "target";
+        var_namespace = "sbs";
     }
     else // if (sbs_token_equals(token, "env")) For compatibility, if we find a for section without a keyword, it is tied to the environment
     {
-        var_name = "sbs.env";
+        var_name = "env";
+        var_namespace = "sbs";
         if (sbs_token_equals(token, "env"))
         {
             sbs_parser_consume(parser, token->type);
@@ -96,7 +104,7 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
         }
     }
 
-    SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(var_name);
+    SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(var_name, var_namespace);
     SbsArrayExpr *array_node = sbs_expression_make_array();
 
     while (sbs_parser_has_input(parser))
@@ -139,12 +147,11 @@ static SbsExpression* parse_identifier_expression(SbsParser *parser)
 
 static SbsExpression* parse_variable_expression(SbsParser *parser)
 {
-    const SbsToken *var_token = sbs_parser_consume(parser, SBS_TOKEN_VARIABLE);
+    SbsValueVariable *variable = sbs_parse_variable(parser);
 
-    // TODO: Should we use slice to avoid the dup string?
-    char *var_name = sbs_token_to_str(var_token);
-    SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(var_name);
-    fl_cstring_free(var_name);
+    SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(variable->name, variable->namespace);
+
+    sbs_value_variable_free(variable);
 
     return var_node;
 }

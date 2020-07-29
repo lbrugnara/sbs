@@ -1,8 +1,9 @@
 #include <fllib/Mem.h>
 #include <fllib/Cstring.h>
 #include <fllib/Array.h>
-#include "parser.h"
 #include "variable.h"
+#include "parser.h"
+#include "helpers.h"
 
 SbsValueVariable* sbs_parse_variable(SbsParser *parser)
 {
@@ -28,6 +29,20 @@ SbsValueVariable* sbs_parse_variable(SbsParser *parser)
     }
 
     return variable;
+}
+
+SbsNodeVariableDefinition* sbs_parse_variable_definition(SbsParser *parser)
+{
+    SbsNodeVariableDefinition *var_def = sbs_node_variable_definition_new();
+    var_def->name = sbs_parse_variable(parser);
+
+    sbs_parser_consume(parser, SBS_TOKEN_ASSIGN);
+
+    // TODO: Update this to support more types
+    var_def->kind = SBS_VALUE_VAR_STR;
+    var_def->value.s = sbs_parse_string(parser);
+
+    return var_def;
 }
 
 SbsValueVariable** sbs_parse_variable_array(SbsParser *parser)

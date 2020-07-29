@@ -28,7 +28,7 @@ typedef struct SbsBuild {
     SbsTarget *current_target;
 } SbsBuild;
 
-SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *arguments);
+SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *arguments, char **env_vars);
 char** sbs_build_target(SbsBuild *build);
 
 #endif /* SBS_BUILD_H */

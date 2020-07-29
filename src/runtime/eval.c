@@ -48,17 +48,56 @@ static SbsValueExpr* eval_variable_node(SbsVariableExpr *var_node, SbsEvalContex
     result->kind = SBS_EXPR_VALUE;
     result->type = SBS_EXPR_VALUE_TYPE_UNK;
 
-    if (!fl_hashtable_has_key(context->variables, var_node->name))
-        return result;
+    if (flm_cstring_equals(var_node->info->namespace, "env"))
+    {
+        #ifdef _WIN32
+        {
+            size_t req_size = 0;
+            getenv_s( &req_size, NULL, 0, var_node->info->name);
 
-    char *var_value = fl_hashtable_get(context->variables, var_node->name);
+            if (req_size == 0)
+                return result;
 
-    if (var_value == NULL)
-        return result;
+            char *var_value = fl_cstring_new(req_size);
+            if (getenv_s(&req_size, var_value, req_size, var_node->info->name) != 0)
+            {
+                fl_cstring_free(var_value);
+                return result;
+            }
 
-    // TODO: By now, we assume STRING type here
-    result->type = SBS_EXPR_VALUE_TYPE_STR;
-    result->value.s = fl_cstring_dup(var_value);
+            result->type = SBS_EXPR_VALUE_TYPE_STR;
+            result->value.s = var_value;
+
+            return result;
+        }
+        #else
+        {
+            char *var_value = getenv(var_node->info->name);
+
+            if (var_value == NULL)
+                return result;
+
+            result->type = SBS_EXPR_VALUE_TYPE_STR;
+            result->value.s = fl_cstring_dup(var_value);
+
+            return result;
+        }
+        #endif        
+    }
+    else
+    {
+        if (!fl_hashtable_has_key(context->variables, var_node->info->fqn))
+            return result;
+
+        char *var_value = fl_hashtable_get(context->variables, var_node->info->fqn);
+
+        if (var_value == NULL)
+            return result;
+
+        // TODO: By now, we assume STRING type here
+        result->type = SBS_EXPR_VALUE_TYPE_STR;
+        result->value.s = fl_cstring_dup(var_value);
+    }
 
     return result;
 }
@@ -355,8 +394,8 @@ static void free_value_node(SbsValueExpr *value)
 
 static void free_variable_node(SbsVariableExpr *value_node)
 {
-    if (value_node->name)
-        fl_cstring_free(value_node->name);
+    if (value_node->info)
+        sbs_varinfo_free(value_node->info);
 
     fl_free(value_node);
 }
@@ -445,7 +484,7 @@ static SbsExpression* copy_variable_node(SbsVariableExpr* node)
     SbsVariableExpr *copy = fl_malloc(sizeof(SbsVariableExpr));
 
     copy->kind = node->kind;
-    copy->name = fl_cstring_dup(node->name);
+    copy->info = sbs_varinfo_new(node->info->name, node->info->namespace);
 
     return (SbsExpression*) copy;
 }
@@ -539,12 +578,12 @@ void sbs_expression_array_add_item(SbsArrayExpr *array, SbsExpression *item)
     array->items = fl_array_append(array->items, &item);
 }
 
-SbsVariableExpr* sbs_expression_make_variable(const char *name)
+SbsVariableExpr* sbs_expression_make_variable(const char *name, const char *namespace)
 {
     SbsVariableExpr *var_node = fl_malloc(sizeof(SbsVariableExpr));
 
     var_node->kind = SBS_EXPR_VARIABLE;
-    var_node->name = fl_cstring_dup(name);
+    var_node->info = sbs_varinfo_new(name, namespace);
 
     return var_node;
 }

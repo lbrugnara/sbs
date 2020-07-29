@@ -8,7 +8,16 @@ SbsValueVariable* sbs_value_variable_new(const struct FlSlice *name, const struc
     SbsValueVariable *variable = fl_malloc(sizeof(SbsValueVariable));
 
     variable->name = sbs_slice_to_str(name);
-    variable->namespace = sbs_slice_to_str(namespace);
+
+    if (namespace != NULL)
+    {
+        variable->namespace = sbs_slice_to_str(namespace);
+        variable->fqn = fl_cstring_vdup("%s.%s", variable->namespace, variable->name);
+    }
+    else
+    {
+        variable->fqn = fl_cstring_dup(variable->name);
+    }
 
     return variable;
 }
@@ -24,5 +33,32 @@ void sbs_value_variable_free(SbsValueVariable *variable)
     if (variable->namespace)
         fl_cstring_free(variable->namespace);
 
+    if (variable->fqn)
+        fl_cstring_free(variable->fqn);
+
     fl_free(variable);
+}
+
+SbsNodeVariableDefinition* sbs_node_variable_definition_new(void)
+{
+    SbsNodeVariableDefinition *var_def = fl_malloc(sizeof(SbsNodeVariableDefinition));
+
+    return var_def;
+}
+
+void sbs_node_variable_definition_free(SbsNodeVariableDefinition *var_def)
+{
+    if (var_def->name)
+        sbs_value_variable_free(var_def->name);
+
+    switch (var_def->kind)
+    {
+        case SBS_VALUE_VAR_STR:
+            fl_cstring_free(var_def->value.s);
+            break;
+
+        default: break;
+    }
+
+    fl_free(var_def);
 }

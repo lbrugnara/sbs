@@ -21,6 +21,8 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *e
         fl_cstring_append_char(&output_filename, build->context->env->host->dir_separator);
 
     output_filename = sbs_context_interpolate_string_realloc(build->context, output_filename);
+    // We need to standardize the paths after the interpolation
+    output_filename = sbs_io_to_host_path_realloc(build->context->env->host->os, output_filename);
 
     fl_io_dir_create_recursive(output_filename);
 
@@ -137,10 +139,11 @@ char** sbs_build_target_executable(SbsBuild *build)
         }
         else
         {
-            char *object_filename = sbs_io_to_host_path(build->context->env->host->os, target_executable->objects[i].value);
+            char *object_filename = fl_cstring_dup(target_executable->objects[i].value);
 
             // TODO: Implement proper string interpolation
             object_filename = sbs_context_interpolate_string_realloc(build->context, object_filename);
+            object_filename = sbs_io_to_host_path_realloc(build->context->env->host->os, object_filename);
             
             // We also check here to see if the object pointed by the string is newer than the executable
             // in order to set the needs_linkage flag

@@ -42,6 +42,7 @@ const char *token_type_string[] = {
 
     [SBS_TOKEN_COMMA] = "COMMA",
     [SBS_TOKEN_COLON] = "COLON",
+    [SBS_TOKEN_ASSIGN] = "ASSIGN",
 
     [SBS_TOKEN_STRING] = "STRING",
     [SBS_TOKEN_COMMAND_STRING] = "COMMAND_STRING",
@@ -56,7 +57,7 @@ SbsLexer sbs_lexer_new(const char *source, size_t length)
         .source = fl_slice_new((const FlByte*)source, 1, 0, length),
         .index = 0,
         .line = 1,
-        .col = 0
+        .col = 1
     };
 }
 
@@ -113,7 +114,7 @@ static inline void remove_ws_and_comments(SbsLexer *lexer)
         {
             consume(lexer);
             lexer->line++;
-            lexer->col = 0;
+            lexer->col = 1;
             continue;
         }
         
@@ -376,6 +377,13 @@ SbsToken sbs_lexer_next(SbsLexer *lexer)
             consume(lexer);
             consume(lexer);
             return create_token(lexer, SBS_TOKEN_OP_NEQ, 2, line, col);
+        }
+        else if (c == '=')
+        {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
+            consume(lexer);
+            return create_token(lexer, SBS_TOKEN_ASSIGN, 1, line, col);
         }
         else if (c == '$')
         {

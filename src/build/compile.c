@@ -228,6 +228,8 @@ static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile
         fl_cstring_append_char(&output_file_fullpath, build->context->env->host->dir_separator);
 
     output_file_fullpath = sbs_context_interpolate_string_realloc(build->context, output_file_fullpath);
+    // We need to standardize the paths after the interpolation
+    output_file_fullpath = sbs_io_to_host_path_realloc(build->context->env->host->os, output_file_fullpath);
 
     // Append the source path structure
     fl_cstring_append(&output_file_fullpath, source_file_path);

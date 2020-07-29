@@ -5,18 +5,20 @@
 
 typedef struct SbsFile {
     const char *filename;
-    /* FlHashtable<char*, SbsSectionEnv*> */
+    // FlHashtable<char*, SbsSectionEnv*>
     FlHashtable *envs;
-    /* FlHashtable<char*, SbsAbstractSectionTarget*> */
+    // FlHashtable<char*, SbsAbstractSectionTarget*>
     FlHashtable *targets;
-    /* FlHashtable<char*, SbsSectionToolchain*> */
+    // FlHashtable<char*, SbsSectionToolchain*>
     FlHashtable *toolchains;
-    /* FlHashtable<char*, SbsSectionConfig*> */
+    // FlHashtable<char*, SbsSectionConfig*>
     FlHashtable *configurations;
-    /* FlHashtable<char*, SbsSectionAction*> */
+    // FlHashtable<char*, SbsSectionAction*>
     FlHashtable *actions;
-    /* FlHashtable<char*, SbsSectionPreset*> */
+    // FlHashtable<char*, SbsSectionPreset*>
     FlHashtable *presets;
+    // FlHashtable<char*, SbsNodeVariableDefinition*>
+    FlHashtable *variables;
 } SbsFile;
 
 SbsFile* sbs_file_new(const char *filename);

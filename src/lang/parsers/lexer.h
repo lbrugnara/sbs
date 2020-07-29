@@ -41,6 +41,7 @@ typedef enum SbsTokenType {
 
     SBS_TOKEN_COMMA,
     SBS_TOKEN_COLON,
+    SBS_TOKEN_ASSIGN,
 
     SBS_TOKEN_STRING,
     SBS_TOKEN_COMMAND_STRING,

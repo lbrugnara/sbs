@@ -21,6 +21,8 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigShared *share
 
     // TODO: Implement proper string interpolation
     output_filename = sbs_context_interpolate_string_realloc(build->context, output_filename);
+    // We need to standardize the paths after the interpolation
+    output_filename = sbs_io_to_host_path_realloc(build->context->env->host->os, output_filename);
 
     fl_io_dir_create_recursive(output_filename);
 

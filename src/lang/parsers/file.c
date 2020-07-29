@@ -13,6 +13,7 @@
 #include "toolchain.h"
 #include "lexer.h"
 #include "parser.h"
+#include "variable.h"
 #include "file.h"
 
 #include "../../io.h"
@@ -34,7 +35,7 @@
 static void merge_hashtable(FlHashtable *dest, FlHashtable *src)
 {
     // We just get the source hashtable's keys
-    char **keys = fl_hashtable_keys(src);
+    void **keys = fl_hashtable_keys(src);
 
     if (!keys)
         return;
@@ -49,13 +50,14 @@ static void merge_hashtable(FlHashtable *dest, FlHashtable *src)
 
         // We pass *false* to prevent the source hashtable of cleaning the memory of our
         // values (and keys), because as mentioned above the values are the same pointers
-        fl_hashtable_remove(src, keys[i], false, false);
+        fl_hashtable_remove(src, keys[i], true, false);
     }
 
     // It is ok to free the keys because of 2 reasons:
     // 1- We removed the entries from *src* WITHOUT cleaning the resources (fl_hashtable_remove with clean_key = false as 3rd parameter)
     // 2- The "dest" hashtable uses the fl_container_allocator_string therefore it creates copies of the keys on fl_hashtable_add
-    fl_array_free_each_pointer(keys, (FlArrayFreeElementFunc) fl_cstring_free);
+    //fl_array_free_each_pointer(keys, (FlArrayFreeElementFunc) fl_cstring_free);
+    fl_array_free(keys);
 }
 
 /*
@@ -81,6 +83,7 @@ static void merge_into_file(SbsFile *dest_file, SbsFile *src_file)
     merge_hashtable(dest_file->presets, src_file->presets);
     merge_hashtable(dest_file->targets, src_file->targets);
     merge_hashtable(dest_file->toolchains, src_file->toolchains);
+    merge_hashtable(dest_file->variables, src_file->variables);
 }
 
 /*
@@ -185,6 +188,19 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
                 success = false;
                 break;
             }
+        }
+        else if (token->type == SBS_TOKEN_VARIABLE)
+        {
+            SbsNodeVariableDefinition *var_def = sbs_parse_variable_definition(parser);
+            if (fl_hashtable_has_key(file->variables, var_def->name))
+            {
+                printf("Variable %s cannot be redefined\n", var_def->name->fqn);
+                sbs_node_variable_definition_free((SbsNodeVariableDefinition*) var_def);
+                success = false;
+                break;
+            }
+            fl_hashtable_add(file->variables, var_def->name, var_def);
+            sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
         }
         else if (token->type == SBS_TOKEN_ENV)
         {

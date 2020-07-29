@@ -2,6 +2,7 @@
 #define SBS_RUNTIME_EVAL_H
 
 #include <fllib/containers/Hashtable.h>
+#include "variable.h"
 
 typedef enum SbsEvalOperatorKind {
     SBS_EVAL_OP_UNK,
@@ -46,7 +47,7 @@ typedef struct SbsValueExpr {
 
 typedef struct SbsVariableExpr {
     SbsExprKind kind;
-    const char *name;
+    SbsVariableInfo *info;
 } SbsVariableExpr;
 
 typedef struct SbsArrayExpr {
@@ -81,7 +82,7 @@ SbsExpression* sbs_expression_copy(SbsExpression *node);
 SbsValueExpr* sbs_expression_make_value(SbsValueExprType type);
 SbsArrayExpr* sbs_expression_make_array(void);
 void sbs_expression_array_add_item(SbsArrayExpr *array, SbsExpression *item);
-SbsVariableExpr* sbs_expression_make_variable(const char *name);
+SbsVariableExpr* sbs_expression_make_variable(const char *name, const char *namespace);
 SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *left);
 SbsBinaryExpr* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right);
 

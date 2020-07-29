@@ -1,14 +1,37 @@
 #include <stdio.h>
 #include <fllib/Array.h>
+#include <fllib/containers/Hashtable.h>
 #include "build.h"
 #include "archive.h"
 #include "compile.h"
 #include "executable.h"
 #include "shared.h"
 #include "action.h"
+#include "../lang/variable.h"
 #include "../runtime/context.h"
 #include "../runtime/triplet.h"
 #include "../runtime/resolvers/target.h"
+
+static inline bool init_variables(SbsContext *context, SbsResult *result)
+{
+    SbsValueVariable **var_names = fl_hashtable_keys(context->file->variables);
+
+    for (size_t i = 0; i < fl_array_length(var_names); i++)
+    {
+       SbsNodeVariableDefinition *var_def = fl_hashtable_get(context->file->variables, var_names[i]);
+       
+       // TODO: Check for other variable types
+       // TODO: Implement proper string interpolation
+       char *str = sbs_context_interpolate_string(context, var_def->value.s);
+       fl_hashtable_add(context->symbols->variables, var_def->name->fqn, str);
+       // NOTE: The variables hashtable creates a copy of the interpolated string
+       fl_cstring_free(str);
+    }
+
+    fl_array_free(var_names);
+
+    return true;
+}
 
 static inline bool resolve_target(SbsContext *context, const char *targetarg, SbsResult *result)
 {
@@ -79,7 +102,7 @@ char** sbs_build_target(SbsBuild *build)
     return result;
 }
 
-SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
+SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args, char **env_vars)
 {
     // We track the build command result with this variable
     SbsResult result = SBS_RES_OK;
@@ -98,6 +121,9 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
 
     // Resolve all the targets
     if (!resolve_target(triplet->context, args->target, &result))
+        goto error_before_targets;
+
+    if (!init_variables(triplet->context, &result))
         goto error_before_targets;
 
     // Create the build object needed by the build process

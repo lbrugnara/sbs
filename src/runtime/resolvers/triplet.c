@@ -65,7 +65,17 @@ FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char
             SbsTriplet *new_triplet = sbs_triplet_new(triplet_ctx);
 
             fl_hashtable_set(new_triplet->context->symbols->variables, "sbs.env", new_triplet->context->env->name);
+
             fl_hashtable_add(new_triplet->context->symbols->variables, "sbs.toolchain", new_triplet->context->toolchain->name);
+
+            if (new_triplet->context->toolchain->compiler.bin != NULL)
+                fl_hashtable_add(new_triplet->context->symbols->variables, "sbs.compiler", new_triplet->context->toolchain->compiler.bin);
+
+            if (new_triplet->context->toolchain->archiver.bin != NULL)
+                fl_hashtable_add(new_triplet->context->symbols->variables, "sbs.archiver", new_triplet->context->toolchain->archiver.bin);
+
+            if (new_triplet->context->toolchain->linker.bin != NULL)
+                fl_hashtable_add(new_triplet->context->symbols->variables, "sbs.linker", new_triplet->context->toolchain->linker.bin);
 
             fl_list_insert_before(triplets, node, new_triplet);
 

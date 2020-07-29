@@ -125,7 +125,7 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
     }
     
     // Run the build process and leave
-    SbsResult result = sbs_build_run(file, &args);
+    SbsResult result = sbs_build_run(file, &args, env);
 
     sbs_file_free(file);
 
