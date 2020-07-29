@@ -28,6 +28,8 @@ const char *token_type_string[] = {
     [SBS_TOKEN_OP_AND] = "AND",
     [SBS_TOKEN_OP_OR] = "OR",
     [SBS_TOKEN_OP_NOT] = "NOT",
+    [SBS_TOKEN_OP_EQ] = "EQUALS",
+    [SBS_TOKEN_OP_NEQ] = "NOT EQUALS",
 
     [SBS_TOKEN_LPAREN] = "LPAREN",
     [SBS_TOKEN_RPAREN] = "RPAREN",
@@ -94,7 +96,7 @@ static inline SbsToken create_token(SbsLexer *lexer, SbsTokenType type, size_t c
 {
     return (SbsToken){ 
         .type = type,
-        .value = fl_slice_new((FlByte*)lexer->source.sequence + lexer->index - 1, 1, 0, chars),
+        .value = fl_slice_new((FlByte*)lexer->source.sequence + lexer->index - chars, 1, 0, chars),
         .line = line,
         .col = col
     };
@@ -167,9 +169,6 @@ SbsToken* sbs_lexer_tokenize(SbsLexer *lexer)
         if (token.type == SBS_TOKEN_EOF)
             break;
 
-        if (token.type == SBS_TOKEN_UNKNOWN)
-            flm_vexit(ERR_FATAL, "Unrecognized token %.*s", token.value.length, token.value.sequence);
-
         fl_vector_add(tokens, &token);
 
         remove_ws_and_comments(lexer);
@@ -199,43 +198,59 @@ SbsToken sbs_lexer_next(SbsLexer *lexer)
         // Tokens
         if (c == '{')
         {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
             consume(lexer);
-            return create_token(lexer, SBS_TOKEN_LBRACE, 1, lexer->line, lexer->col);
+            return create_token(lexer, SBS_TOKEN_LBRACE, 1, line, col);
         }
         else if (c == '}')
         {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
             consume(lexer);
-            return create_token(lexer, SBS_TOKEN_RBRACE, 1, lexer->line, lexer->col);
+            return create_token(lexer, SBS_TOKEN_RBRACE, 1, line, col);
         }
         else if (c == '[')
         {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
             consume(lexer);
-            return create_token(lexer, SBS_TOKEN_LBRACKET, 1, lexer->line, lexer->col);
+            return create_token(lexer, SBS_TOKEN_LBRACKET, 1, line, col);
         }
         else if (c == ']')
         {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
             consume(lexer);
-            return create_token(lexer, SBS_TOKEN_RBRACKET, 1, lexer->line, lexer->col);
+            return create_token(lexer, SBS_TOKEN_RBRACKET, 1, line, col);
         }
         else if (c == '(')
         {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
             consume(lexer);
-            return create_token(lexer, SBS_TOKEN_LPAREN, 1, lexer->line, lexer->col);
+            return create_token(lexer, SBS_TOKEN_LPAREN, 1, line, col);
         }
         else if (c == ')')
         {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
             consume(lexer);
-            return create_token(lexer, SBS_TOKEN_RPAREN, 1, lexer->line, lexer->col);
+            return create_token(lexer, SBS_TOKEN_RPAREN, 1, line, col);
         }
         else if (c == ':')
         {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
             consume(lexer);
-            return create_token(lexer, SBS_TOKEN_COLON, 1, lexer->line, lexer->col);
+            return create_token(lexer, SBS_TOKEN_COLON, 1, line, col);
         }
         else if (c == ',')
         {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
             consume(lexer);
-            return create_token(lexer, SBS_TOKEN_COMMA, 1, lexer->line, lexer->col);
+            return create_token(lexer, SBS_TOKEN_COMMA, 1, line, col);
         }
         else if (is_number(c))
         {
@@ -345,6 +360,22 @@ SbsToken sbs_lexer_next(SbsLexer *lexer)
             consume(lexer);
 
             return token;
+        }
+        else if (c == '=' && peek_at(lexer, 1) == '=')
+        {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
+            consume(lexer);
+            consume(lexer);
+            return create_token(lexer, SBS_TOKEN_OP_EQ, 2, line, col);
+        }
+        else if (c == '!' && peek_at(lexer, 1) == '=')
+        {
+            unsigned int line = lexer->line;
+            unsigned int col = lexer->col;
+            consume(lexer);
+            consume(lexer);
+            return create_token(lexer, SBS_TOKEN_OP_NEQ, 2, line, col);
         }
         else if (c == '$')
         {
@@ -467,6 +498,10 @@ SbsToken sbs_lexer_next(SbsLexer *lexer)
             {
                 type = SBS_TOKEN_OP_NOT;
             }
+            else if (fl_slice_equals_sequence(&value, (FlByte*)"in", 2))
+            {
+                type = SBS_TOKEN_OP_IN;
+            }
 
             SbsToken token = { 
                 .type = type,
@@ -477,7 +512,11 @@ SbsToken sbs_lexer_next(SbsLexer *lexer)
 
             return token;
         }
+        else break;
     }
 
-    return (SbsToken){ .type = SBS_TOKEN_UNKNOWN };
+    unsigned int line = lexer->line;
+    unsigned int col = lexer->col;
+    consume(lexer);
+    return create_token(lexer, SBS_TOKEN_UNKNOWN, 1, line, col);
 }

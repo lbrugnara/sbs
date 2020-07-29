@@ -54,7 +54,7 @@ static void parse_for_section(SbsParser *parser, SbsAbstractSectionTarget *targe
     }
     else
     {
-        sbs_parser_error(token, "while parsing a for statement in a target section");
+        sbs_parser_error(parser, token, "while parsing a for statement in a target section");
     }
 
     sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
@@ -100,7 +100,7 @@ static SbsPropertyLibrary* parse_library_array(SbsParser *parser)
             }
             else
             {
-                sbs_parser_error(token, "while parsing a target library node");
+                sbs_parser_error(parser, token, "while parsing a target library node");
             }
         }
 
@@ -156,7 +156,7 @@ static void parse_compile_body(SbsParser *parser, SbsSectionCompile *target_sect
         }
         else
         {
-            sbs_parser_error(token, "while parsing a target compile block");
+            sbs_parser_error(parser, token, "while parsing a target compile block");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -227,7 +227,7 @@ static void parse_archive_body(SbsParser *parser, SbsSectionArchive *target_sect
         }
         else
         {
-            sbs_parser_error(token, "while parsing a target archive block");
+            sbs_parser_error(parser, token, "while parsing a target archive block");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -298,7 +298,7 @@ static void parse_shared_body(SbsParser *parser, SbsSectionShared *target_sectio
         }
         else
         {
-            sbs_parser_error(token, "while parsing a target shared block");
+            sbs_parser_error(parser, token, "while parsing a target shared block");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -381,7 +381,7 @@ static void parse_executable_body(SbsParser *parser, SbsSectionExecutable *targe
         }
         else
         {
-            sbs_parser_error(token, "while parsing a target executable block");
+            sbs_parser_error(parser, token, "while parsing a target executable block");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -448,7 +448,7 @@ SbsAbstractSectionTarget* sbs_section_target_parse(SbsParser *parser)
         case SBS_TOKEN_EXECUTABLE:
             return sbs_target_parse_executable(parser);
         default:
-            sbs_parser_error(token, "while parsing a target block");
+            sbs_parser_error(parser, token, "while parsing a target block");
     }
 
     return NULL;

@@ -9,7 +9,9 @@ typedef enum SbsEvalOperatorKind {
     SBS_EVAL_OP_AND,
     SBS_EVAL_OP_OR,
     SBS_EVAL_OP_NOT,
-    SBS_EVAL_OP_IN_ARRAY,
+    SBS_EVAL_OP_EQ,
+    SBS_EVAL_OP_NEQ,
+    SBS_EVAL_OP_IN,
 } SbsEvalOperatorKind;
 
 typedef enum SbsExprKind {

@@ -39,7 +39,7 @@ static void parse_toolchain_entry(SbsParser *parser, SbsNodeToolchain *toolchain
                 }
                 else
                 {
-                    sbs_parser_error(property, "while parsing a toolchain's compiler block");
+                    sbs_parser_error(parser, property, "while parsing a toolchain's compiler block");
                 }
                 sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
             }
@@ -57,7 +57,7 @@ static void parse_toolchain_entry(SbsParser *parser, SbsNodeToolchain *toolchain
                 }
                 else
                 {
-                    sbs_parser_error(property, "while parsing a toolchain's archiver block");
+                    sbs_parser_error(parser, property, "while parsing a toolchain's archiver block");
                 }
                 sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
             }
@@ -87,14 +87,14 @@ static void parse_toolchain_entry(SbsParser *parser, SbsNodeToolchain *toolchain
                 }
                 else
                 {
-                    sbs_parser_error(property, "while parsing a toolchain's linker block");
+                    sbs_parser_error(parser, property, "while parsing a toolchain's linker block");
                 }
                 sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
             }
         }
         else
         {
-            sbs_parser_error(property, "while parsing a toolchain block");
+            sbs_parser_error(parser, property, "while parsing a toolchain block");
         }
 
         sbs_parser_consume(parser, SBS_TOKEN_RBRACE);

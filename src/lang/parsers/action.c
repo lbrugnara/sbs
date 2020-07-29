@@ -26,7 +26,7 @@ static void parse_action_body(SbsParser *parser, SbsNodeAction *current_node)
         }
         else
         {
-            sbs_parser_error(token, "while parsing an action body");
+            sbs_parser_error(parser, token, "while parsing an action body");
         }
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
@@ -120,7 +120,7 @@ SbsPropertyActions sbs_property_actions_parse(SbsParser *parser)
         }
         else
         {
-            sbs_parser_error(token, "while parsing an action block");
+            sbs_parser_error(parser, token, "while parsing an action block");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

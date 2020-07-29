@@ -26,6 +26,9 @@ typedef enum SbsTokenType {
     SBS_TOKEN_OP_AND,
     SBS_TOKEN_OP_OR,
     SBS_TOKEN_OP_NOT,
+    SBS_TOKEN_OP_EQ,
+    SBS_TOKEN_OP_NEQ,
+    SBS_TOKEN_OP_IN,
 
     SBS_TOKEN_LPAREN,
     SBS_TOKEN_RPAREN,

@@ -58,7 +58,7 @@ SbsValueSource* sbs_value_source_array_prase(SbsParser *parser)
             }
             else
             {
-                sbs_parser_error(element, "while parsing an array of strings or IDs");
+                sbs_parser_error(parser, element, "while parsing an array of strings or IDs");
             }
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

@@ -260,7 +260,7 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else
         {
-            sbs_parser_error(token, "while parsing the file");
+            sbs_parser_error(parser, token, "while parsing the file");
         }
     }
 
@@ -290,6 +290,7 @@ SbsFile* sbs_file_parse(const char *filename)
 
     SbsLexer lexer = sbs_lexer_new(source, strlen(source));
     SbsParser parser = {
+        .filename = filename,
         // TODO: We can use a buffer here and use the sbs_lexer_next function
         .tokens = sbs_lexer_tokenize(&lexer),
         .index = 0,

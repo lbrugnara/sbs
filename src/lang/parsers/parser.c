@@ -8,10 +8,11 @@ extern const char *token_type_string[];
 
 void sbs_parser_warning(SbsParser *parser, const SbsToken *token, const char *message)
 {
-    fprintf(stderr, "Token %s %.*s in line %u, column %u %s\n",
+    fprintf(stderr, "Token %s %.*s in file %s:%u:%u '%s'\n",
         token_type_string[token->type],
         (int) token->value.length,
         token->value.sequence,
+        parser->filename,
         token->line, 
         token->col,
         message);
@@ -41,12 +42,13 @@ void sbs_parser_sync(SbsParser *parser, SbsTokenType *types, size_t length)
     while (true);
 }
 
-void sbs_parser_error(const SbsToken *token, const char *message)
+void sbs_parser_error(SbsParser *parser, const SbsToken *token, const char *message)
 {
-    flm_vexit(ERR_FATAL, "Unexpected token %s %.*s in line %ld, column %ld %s",
-        token_type_string[token->type],
+    flm_vexit(ERR_FATAL, "Unexpected token %.*s (%s) in file %s:%u:%u '%s'",
         token->value.length,
         token->value.sequence,
+        token_type_string[token->type],
+        parser->filename,
         token->line, 
         token->col,
         message);
@@ -55,6 +57,19 @@ void sbs_parser_error(const SbsToken *token, const char *message)
 bool sbs_parser_has_input(SbsParser *parser)
 {
     return parser->index < parser->length;
+}
+
+bool sbs_parser_next_is(SbsParser *parser, SbsTokenType type)
+{
+    return sbs_parser_has_input(parser) && sbs_parser_peek(parser)->type == type;
+}
+
+bool sbs_parser_next_is_not(SbsParser *parser, SbsTokenType type)
+{
+    if (!sbs_parser_has_input(parser))
+        return false;
+
+    return sbs_parser_peek(parser)->type != type;
 }
 
 const SbsToken* sbs_parser_peek(SbsParser *parser)
@@ -91,7 +106,7 @@ const SbsToken* sbs_parser_consume(SbsParser *parser, SbsTokenType type)
     if (token->type != type)
     {
         char *message = fl_cstring_vdup("expecting %s but received %s", token_type_string[(size_t)type], token_type_string[(size_t)token->type]);
-        sbs_parser_error(token, message);
+        sbs_parser_error(parser, token, message);
         fl_cstring_free(message);
         return NULL;
     }

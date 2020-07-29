@@ -26,7 +26,7 @@ static void parse_compile_block(SbsParser *parser, SbsNodeConfigCompile *compile
         }
         else
         {
-            sbs_parser_error(token, "while parsing a compile configuration section");
+            sbs_parser_error(parser, token, "while parsing a compile configuration section");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -52,7 +52,7 @@ static void parse_archive_block(SbsParser *parser, SbsNodeConfigArchive *archive
         }
         else
         {
-            sbs_parser_error(token, "while parsing an archive configuration section");
+            sbs_parser_error(parser, token, "while parsing an archive configuration section");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -78,7 +78,7 @@ static void parse_shared_block(SbsParser *parser, SbsNodeConfigShared *shared)
         }
         else
         {
-            sbs_parser_error(token, "while parsing a shared configuration section");
+            sbs_parser_error(parser, token, "while parsing a shared configuration section");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -104,7 +104,7 @@ static void parse_executable_block(SbsParser *parser, SbsNodeConfigExecutable *e
         }
         else
         {
-            sbs_parser_error(token, "while parsing an executable configuration section");
+            sbs_parser_error(parser, token, "while parsing an executable configuration section");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
@@ -151,7 +151,7 @@ static void parse_config_body(SbsParser *parser, struct SbsNodeConfig *configura
         }
         else
         {
-            sbs_parser_error(token, "while parsing a configuration section");
+            sbs_parser_error(parser, token, "while parsing a configuration section");
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

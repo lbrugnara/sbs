@@ -58,7 +58,7 @@ SbsValueCommand* sbs_value_command_array_parse(SbsParser *parser)
             }
             else
             {
-                sbs_parser_error(element, "while parsing an array of commands or IDs");
+                sbs_parser_error(parser, element, "while parsing an array of commands or IDs");
             }
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

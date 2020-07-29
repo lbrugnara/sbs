@@ -123,9 +123,88 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
     if (!is_compat_env)
         sbs_parser_consume(parser, SBS_TOKEN_RPAREN);
 
-    return (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_IN_ARRAY, var_node, (SbsExpression*) array_node);
+    return (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_IN, var_node, (SbsExpression*) array_node);
 }
 
+static SbsExpression* parse_identifier_expression(SbsParser *parser)
+{
+    const SbsToken *id = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+    
+    // TODO: We assume strings here...
+    SbsValueExpr *str = sbs_expression_make_value(SBS_EXPR_VALUE_TYPE_STR);
+    str->value.s = sbs_token_to_str(id);
+
+    return (SbsExpression*) str;
+}
+
+static SbsExpression* parse_variable_expression(SbsParser *parser)
+{
+    const SbsToken *var_token = sbs_parser_consume(parser, SBS_TOKEN_VARIABLE);
+
+    // TODO: Should we use slice to avoid the dup string?
+    char *var_name = sbs_token_to_str(var_token);
+    SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(var_name);
+    fl_cstring_free(var_name);
+
+    return var_node;
+}
+
+static SbsExpression* parse_array_expression(SbsParser *parser)
+{
+    sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
+
+    SbsArrayExpr *array_node = sbs_expression_make_array();
+
+    while (sbs_parser_next_is_not(parser, SBS_TOKEN_RBRACKET))
+    {
+        SbsExpression *item = parse_or_expression(parser);
+
+        if (item != NULL)
+        {
+            sbs_expression_array_add_item(array_node, (SbsExpression*) item);
+        }
+
+        if (sbs_parser_next_is_not(parser, SBS_TOKEN_RBRACKET))
+            sbs_parser_consume(parser, SBS_TOKEN_COMMA);
+    }
+
+    sbs_parser_consume(parser, SBS_TOKEN_RBRACKET);
+
+    return (SbsExpression*) array_node;
+}
+
+static SbsExpression* parse_primary_expression(SbsParser *parser)
+{
+    const SbsToken *token = sbs_parser_peek(parser);
+
+    SbsExpression *node = NULL;
+
+    if (token->type == SBS_TOKEN_VARIABLE)
+    {
+        node = parse_variable_expression(parser);
+    }
+    else if (token->type == SBS_TOKEN_IDENTIFIER)
+    {
+        node = parse_identifier_expression(parser);
+    }
+    else if (token->type == SBS_TOKEN_LBRACKET)
+    {
+        node = parse_array_expression(parser);
+    }
+    else if (token->type == SBS_TOKEN_LPAREN)
+    {
+        sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
+        node = parse_or_expression(parser);
+        sbs_parser_consume(parser, SBS_TOKEN_RPAREN);
+    }
+    else
+    {
+        sbs_parser_warning(parser, token, "is unexpected in this context.");
+        sbs_parser_sync(parser, (SbsTokenType[]) { SBS_TOKEN_LBRACE }, 1);
+    }
+
+    return node;
+}
 
 static SbsExpression* parse_unary_expression(SbsParser *parser)
 {
@@ -138,19 +217,104 @@ static SbsExpression* parse_unary_expression(SbsParser *parser)
         op = SBS_EVAL_OP_NOT;
     }
 
-    SbsExpression *node = parse_inlist_expression(parser);
+    SbsExpression *node = NULL;
+    const SbsToken *token = sbs_parser_peek(parser);
+    
+    if ((sbs_token_equals(token, "os")
+                || sbs_token_equals(token, "arch")
+                || sbs_token_equals(token, "toolchain")
+                || sbs_token_equals(token, "config")
+                || sbs_token_equals(token, "target")
+                || sbs_token_equals(token, "env")) 
+            && sbs_parser_peek_at(parser, 1)->type == SBS_TOKEN_LPAREN)
+    {
+        // TODO: This is here fro BC: env(...), arch(...), etc
+        node = parse_inlist_expression(parser);
+    }
+    else
+    {
+        node = parse_primary_expression(parser);
+    }
     return (SbsExpression*) sbs_expression_make_unary(op, node);
+}
+
+static SbsExpression* parse_comparison_expression(SbsParser *parser)
+{
+    SbsExpression *node = parse_unary_expression(parser);
+
+    while (sbs_parser_has_input(parser))
+    {
+        bool is_not = false;
+        SbsEvalOperatorKind operator = SBS_EVAL_OP_UNK;
+
+        if (sbs_parser_next_is(parser, SBS_TOKEN_OP_NOT))
+        {
+            is_not = true;
+            sbs_parser_consume(parser, SBS_TOKEN_OP_NOT);
+        }
+
+        if (sbs_parser_next_is(parser, SBS_TOKEN_OP_IN))
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_OP_IN);
+            operator = SBS_EVAL_OP_IN;
+        }
+        else
+        {
+            break;
+        }
+
+        SbsExpression *right = parse_unary_expression(parser);
+
+        node = (SbsExpression*) sbs_expression_make_binary(operator, node, right);
+
+        if (is_not)
+            node = (SbsExpression*) sbs_expression_make_unary(SBS_EVAL_OP_NOT, node);
+    }
+
+    return node;
+}
+
+static SbsExpression* parse_equality_expression(SbsParser *parser)
+{
+    SbsExpression *node = parse_comparison_expression(parser);
+
+    while (sbs_parser_has_input(parser))
+    {
+        SbsEvalOperatorKind operator = SBS_EVAL_OP_UNK;
+        const SbsToken *operator_token = sbs_parser_peek(parser);
+
+        if (operator_token->type == SBS_TOKEN_OP_EQ)
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_OP_EQ);
+            operator = SBS_EVAL_OP_EQ;
+        }
+        else if (operator_token->type == SBS_TOKEN_OP_NEQ)
+        {
+            sbs_parser_consume(parser, SBS_TOKEN_OP_NEQ);
+            operator = SBS_EVAL_OP_NEQ;
+        }
+        else
+        {
+            break;
+        }
+
+        SbsExpression *right = parse_comparison_expression(parser);
+
+        node = (SbsExpression*) sbs_expression_make_binary(operator, node, right);
+    }
+
+    return node;
 }
 
 static SbsExpression* parse_and_expression(SbsParser *parser)
 {
-    SbsExpression *node = parse_unary_expression(parser);
+    SbsExpression *node = parse_equality_expression(parser);
 
     while (sbs_parser_has_input(parser) && sbs_parser_peek(parser)->type == SBS_TOKEN_OP_AND)
     {
         const SbsToken *or_op = sbs_parser_consume(parser, SBS_TOKEN_OP_AND);
 
-        SbsExpression *right = parse_unary_expression(parser);
+        SbsExpression *right = parse_equality_expression(parser);
 
         node = (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_AND, node, right);
     }

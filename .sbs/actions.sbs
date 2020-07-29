@@ -1,15 +1,15 @@
 action clean {
-    if env(win-cmd) {
+    if $sbs.env == win-cmd {
         `if exist .\\obj\\${sbs.env}\\${sbs.arch} (rd /s /q .\\obj\\${sbs.env}\\${sbs.arch})`,
         `if exist .\\build.\\${sbs.env}\\${sbs.arch} (rd /s /q .\\build.\\${sbs.env}\\${sbs.arch})`
     },
-    if env(linux-bash) {
+    if $sbs.env == linux-bash {
         `/bin/rm -fr obj/${sbs.env}/${sbs.arch} build/${sbs.env}/${sbs.arch}`
     }
 }
 
 action copy-fllib {
-    if env(win-cmd) {
+    if $sbs.env == win-cmd {
         # Create the include directory
         `if not exist .\include (md .\include)`,
 
@@ -26,7 +26,7 @@ action copy-fllib {
                  .\lib\fllib\${sbs.env}\${sbs.arch}\${sbs.toolchain}\${sbs.config}\ )`,
     }
 
-    if env(linux-bash) {
+    if $sbs.env == linux-bash {
         `mkdir -p ./include`
         `if [ -f "../fllib/include/fllib.h" ]; then cp ../fllib/include/fllib.h ./include/ ; fi`
 
@@ -39,7 +39,7 @@ action copy-fllib {
 }
 
 action install {
-    if env(win-cmd) {
+    if $sbs.env == win-cmd {
         `if exist .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe (                      \
             copy /Y .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\fllib\\ &           \
             copy /Y .\\build\\${sbs.env}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\zenit\\ &           \
@@ -47,7 +47,7 @@ action install {
         )`
     }
 
-    if env(linux-bash) {
+    if $sbs.env == linux-bash {
         `if [ -f "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs" ]; then            \
             cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../fllib/sbs;          \
             cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../zenit/sbs;          \

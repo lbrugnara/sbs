@@ -9,7 +9,7 @@ toolchain clang {
     }    
 
     # Windows specifics
-    if env(win-cmd) {
+    if $sbs.env == win-cmd {
         # We use LLVM's archiver
         archiver: {
             bin: "llvm-lib.exe"
@@ -23,7 +23,7 @@ toolchain clang {
     },
 
     # Linux specifics
-    if env(linux-bash) {
+    if $sbs.env == linux-bash {
         archiver: {
             bin: "ar"
         },

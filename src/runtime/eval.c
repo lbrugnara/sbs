@@ -5,6 +5,19 @@
 #include "eval.h"
 #include "../utils.h"
 
+static SbsEvalOperatorKind UnaryOperators[] = {
+    SBS_EVAL_OP_ID,
+    SBS_EVAL_OP_NOT,
+};
+
+static SbsEvalOperatorKind BinaryOperators[] = {
+    SBS_EVAL_OP_OR,
+    SBS_EVAL_OP_AND,
+    SBS_EVAL_OP_EQ,
+    SBS_EVAL_OP_NEQ,
+    SBS_EVAL_OP_IN,
+};
+
 static SbsValueExpr* eval_run(SbsEvalContext *context, SbsExpression *node);
 
 SbsEvalContext* sbs_eval_context_new(void)
@@ -90,6 +103,69 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
 
     switch (binary_node->op)
     {
+        case SBS_EVAL_OP_EQ:
+        {
+            bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
+            bin_result->value.b = false;
+
+            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+
+            if (left_result->type != right_result->type)
+            {
+                sbs_expression_free((SbsExpression*) left_result);
+                sbs_expression_free((SbsExpression*) right_result);
+                return bin_result;
+            }
+
+            switch (left_result->type)
+            {
+                case SBS_EXPR_VALUE_TYPE_BOOL:
+                    bin_result->value.b = left_result->value.b == right_result->value.b;
+                    break;
+
+                case SBS_EXPR_VALUE_TYPE_STR:
+                    bin_result->value.b = flm_cstring_equals(left_result->value.s, right_result->value.s);
+                    break;
+
+                default: break;
+            }
+
+            sbs_expression_free((SbsExpression*) left_result);
+            sbs_expression_free((SbsExpression*) right_result);
+            return bin_result;
+        }
+        case SBS_EVAL_OP_NEQ:
+        {
+            bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
+            bin_result->value.b = false;
+
+            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+
+            if (left_result->type != right_result->type)
+            {
+                bin_result->value.b = true;
+                sbs_expression_free((SbsExpression*) left_result);
+                sbs_expression_free((SbsExpression*) right_result);
+                return bin_result;
+            }
+
+            switch (left_result->type)
+            {
+                case SBS_EXPR_VALUE_TYPE_BOOL:
+                    bin_result->value.b = left_result->value.b != right_result->value.b;
+                    break;
+
+                case SBS_EXPR_VALUE_TYPE_STR:
+                    bin_result->value.b = !flm_cstring_equals(left_result->value.s, right_result->value.s);
+                    break;
+
+                default: break;
+            }
+
+            sbs_expression_free((SbsExpression*) left_result);
+            sbs_expression_free((SbsExpression*) right_result);
+            return bin_result;
+        }
         case SBS_EVAL_OP_AND:
         {
             // At this point we know it needs to be bool
@@ -157,7 +233,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             sbs_expression_free((SbsExpression*) right_result);
             return bin_result;            
         }
-        case SBS_EVAL_OP_IN_ARRAY:
+        case SBS_EVAL_OP_IN:
         {
             // At this point we know it needs to be bool
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
@@ -475,7 +551,7 @@ SbsVariableExpr* sbs_expression_make_variable(const char *name)
 
 SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *left)
 {
-    if (op != SBS_EVAL_OP_ID && op != SBS_EVAL_OP_NOT)
+    if (!fl_array_contains_n(UnaryOperators, flm_array_length(UnaryOperators), &op, sizeof(SbsEvalOperatorKind)))
         return NULL;
 
     SbsUnaryExpr *unary_node = fl_malloc(sizeof(SbsUnaryExpr));
@@ -489,7 +565,7 @@ SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *l
 
 SbsBinaryExpr* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right)
 {
-    if (op != SBS_EVAL_OP_AND && op != SBS_EVAL_OP_OR && op != SBS_EVAL_OP_IN_ARRAY)
+    if (!fl_array_contains_n(BinaryOperators, flm_array_length(BinaryOperators), &op, sizeof(SbsEvalOperatorKind)))
         return NULL;
 
     SbsBinaryExpr *binode = fl_malloc(sizeof(SbsBinaryExpr));
