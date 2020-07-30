@@ -3,6 +3,7 @@
 #include <fllib/Cstring.h>
 #include "configuration.h"
 #include "helpers.h"
+#include "string.h"
 #include "parser.h"
 #include "conditional.h"
 #include "../../utils.h"
@@ -16,7 +17,7 @@ static void parse_compile_block(SbsParser *parser, SbsNodeConfigCompile *compile
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->flags = sbs_parse_string_array(parser);
+            compile->flags = sbs_parse_interpolated_string_array(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {

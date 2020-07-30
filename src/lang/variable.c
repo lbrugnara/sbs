@@ -7,11 +7,11 @@ SbsValueVariable* sbs_value_variable_new(const struct FlSlice *name, const struc
 {
     SbsValueVariable *variable = fl_malloc(sizeof(SbsValueVariable));
 
-    variable->name = sbs_slice_to_str(name);
+    variable->name = sbs_slice_to_cstring(name);
 
     if (namespace != NULL)
     {
-        variable->namespace = sbs_slice_to_str(namespace);
+        variable->namespace = sbs_slice_to_cstring(namespace);
         variable->fqn = fl_cstring_vdup("%s.%s", variable->namespace, variable->name);
     }
     else

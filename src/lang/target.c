@@ -9,7 +9,7 @@ SbsSectionCompile* sbs_section_compile_new(const struct FlSlice *name)
     SbsSectionCompile *target_section = fl_malloc(sizeof(SbsSectionCompile));
 
     target_section->base.type = SBS_TARGET_COMPILE;
-    target_section->base.name = sbs_slice_to_str(name);
+    target_section->base.name = sbs_slice_to_cstring(name);
     target_section->entries = fl_array_new(sizeof(SbsNodeCompile*), 0);
 
     return target_section;
@@ -20,7 +20,7 @@ SbsSectionArchive* sbs_section_archive_new(const struct FlSlice *name)
     SbsSectionArchive *target_section = fl_malloc(sizeof(SbsSectionArchive));
 
     target_section->base.type = SBS_TARGET_ARCHIVE;
-    target_section->base.name = sbs_slice_to_str(name);
+    target_section->base.name = sbs_slice_to_cstring(name);
     target_section->entries = fl_array_new(sizeof(SbsNodeArchive*), 0);
 
     return target_section;
@@ -31,7 +31,7 @@ SbsSectionShared* sbs_section_shared_new(const struct FlSlice *name)
     SbsSectionShared *target_section = fl_malloc(sizeof(SbsSectionShared));
 
     target_section->base.type = SBS_TARGET_SHARED;
-    target_section->base.name = sbs_slice_to_str(name);
+    target_section->base.name = sbs_slice_to_cstring(name);
     target_section->entries = fl_array_new(sizeof(SbsNodeShared*), 0);
 
     return target_section;
@@ -42,7 +42,7 @@ SbsSectionExecutable* sbs_section_executable_new(const struct FlSlice *name)
     SbsSectionExecutable *target_section = fl_malloc(sizeof(SbsSectionExecutable));
 
     target_section->base.type = SBS_TARGET_EXECUTABLE;
-    target_section->base.name = sbs_slice_to_str(name);
+    target_section->base.name = sbs_slice_to_cstring(name);
     target_section->entries = fl_array_new(sizeof(SbsNodeExecutable*), 0);
 
     return target_section;

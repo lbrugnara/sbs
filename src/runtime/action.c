@@ -56,7 +56,7 @@ void sbs_action_copy(SbsAction **dest, const SbsAction **src_action)
     SbsAction *dst_action = fl_malloc(sizeof(SbsAction));
 
     dst_action->name = fl_cstring_dup((*src_action)->name);
-    dst_action->commands = sbs_string_array_extend(dst_action->commands, (*src_action)->commands);
+    dst_action->commands = sbs_cstring_array_extend(dst_action->commands, (*src_action)->commands);
 
     memcpy(dest, &dst_action, sizeof(SbsAction));
 }

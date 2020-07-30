@@ -18,7 +18,7 @@ FlArray* sbs_array_extend(FlArray *dest, const FlArray *src, SbsArrayCopyElement
     dest = fl_array_resize(dest, dest_size + src_size);
 
     if (!dest)
-        return NULL;    
+        return NULL;
 
     for (size_t i=0; i < src_size; i++, dest_size++)
     {
@@ -28,7 +28,7 @@ FlArray* sbs_array_extend(FlArray *dest, const FlArray *src, SbsArrayCopyElement
     return dest;
 }
 
-void sbs_string_copy(char **dest, const char **src_str)
+void sbs_cstring_copy(char **dest, const char **src_str)
 {
     if (!dest)
         return;
@@ -44,7 +44,7 @@ void sbs_string_copy(char **dest, const char **src_str)
     memcpy(dest, &copy, sizeof(char*));
 }
 
-char* sbs_string_set(char *dest, const char *src)
+char* sbs_cstring_set(char *dest, const char *src)
 {
     if (!src)
         return dest;
@@ -60,7 +60,7 @@ char* sbs_string_set(char *dest, const char *src)
 }
 
 
-char** sbs_string_append_free(char **dest, char *src)
+char** sbs_cstring_append_free(char **dest, char *src)
 {
     dest = fl_cstring_append(dest, src);
     fl_cstring_free(src);

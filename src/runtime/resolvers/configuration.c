@@ -2,44 +2,46 @@
 #include <fllib/Cstring.h>
 #include <fllib/containers/Hashtable.h>
 #include "configuration.h"
+#include "string.h"
 #include "../../utils.h"
 #include "../../lang/configuration.h"
+#include "../../lang/string.h"
 
-static void merge_compile_config(SbsConfigCompile *extend, const SbsNodeConfigCompile *source)
+static void merge_compile_config(SbsContext *context, SbsConfigCompile *extend, const SbsNodeConfigCompile *source)
 {
     if (source->extension)
-        extend->extension = sbs_string_set(extend->extension, source->extension);
+        extend->extension = sbs_cstring_set(extend->extension, source->extension);
     
-    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_cstring_array_extend_convert(extend->flags, source->flags);
 }
 
-static void merge_archive_config(SbsConfigArchive *extend, const SbsNodeConfigArchive *source)
+static void merge_archive_config(SbsContext *context, SbsConfigArchive *extend, const SbsNodeConfigArchive *source)
 {
     if (source->extension)
-        extend->extension = sbs_string_set(extend->extension, source->extension);
+        extend->extension = sbs_cstring_set(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_cstring_array_extend(extend->flags, source->flags);
 }
 
-static void merge_shared_config(SbsConfigShared *extend, const SbsNodeConfigShared *source)
+static void merge_shared_config(SbsContext *context, SbsConfigShared *extend, const SbsNodeConfigShared *source)
 {
     if (source->extension)
-        extend->extension = sbs_string_set(extend->extension, source->extension);
+        extend->extension = sbs_cstring_set(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_cstring_array_extend(extend->flags, source->flags);
 }
 
-static void merge_executable_config(SbsConfigExecutable *extend, const SbsNodeConfigExecutable *source)
+static void merge_executable_config(SbsContext *context, SbsConfigExecutable *extend, const SbsNodeConfigExecutable *source)
 {
     if (source->extension)
-        extend->extension = sbs_string_set(extend->extension, source->extension);
+        extend->extension = sbs_cstring_set(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_cstring_array_extend(extend->flags, source->flags);
 }
 
 static bool try_resolve_config_with_hierarchy(SbsContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)
 {
-    if (config_section->condition && !sbs_expression_eval(context->symbols, config_section->condition->expr))
+    if (config_section->condition && !sbs_expression_eval_bool(context->symbols, config_section->condition->expr))
         return false;
 
     if (config_section->extends)
@@ -56,14 +58,14 @@ static bool try_resolve_config_with_hierarchy(SbsContext *context, SbsConfigurat
     {
         struct SbsNodeConfig *config_node = config_section->entries[i];
 
-        if (config_node->condition && !sbs_expression_eval(context->symbols, config_node->condition->expr))
+        if (config_node->condition && !sbs_expression_eval_bool(context->symbols, config_node->condition->expr))
             continue;
         
 
-        merge_compile_config(&configuration->compile, &config_node->compile);
-        merge_archive_config(&configuration->archive, &config_node->archive);
-        merge_shared_config(&configuration->shared, &config_node->shared);
-        merge_executable_config(&configuration->executable, &config_node->executable);
+        merge_compile_config(context, &configuration->compile, &config_node->compile);
+        merge_archive_config(context, &configuration->archive, &config_node->archive);
+        merge_shared_config(context, &configuration->shared, &config_node->shared);
+        merge_executable_config(context, &configuration->executable, &config_node->executable);
     }
 
     return true;

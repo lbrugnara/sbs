@@ -1,9 +1,11 @@
 #ifndef SBS_RUNTIME_CONFIGURATION_H
 #define SBS_RUNTIME_CONFIGURATION_H
 
+#include "string.h"
+
 typedef struct SbsConfigCompile {
     char *extension;
-    char **flags;
+    SbsString **flags;
 } SbsConfigCompile;
 
 typedef struct SbsConfigArchive {

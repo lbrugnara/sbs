@@ -13,6 +13,10 @@ v0.2.0:
     [ ] Change working directory
     [ ] Environments review the API and the properties
         [ ] Expose builtin variables (like $sbs.shell)
+    [ ] Script mode
+        [ ] Don't create directories in the host
+        [ ] Add mkdir commands to the output scripts
+        [x] Use host default triplet if -e|--env is not provided
     [ ] Defining and using variables
         [x] Define variables at the top-level scope
             Notes: Variables should only be defined/declared at the top-level?
@@ -23,6 +27,7 @@ v0.2.0:
             Example: a $my.flags variable within a compile's flag property can be extended/overridden by a command line argument
         [x] Textual replacement 
     [ ] String interpolation for variables and probably a ternary if or something like that
+        [x] Initial support for string interpolation (compile flags support interpolated strings)
     [ ] sbs init command (scaffolding): Add basic elements and common toolchains
         [ ] Init specific "identifier"? -e=my-env1,my-env2 --> my-env1{} my-env2{}
         [ ] Default win-cmd, linux-bash, osx-bash envs??

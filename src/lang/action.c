@@ -39,7 +39,7 @@ SbsSectionAction* sbs_section_action_new(const struct FlSlice *name)
 {
     SbsSectionAction *action_section = fl_malloc(sizeof(SbsSectionAction));
 
-    action_section->name = sbs_slice_to_str(name);
+    action_section->name = sbs_slice_to_cstring(name);
     action_section->nodes = fl_array_new(sizeof(SbsNodeAction*), 0);
 
     return action_section;

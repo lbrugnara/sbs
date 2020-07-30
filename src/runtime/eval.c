@@ -18,7 +18,7 @@ static SbsEvalOperatorKind BinaryOperators[] = {
     SBS_EVAL_OP_IN,
 };
 
-static SbsValueExpr* eval_run(SbsEvalContext *context, SbsExpression *node);
+static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node);
 
 SbsEvalContext* sbs_eval_context_new(void)
 {
@@ -111,7 +111,7 @@ static SbsValueExpr* eval_array_node(SbsArrayExpr *array_node, SbsEvalContext *c
 
     for (size_t i=0; i < fl_array_length(array_node->items); i++)
     {
-        SbsValueExpr *result = eval_run(context, array_node->items[i]);
+        SbsValueExpr *result = internal_eval(context, array_node->items[i]);
         array_val->value.a = fl_array_append(array_val->value.a, &result);
     }
 
@@ -120,7 +120,7 @@ static SbsValueExpr* eval_array_node(SbsArrayExpr *array_node, SbsEvalContext *c
 
 static SbsValueExpr* eval_unary_node(SbsUnaryExpr *unary_node, SbsEvalContext *context)
 {
-    SbsValueExpr *result = eval_run(context, unary_node->node);
+    SbsValueExpr *result = internal_eval(context, unary_node->node);
 
     // TODO: Error handling for non-boolean values or type conversion...
     if (result->type != SBS_EXPR_VALUE_TYPE_BOOL)
@@ -138,7 +138,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
     bin_result->kind = SBS_EXPR_VALUE;
     bin_result->type = SBS_EXPR_VALUE_TYPE_UNK;
 
-    SbsValueExpr *left_result = eval_run(context, binary_node->left);
+    SbsValueExpr *left_result = internal_eval(context, binary_node->left);
 
     switch (binary_node->op)
     {
@@ -147,7 +147,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
             bin_result->value.b = false;
 
-            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+            SbsValueExpr *right_result = internal_eval(context, binary_node->right);
 
             if (left_result->type != right_result->type)
             {
@@ -178,7 +178,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
             bin_result->value.b = false;
 
-            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+            SbsValueExpr *right_result = internal_eval(context, binary_node->right);
 
             if (left_result->type != right_result->type)
             {
@@ -219,7 +219,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
                 return bin_result;
             }
 
-            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+            SbsValueExpr *right_result = internal_eval(context, binary_node->right);
 
             // TODO: Error handling for non-boolean values or type conversion...
             if (right_result->type != SBS_EXPR_VALUE_TYPE_BOOL)
@@ -256,7 +256,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
                 return bin_result;
             }
 
-            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+            SbsValueExpr *right_result = internal_eval(context, binary_node->right);
 
             // TODO: Error handling for non-boolean values or type conversion...
             if (right_result->type != SBS_EXPR_VALUE_TYPE_BOOL)
@@ -278,7 +278,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
             bin_result->value.b = false;
 
-            SbsValueExpr *right_result = eval_run(context, binary_node->right);
+            SbsValueExpr *right_result = internal_eval(context, binary_node->right);
 
             if (right_result->type != SBS_EXPR_VALUE_TYPE_ARRAY)
             {
@@ -329,7 +329,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
     return false;
 }
 
-static SbsValueExpr* eval_run(SbsEvalContext *context, SbsExpression *node)
+static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node)
 {
     SbsValueExpr *result = NULL;
 
@@ -361,11 +361,22 @@ static SbsValueExpr* eval_run(SbsEvalContext *context, SbsExpression *node)
     return result;
 }
 
-bool sbs_expression_eval(SbsEvalContext *context, SbsExpression *node)
+SbsValueExpr* sbs_expression_eval(SbsEvalContext *context, SbsExpression *node)
 {
     SbsExpression *node_copy = sbs_expression_copy(node);
 
-    SbsValueExpr *result = eval_run(context, node_copy);
+    SbsValueExpr *result = internal_eval(context, node_copy);
+
+    sbs_expression_free(node_copy);
+
+    return result;
+}
+
+bool sbs_expression_eval_bool(SbsEvalContext *context, SbsExpression *node)
+{
+    SbsExpression *node_copy = sbs_expression_copy(node);
+
+    SbsValueExpr *result = internal_eval(context, node_copy);
 
     bool b = false;
     

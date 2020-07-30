@@ -3,10 +3,11 @@
 
 #include <fllib.h>
 #include "conditional.h"
+#include "string.h"
 
 typedef struct SbsNodeConfigCompile {
     const char *extension;
-    char **flags;
+    SbsValueString **flags;
 } SbsNodeConfigCompile;
 
 typedef struct SbsNodeConfigArchive {

@@ -23,7 +23,9 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *arch
     // We need to standardize the paths after the interpolation
     output_filename = sbs_io_to_host_path_realloc(build->context->env->host->os, output_filename);
 
-    fl_io_dir_create_recursive(output_filename);
+    // We don't want to break the host directory on script mode
+    if (!build->script_mode)
+        fl_io_dir_create_recursive(output_filename);
 
     // Create the fullname
     fl_cstring_append(fl_cstring_append(&output_filename, output_name), extension);

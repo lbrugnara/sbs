@@ -75,7 +75,8 @@ typedef struct SbsEvalContext {
 SbsEvalContext* sbs_eval_context_new(void);
 void sbs_eval_context_free(SbsEvalContext *context);
 
-bool sbs_expression_eval(SbsEvalContext *context, SbsExpression *node);
+SbsValueExpr* sbs_expression_eval(SbsEvalContext *context, SbsExpression *node);
+bool sbs_expression_eval_bool(SbsEvalContext *context, SbsExpression *node);
 void sbs_expression_free(SbsExpression *node);
 SbsExpression* sbs_expression_copy(SbsExpression *node);
 

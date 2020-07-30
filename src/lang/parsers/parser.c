@@ -8,6 +8,9 @@ extern const char *token_type_string[];
 
 void sbs_parser_warning(SbsParser *parser, const SbsToken *token, const char *message)
 {
+    // TODO: Flag the has_error property here. Once the sbs_parser_error removes the
+    // exit call, we should flag a warning here instead
+    parser->has_errors = true;
     fprintf(stderr, "Token %s %.*s in file %s:%u:%u '%s'\n",
         token_type_string[token->type],
         (int) token->value.length,
@@ -44,6 +47,8 @@ void sbs_parser_sync(SbsParser *parser, SbsTokenType *types, size_t length)
 
 void sbs_parser_error(SbsParser *parser, const SbsToken *token, const char *message)
 {
+    parser->has_errors = true;
+    // TODO: No need to exit
     flm_vexit(ERR_FATAL, "Unexpected token %.*s (%s) in file %s:%u:%u '%s'",
         token->value.length,
         token->value.sequence,

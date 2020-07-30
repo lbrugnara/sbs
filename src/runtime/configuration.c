@@ -17,7 +17,7 @@ void sbs_config_free(SbsConfiguration *config)
     fl_cstring_free(config->name);
 
     if (config->compile.flags)
-        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) fl_cstring_free);
+        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) sbs_string_free);
 
     if (config->compile.extension)
         fl_cstring_free(config->compile.extension);

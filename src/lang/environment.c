@@ -39,7 +39,7 @@ SbsSectionEnv* sbs_section_env_new(const struct FlSlice *name)
 {
     SbsSectionEnv *env = fl_malloc(sizeof(SbsSectionEnv));
 
-    env->name = sbs_slice_to_str(name);
+    env->name = sbs_slice_to_cstring(name);
 
     return env;
 }

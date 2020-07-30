@@ -8,7 +8,7 @@ SbsSectionToolchain* sbs_section_toolchain_new(const struct FlSlice *name)
 {
     SbsSectionToolchain *toolchain = fl_malloc(sizeof(SbsSectionToolchain));
 
-    toolchain->name = sbs_slice_to_str(name);
+    toolchain->name = sbs_slice_to_cstring(name);
     toolchain->entries = fl_array_new(sizeof(SbsNodeToolchain*), 0);
 
     return toolchain;

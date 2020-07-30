@@ -116,8 +116,23 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args, char **env_vars
         goto error_before_targets;
     }
 
-    // TODO: By now, we assume the first triplet is the correct one
+    // Fail-safe triplet
     SbsTriplet *triplet = triplets[0];
+
+    // Search for the default triplet for this host
+    for (size_t i=0; i < fl_array_length(triplets); i++)
+    {
+        SbsContext *triplet_ctx = triplets[i]->context;
+
+        if (triplet_ctx->host->os != triplet_ctx->env->host->os)
+            continue;
+
+        if (!fl_array_contains(triplet_ctx->env->arch, &triplet_ctx->host->arch))
+            continue;
+
+        triplet = triplets[i];
+        break;
+    }    
 
     // Resolve all the targets
     if (!resolve_target(triplet->context, args->target, &result))

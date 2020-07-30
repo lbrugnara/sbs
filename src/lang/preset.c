@@ -7,7 +7,7 @@ SbsSectionPreset* sbs_section_preset_new(const struct FlSlice *name)
 {
     SbsSectionPreset *preset = fl_malloc(sizeof(SbsSectionPreset));
 
-    preset->name = sbs_slice_to_str(name);
+    preset->name = sbs_slice_to_cstring(name);
 
     return preset;
 }

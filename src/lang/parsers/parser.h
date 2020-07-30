@@ -9,6 +9,7 @@ typedef struct SbsParser {
     const SbsToken *tokens;
     unsigned int index;
     size_t length;
+    bool has_errors;
 } SbsParser;
 
 void sbs_parser_error(SbsParser *parser, const SbsToken *token, const char *message);

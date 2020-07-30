@@ -64,10 +64,10 @@ SbsEnv* sbs_env_resolve(SbsContext *context, const char *env_name)
 
     SbsEnv *env_object = sbs_env_new(env_section->name);
 
-    env_object->type = sbs_string_set(env_object->type, env_section->type);
-    env_object->terminal = sbs_string_set(env_object->terminal, env_section->terminal);
-    env_object->args = sbs_string_array_extend(env_object->args, env_section->args);
-    env_object->variables = sbs_string_array_extend(env_object->variables, env_section->variables);
+    env_object->type = sbs_cstring_set(env_object->type, env_section->type);
+    env_object->terminal = sbs_cstring_set(env_object->terminal, env_section->terminal);
+    env_object->args = sbs_cstring_array_extend(env_object->args, env_section->args);
+    env_object->variables = sbs_cstring_array_extend(env_object->variables, env_section->variables);
     env_object->os = variable_to_host_os(env_section->os);
     env_object->arch = variable_array_to_host_arch(env_section->arch);
 

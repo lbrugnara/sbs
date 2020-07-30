@@ -17,7 +17,7 @@ SbsAction* sbs_action_resolve(SbsContext *context, const char *action_name)
     {
         SbsNodeAction *action_node = action_section->nodes[i];
 
-        if (action_node->condition && !sbs_expression_eval(context->symbols, action_node->condition->expr))
+        if (action_node->condition && !sbs_expression_eval_bool(context->symbols, action_node->condition->expr))
             continue;
 
         for (size_t i=0; i < fl_array_length(action_node->commands); i++)
@@ -38,7 +38,7 @@ SbsAction* sbs_action_resolve(SbsContext *context, const char *action_name)
                     continue;
                 }
 
-                action_object->commands = sbs_string_array_extend(action_object->commands, ref_action->commands);
+                action_object->commands = sbs_cstring_array_extend(action_object->commands, ref_action->commands);
 
                 sbs_action_free(ref_action);
             }

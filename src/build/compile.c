@@ -234,8 +234,9 @@ static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile
     // Append the source path structure
     fl_cstring_append(&output_file_fullpath, source_file_path);
 
-    // Create the output directory
-    fl_io_dir_create_recursive(output_file_fullpath);
+    // We don't want to break the host directory on script mode
+    if (!build->script_mode)
+        fl_io_dir_create_recursive(output_file_fullpath);
 
     // Create the full path for the object file
     object_file = fl_cstring_vdup("%s%c%s", output_file_fullpath, build->context->env->host->dir_separator, filename);
@@ -257,14 +258,17 @@ char** sbs_build_compile(SbsBuild *build)
 
     const SbsConfigCompile *config_compile = &build->context->config->compile;
 
-    // Collect all the compile flags in the configuration hierarchy
-    char *flags = fl_cstring_new(0);
+    // Process the flags that don't need interpolation
+    char *readonly_flags = fl_cstring_new(0);
     if (config_compile->flags)
     {
         for (size_t i = 0; i < fl_array_length(config_compile->flags); i++)
         {
-            fl_cstring_append(&flags, config_compile->flags[i]);
-            fl_cstring_append(&flags, " ");
+            if (!config_compile->flags[i]->is_constant)
+                continue;
+
+            fl_cstring_append(&readonly_flags, config_compile->flags[i]->format);
+            fl_cstring_append(&readonly_flags, " ");
         }
     }
 
@@ -273,7 +277,7 @@ char** sbs_build_compile(SbsBuild *build)
     for (size_t i = 0; target_compile->includes && i < fl_array_length(target_compile->includes); i++)
     {
         fl_cstring_append(&includes, build->context->toolchain->compiler.include_dir_flag);
-        sbs_string_append_free(&includes, sbs_io_to_host_path(build->context->env->host->os, target_compile->includes[i]));
+        sbs_cstring_append_free(&includes, sbs_io_to_host_path(build->context->env->host->os, target_compile->includes[i]));
         fl_cstring_append(&includes, " ");
     }
 
@@ -359,12 +363,27 @@ char** sbs_build_compile(SbsBuild *build)
 
         if (build->context->toolchain->compiler.bin)
         {
-            // Replace the special ${sbs.input_file} and ${sbs.output_file} variables in the falgs
-            char *compilation_unit_flags = fl_cstring_replace(flags, "${sbs.input_file}", source_file);
-            compilation_unit_flags = fl_cstring_replace_realloc(compilation_unit_flags, "${sbs.output_file}", object_file);
+            fl_hashtable_add(build->context->symbols->variables, "sbs.input_file", source_file);
+            fl_hashtable_add(build->context->symbols->variables, "sbs.output_file", object_file);
+
+            // Process the flags
+            char *flags = fl_cstring_dup(readonly_flags);
+            if (config_compile->flags)
+            {
+                for (size_t i = 0; i < fl_array_length(config_compile->flags); i++)
+                {
+                    if (config_compile->flags[i]->is_constant)
+                        continue;
+
+                    char *flag = sbs_string_interpolate(build->context, config_compile->flags[i]);
+                    fl_cstring_append(&flags, flag);
+                    fl_cstring_append(&flags, " ");
+                    fl_cstring_free(flag);
+                }
+            }
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s %s %s", build->context->toolchain->compiler.bin, defines, includes, compilation_unit_flags);
+            char *command = fl_cstring_vdup("%s %s %s %s", build->context->toolchain->compiler.bin, defines, includes, flags);
 
             if (fl_io_file_exists(object_tc_file))
             {
@@ -392,7 +411,10 @@ char** sbs_build_compile(SbsBuild *build)
             
             // clean
             fl_cstring_free(command);
-            fl_cstring_free(compilation_unit_flags);
+            fl_cstring_free(flags);
+
+            fl_hashtable_remove(build->context->symbols->variables, "sbs.input_file", true, true);
+            fl_hashtable_remove(build->context->symbols->variables, "sbs.output_file", true, true);
         }
         else
         {
@@ -407,7 +429,7 @@ char** sbs_build_compile(SbsBuild *build)
     fl_array_free_each_pointer(target_source_files, (FlArrayFreeElementFunc) fl_cstring_free);
     fl_cstring_free(defines);
     fl_cstring_free(includes);
-    fl_cstring_free(flags);
+    fl_cstring_free(readonly_flags);
 
     if (!success)
     {

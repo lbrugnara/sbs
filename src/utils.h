@@ -9,16 +9,16 @@ typedef void(*SbsArrayCopyElementFn)(void*, const void*);
 
 FlArray* sbs_array_extend(FlArray *dest, const FlArray *src, SbsArrayCopyElementFn copy_fn);
 
-void sbs_string_copy(char **dest, const char **src);
-char* sbs_string_set(char *dest, const char *src);
-char** sbs_string_append_free(char **dest, char *src);
+void sbs_cstring_copy(char **dest, const char **src);
+char* sbs_cstring_set(char *dest, const char *src);
+char** sbs_cstring_append_free(char **dest, char *src);
 
-static inline char** sbs_string_array_extend(char **dest, char * const * const src)
+static inline char** sbs_cstring_array_extend(char **dest, char * const * const src)
 {
-    return sbs_array_extend(dest, src, (SbsArrayCopyElementFn) sbs_string_copy);
+    return sbs_array_extend(dest, src, (SbsArrayCopyElementFn) sbs_cstring_copy);
 }
 
-static inline char* sbs_slice_to_str(const struct FlSlice *slice)
+static inline char* sbs_slice_to_cstring(const struct FlSlice *slice)
 {
     return fl_cstring_dup_n((const char*) slice->sequence, slice->length);
 }

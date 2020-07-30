@@ -280,7 +280,7 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
     }
 
-    return success;
+    return success && !parser->has_errors;
 }
 
 /*

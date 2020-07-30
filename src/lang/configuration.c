@@ -8,7 +8,7 @@
 static void sbs_config_entry_free(struct SbsNodeConfig *config)
 {
     if (config->compile.flags)
-        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) fl_cstring_free);
+        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) sbs_value_string_free);
 
     if (config->compile.extension)
         fl_cstring_free(config->compile.extension);
@@ -61,7 +61,7 @@ SbsSectionConfig* sbs_section_config_new(const struct FlSlice *name)
 {
     SbsSectionConfig *configuration = fl_malloc(sizeof(SbsSectionConfig));
 
-    configuration->name = sbs_slice_to_str(name);
+    configuration->name = sbs_slice_to_cstring(name);
     configuration->entries = fl_array_new(sizeof(SbsNodeConfig*), 0);
 
     return configuration;

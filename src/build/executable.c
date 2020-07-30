@@ -24,7 +24,9 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *e
     // We need to standardize the paths after the interpolation
     output_filename = sbs_io_to_host_path_realloc(build->context->env->host->os, output_filename);
 
-    fl_io_dir_create_recursive(output_filename);
+    // We don't want to break the host directory on script mode
+    if (!build->script_mode)
+        fl_io_dir_create_recursive(output_filename);
 
     // Create the fullname
     fl_cstring_append(fl_cstring_append(&output_filename, output_name), extension);
@@ -57,7 +59,7 @@ char** sbs_build_target_executable(SbsBuild *build)
             if (library->path)
             {
                 fl_cstring_append(&executable_libraries, build->context->toolchain->linker.lib_dir_flag);
-                sbs_string_append_free(&executable_libraries, sbs_io_to_host_path(build->context->env->host->os, library->path));
+                sbs_cstring_append_free(&executable_libraries, sbs_io_to_host_path(build->context->env->host->os, library->path));
                 fl_cstring_append(&executable_libraries, " ");
             }
 

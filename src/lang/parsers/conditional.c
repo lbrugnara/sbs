@@ -45,7 +45,7 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
     if (token->type == SBS_TOKEN_LPAREN)
     {
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        SbsExpression *node = parse_or_expression(parser);
+        SbsExpression *node = sbs_expr_conditional_parse(parser);
         sbs_parser_consume(parser, SBS_TOKEN_RPAREN);
         return node;
     }
@@ -164,7 +164,7 @@ static SbsExpression* parse_array_expression(SbsParser *parser)
 
     while (sbs_parser_next_is_not(parser, SBS_TOKEN_RBRACKET))
     {
-        SbsExpression *item = parse_or_expression(parser);
+        SbsExpression *item = sbs_expr_conditional_parse(parser);
 
         if (item != NULL)
         {
@@ -201,7 +201,7 @@ static SbsExpression* parse_primary_expression(SbsParser *parser)
     else if (token->type == SBS_TOKEN_LPAREN)
     {
         sbs_parser_consume(parser, SBS_TOKEN_LPAREN);
-        node = parse_or_expression(parser);
+        node = sbs_expr_conditional_parse(parser);
         sbs_parser_consume(parser, SBS_TOKEN_RPAREN);
     }
     else
@@ -345,6 +345,11 @@ static SbsExpression* parse_or_expression(SbsParser *parser)
     return node;
 }
 
+SbsExpression* sbs_expr_conditional_parse(SbsParser *parser)
+{
+    return parse_or_expression(parser);
+}
+
 SbsStmtConditional* sbs_stmt_conditional_parse(SbsParser *parser)
 {
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
@@ -361,7 +366,7 @@ SbsStmtConditional* sbs_stmt_conditional_parse(SbsParser *parser)
     }
 
     SbsStmtConditional *conditional = sbs_stmt_conditional_new();
-    conditional->expr = parse_or_expression(parser);
+    conditional->expr = sbs_expr_conditional_parse(parser);
 
     return conditional;
 }
