@@ -14,6 +14,7 @@
 
 static inline bool init_variables(SbsContext *context, SbsResult *result)
 {
+    // Init the user-defined variables
     SbsValueVariable **var_names = fl_hashtable_keys(context->file->variables);
 
     for (size_t i = 0; i < fl_array_length(var_names); i++)
@@ -102,13 +103,13 @@ char** sbs_build_target(SbsBuild *build)
     return result;
 }
 
-SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args, char **env_vars)
+SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
 {
     // We track the build command result with this variable
     SbsResult result = SBS_RES_OK;
 
     // Get all the available combinations of environments, toolchains, and configurations.
-    SbsTriplet **triplets = sbs_triplet_find(file, args->preset, args->env, args->toolchain, args->config, args->script_mode);
+    SbsTriplet **triplets = sbs_triplet_find(file, args->preset, args->environment, args->toolchain, args->config, args->script_mode);
 
     if (triplets == NULL || fl_array_length(triplets) == 0)
     {
@@ -132,7 +133,12 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args, char **env_vars
 
         triplet = triplets[i];
         break;
-    }    
+    }
+
+    // Add a built-in variable with the sbs binary
+    fl_scoped_resource(char* sbs_bin = fl_io_realpath(args->argv[0]), fl_cstring_free(sbs_bin)) {
+        fl_hashtable_add(triplet->context->symbols->variables, "sbs.bin", sbs_bin);
+    }
 
     // Resolve all the targets
     if (!resolve_target(triplet->context, args->target, &result))

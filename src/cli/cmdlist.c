@@ -43,7 +43,7 @@ static int compare_strings(const void* a, const void* b)
     return strcmp(*(const char**)a, *(const char**)b); 
 }
 
-SbsResult sbs_command_list(int argc, char **argv, char **env)
+SbsResult sbs_command_list(int argc, char **argv, char **env, size_t argv_offset)
 {
     sbs_cli_print_header();
 
@@ -60,12 +60,12 @@ SbsResult sbs_command_list(int argc, char **argv, char **env)
     SbsArgsResult parsed_args = SBS_ARGS_OK;
     
     // args+2: skip program name and "build" argument
-    sbs_args_parse(argv+2, {
+    sbs_args_parse(argv + argv_offset, {
         sbs_args_retval(&parsed_args);
         sbs_args_error_fn(sbs_cli_print_error);
         sbs_args_help("--help", "-h");
         sbs_args_list(
-            sbs_args_cmd(args.resource)
+            sbs_args_word(args.resource)
             sbs_args_string("--file", "-f", &args.file)
         );
     });
@@ -92,7 +92,6 @@ SbsResult sbs_command_list(int argc, char **argv, char **env)
     // If present the file argument, make sure the filename is valid
     if (args.file && strlen(args.file) == 0)
     {
-        sbs_cli_print_header();
         sbs_cli_print_error("File name cannot be empty");
         return SBS_RES_INVALID_FILE;
     }
@@ -102,7 +101,6 @@ SbsResult sbs_command_list(int argc, char **argv, char **env)
 
     if (file_abspath && !fl_io_file_exists(file_abspath))
     {
-        sbs_cli_print_header();
         const char *error = sbs_result_get_reason(SBS_RES_INVALID_FILE, file_abspath);
         sbs_cli_print_error("%s", error);
         fl_cstring_free(error);
@@ -150,7 +148,6 @@ SbsResult sbs_command_list(int argc, char **argv, char **env)
     else
     {
         sbs_file_free(file);
-        sbs_cli_print_header();
         sbs_cli_print_error("Unkown resource type '%s'", args.resource);
         return SBS_RES_INVALID_RESOURCE;
     }
@@ -169,9 +166,8 @@ SbsResult sbs_command_list(int argc, char **argv, char **env)
     // Print the ordered list of requested resources
     qsort(keys, fl_array_length(keys), sizeof(char*), compare_strings); 
 
-    sbs_cli_print_header();
-
     sbs_cli_print_message("List of %s in the build file %s:\n", resource_name, file->filename);
+
     for (size_t i=0; i < fl_array_length(keys); i++)
         sbs_cli_print_message("    %s", keys[i]);
     

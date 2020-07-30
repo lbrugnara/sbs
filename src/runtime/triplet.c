@@ -37,6 +37,9 @@ static inline bool resolve_preset(SbsContext *context, const char *preset_name)
 {
     context->preset = sbs_preset_resolve(context, preset_name);
 
+    if (context->preset != NULL)
+        fl_hashtable_add(context->symbols->variables, "sbs.preset", preset_name);
+
     return context->preset != NULL;
 }
 

@@ -4,17 +4,19 @@ v0.2.0:
         [ ] Use the executor to find toolchain's executable files
         [ ] Add a preconditions property that can contain actions and is evaluated in the process of getting all the available triplets
             Notes: for env? for toolchian? both?
-        [ ] A builtin action-like function to search for binaries.
-        [ ] Basic support to search within the PATH
         [x] In presets, make "toolchain" property an array to allow multiple toolset combinations
         [x] In presets, make "config" property an array to allow multiple toolset combinations
+    [ ] Add builtin sbs binaries and wrap them in actions
+        [ ] sbs-mkdir
+        [ ] sbs-whereis
+        [ ] sbs-pkg-config like command?
     [ ] Executable targets should support sources too?
     [ ] sbs run command to run actions
     [ ] Environments review the API and the properties
         [ ] Expose builtin variables (like $sbs.shell)
     [ ] Script mode
-        [ ] Don't create directories in the host
-        [ ] Add mkdir commands to the output scripts
+        [ ] Add sbs-mkdir commands to the output scripts
+        [x] Don't create directories in the host
         [x] Use host default triplet if -e|--env is not provided
     [ ] Defining and using variables
         [x] Define variables at the top-level scope
@@ -33,8 +35,12 @@ v0.2.0:
         [ ] Default clang, gcc, msvc toolchains?
     [ ] Within the same environment, a way to detect the terminal to use
         Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
-    [ ] Linux support: in the latest version the Linux support is incomplete
     [ ] Update grammar file
+    [x] --working-dir|-cwd flag accepted by the main program along with the build subcommand
+        Example: `sbs -cwd=../ build debug` is equals to `sbs build debug -cwd=../`. The advantage is that a command like
+        `sbs -cwd=../ list presets` works out-of-the-box
+    [x] Add builtin $sbs.bin variable
+    [x] Linux support: in the latest version the Linux support is incomplete
     [x] Allow changing the working directory for the build command
     [x] Check flags and defines to invalidate the build
     [x] Initial support for tiplets: collect all the combinations of environments, toolchains, and configurations available in the host machine

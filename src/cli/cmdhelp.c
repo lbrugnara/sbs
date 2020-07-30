@@ -18,7 +18,7 @@ static const char *help =
     "       sbs <command> --help                                                    "
 ;
 
-SbsResult sbs_command_help(int argc, char **argv, char **env)
+SbsResult sbs_command_help(int argc, char **argv, char **env, size_t argv_offset)
 {
     sbs_cli_print_message(help, SBS_VERSION_MAJOR, SBS_VERSION_MINOR, SBS_VERSION_PATCH);
     return SBS_RES_OK;

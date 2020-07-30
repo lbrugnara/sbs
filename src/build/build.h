@@ -14,13 +14,16 @@
 #include "../runtime/toolchain.h"
 
 typedef struct SbsBuildArgs {
-    char *env;
+    char *environment;
     char *toolchain;
     char *config;
     char *target;
     char *preset;
     bool script_mode;
     char *cwd;
+    int argc;
+    char **argv;
+    char **env;
 } SbsBuildArgs;
 
 typedef struct SbsBuild {
@@ -29,7 +32,7 @@ typedef struct SbsBuild {
     SbsTarget *current_target;
 } SbsBuild;
 
-SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *arguments, char **env_vars);
+SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *arguments);
 char** sbs_build_target(SbsBuild *build);
 
 #endif /* SBS_BUILD_H */

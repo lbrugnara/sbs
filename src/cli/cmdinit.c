@@ -3,7 +3,7 @@
 #include "cli.h"
 #include "../result.h"
 
-SbsResult sbs_command_init(int argc, char **argv, char **env)
+SbsResult sbs_command_init(int argc, char **argv, char **env, size_t argv_offset)
 {
     sbs_cli_print_header();
 

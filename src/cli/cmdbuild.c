@@ -46,7 +46,7 @@ static const char *build_args_error =
     "Use 'sbs build [-h|--help]' to know how to invoke the build command            \n"
 ;
 
-SbsResult sbs_command_build(int argc, char **argv, char **env)
+SbsResult sbs_command_build(int argc, char **argv, char **env, size_t argv_offset)
 {
     sbs_cli_print_header();
 
@@ -57,17 +57,22 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
         return SBS_RES_WRONG_ARGS;
     }
 
-    char *build_file_path = NULL;
     SbsBuildArgs args = { 0 };
+    args.argc = argc;
+    args.argv = argv;
+    args.env = env;
+
+    char *build_file_path = NULL;
+
     SbsArgsResult parsed_args = SBS_ARGS_OK;
     // args+2: skip program name and "build" argument
-    sbs_args_parse(argv+2, {
+    sbs_args_parse(argv + argv_offset, {
         sbs_args_retval(&parsed_args);
         sbs_args_error_fn(sbs_cli_print_error);
         sbs_args_help("--help", "-h");
         sbs_args_list(
-            sbs_args_cmd(args.preset)
-            sbs_args_string("--env", "-e", &args.env)
+            sbs_args_word(args.preset)
+            sbs_args_string("--env", "-e", &args.environment)
             sbs_args_string("--toolchain", "-tc", &args.toolchain)
             sbs_args_string("--config", "-c", &args.config)
             sbs_args_string("--target", "-t", &args.target)
@@ -90,7 +95,7 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
     }
 
     // Check if the processed arguments are valid
-    if (args.preset == NULL  && (args.env == NULL || args.toolchain == NULL || args.config == NULL || args.target == NULL))
+    if (args.preset == NULL  && (args.environment == NULL || args.toolchain == NULL || args.config == NULL || args.target == NULL))
     {
         sbs_cli_print_message(build_help, SBS_VERSION_MAJOR, SBS_VERSION_MINOR, SBS_VERSION_PATCH);
         return SBS_RES_WRONG_ARGS;
@@ -135,7 +140,7 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
     }
     
     // Run the build process and leave
-    SbsResult result = sbs_build_run(file, &args, env);
+    SbsResult result = sbs_build_run(file, &args);
 
     sbs_file_free(file);
 

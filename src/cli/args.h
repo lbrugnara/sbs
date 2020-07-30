@@ -70,11 +70,25 @@ do { \
     } \
 } while (1)
 
-#define sbs_args_cmd(dest) \
+#define sbs_args_word(dest) \
     else if (sbs_arg[0] != '-' && (dest) == NULL) \
     { \
         (dest) = sbs_arg; \
-    } \
+    }
+
+#define sbs_args_subcmd(dest, ...) \
+    else if (sbs_arg[0] != '-' && (dest) == NULL) \
+    { \
+        const char **opts = (const char*[]) { __VA_ARGS__, NULL }; \
+        for (size_t i=0; opts[i]; i++) { \
+            if (flm_cstring_equals(sbs_arg, opts[i])) \
+            { \
+                (dest) = sbs_arg; \
+                sbs_break = true; \
+                break; \
+            } \
+        } \
+    }
 
 #define sbs_args_string(lname, sname, strptr) \
     else if (sbs_args_is_flag((lname), (sname), sbs_arg)) \
@@ -106,7 +120,7 @@ do { \
         *(boolptr) = true; \
     }
 
-#define sbs_args_is_cmd(module_name, str) flm_cstring_equals((module_name), (str))
+#define sbs_args_is_cmd(module_name, str) (str) != NULL && flm_cstring_equals((module_name), (str))
 
 bool sbs_args_is_flag(const char *longname, const char *shortname, const char *arg);
 bool sbs_args_is_string(const char *arg, char **option);
