@@ -5,6 +5,7 @@ typedef enum SbsResult {
     SBS_RES_OK = 0,
     SBS_RES_ERROR,
     SBS_RES_WRONG_ARGS,
+    SBS_RES_CWD,
     SBS_RES_BAD_INPUT,
 
     SBS_RES_INVALID_RESOURCE,

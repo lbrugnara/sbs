@@ -72,6 +72,7 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
             sbs_args_string("--config", "-c", &args.config)
             sbs_args_string("--target", "-t", &args.target)
             sbs_args_string("--file", "-f", &build_file_path)
+            sbs_args_string("--working-dir", "-cwd", &args.cwd)
             sbs_args_flag("--script-mode", "-s", &args.script_mode)
         );
     });
@@ -100,6 +101,15 @@ SbsResult sbs_command_build(int argc, char **argv, char **env)
     {
         sbs_cli_print_error("File name cannot be empty");
         return SBS_RES_INVALID_FILE;
+    }
+
+    if (args.cwd)
+    {
+        if (!fl_system_set_working_dir(args.cwd))
+        {
+            sbs_cli_print_error("Could not change working directory to %s", args.cwd);
+            return SBS_RES_INVALID_FILE;
+        }
     }
 
     // Convert the file path to an absolute path

@@ -20,6 +20,7 @@ typedef struct SbsBuildArgs {
     char *target;
     char *preset;
     bool script_mode;
+    char *cwd;
 } SbsBuildArgs;
 
 typedef struct SbsBuild {

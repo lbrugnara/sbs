@@ -7,6 +7,7 @@ static char *reason[] = {
     [SBS_RES_OK] =                      "Ok\n",
     [SBS_RES_ERROR] =                   "An unknown error ocurred\n",
     [SBS_RES_WRONG_ARGS] =              "The command expects a different set of arguments\n",
+    [SBS_RES_CWD] =                     "Could not change the working directory\n",
 
     [SBS_RES_INVALID_RESOURCE] =        "The resource '%s' does not exist\n",
     [SBS_RES_MISSING_RESOURCE_ARG] =    "A resource name is required for this command to run\n",

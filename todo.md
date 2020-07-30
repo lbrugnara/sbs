@@ -10,7 +10,6 @@ v0.2.0:
         [x] In presets, make "config" property an array to allow multiple toolset combinations
     [ ] Executable targets should support sources too?
     [ ] sbs run command to run actions
-    [ ] Change working directory
     [ ] Environments review the API and the properties
         [ ] Expose builtin variables (like $sbs.shell)
     [ ] Script mode
@@ -36,6 +35,7 @@ v0.2.0:
         Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
     [ ] Linux support: in the latest version the Linux support is incomplete
     [ ] Update grammar file
+    [x] Allow changing the working directory for the build command
     [x] Check flags and defines to invalidate the build
     [x] Initial support for tiplets: collect all the combinations of environments, toolchains, and configurations available in the host machine
     [x] In presets, make "target" property an array object to run multiple targets at once
