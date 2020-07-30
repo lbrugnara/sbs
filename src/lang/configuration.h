@@ -6,23 +6,23 @@
 #include "string.h"
 
 typedef struct SbsNodeConfigCompile {
-    const char *extension;
+    SbsValueString *extension;
     SbsValueString **flags;
 } SbsNodeConfigCompile;
 
 typedef struct SbsNodeConfigArchive {
-    const char *extension;
-    char **flags;
+    SbsValueString *extension;
+    SbsValueString **flags;
 } SbsNodeConfigArchive;
 
 typedef struct SbsNodeConfigShared {
-    const char *extension;
-    char **flags;
+    SbsValueString *extension;
+    SbsValueString **flags;
 } SbsNodeConfigShared;
 
 typedef struct SbsNodeConfigExecutable {
-    const char *extension;
-    char **flags;
+    SbsValueString *extension;
+    SbsValueString **flags;
 } SbsNodeConfigExecutable;
 
 typedef struct SbsNodeConfig {

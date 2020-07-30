@@ -59,7 +59,6 @@ char* sbs_cstring_set(char *dest, const char *src)
     return dest;
 }
 
-
 char** sbs_cstring_append_free(char **dest, char *src)
 {
     dest = fl_cstring_append(dest, src);

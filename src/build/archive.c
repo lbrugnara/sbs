@@ -11,7 +11,11 @@
 static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *archive, const char *output_dir, const char *output_name)
 {
     // File
-    const char *extension = archive->extension ? archive->extension : ".a";
+    const char *extension = !archive->extension 
+                                ? ".a"
+                                : archive->extension->is_constant
+                                    ? archive->extension->format
+                                    : sbs_string_interpolate(build->context, archive->extension);
 
     // Path
     char *output_filename = sbs_io_to_host_path(build->context->env->host->os, output_dir);
@@ -30,6 +34,9 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *arch
     // Create the fullname
     fl_cstring_append(fl_cstring_append(&output_filename, output_name), extension);
 
+    if (archive->extension && !archive->extension->is_constant && extension != NULL)
+        fl_cstring_free(extension);
+
     return output_filename;
 }
 
@@ -39,13 +46,16 @@ char** sbs_build_target_archive(SbsBuild *build)
     const SbsConfigArchive *config_archive = &build->context->config->archive;
 
     // Collect all the archive flags in the configuration hierarchy
-    char *flags = fl_cstring_new(0);
+    char *readonly_flags = fl_cstring_new(0);
     if (config_archive->flags)
     {
         for (size_t i = 0; i < fl_array_length(config_archive->flags); i++)
         {
-            fl_cstring_append(&flags, config_archive->flags[i]);
-            fl_cstring_append(&flags, " ");
+            if (!config_archive->flags[i]->is_constant)
+                continue;
+
+            fl_cstring_append(&readonly_flags, config_archive->flags[i]->format);
+            fl_cstring_append(&readonly_flags, " ");
         }
     }
 
@@ -136,11 +146,25 @@ char** sbs_build_target_archive(SbsBuild *build)
     {
         if (build->context->toolchain->archiver.bin != NULL)
         {
-            // Replace the special ${sbs.output_file} variable in the flag
-            char *archive_flags = fl_cstring_replace(flags, "${sbs.output_file}", output_filename);
+            fl_hashtable_add(build->context->symbols->variables, "sbs.output_file", output_filename);
+
+            char *flags = fl_cstring_dup(readonly_flags);
+            if (config_archive->flags)
+            {
+                for (size_t i = 0; i < fl_array_length(config_archive->flags); i++)
+                {
+                    if (config_archive->flags[i]->is_constant)
+                        continue;
+
+                    char *flag = sbs_string_interpolate(build->context, config_archive->flags[i]);
+                    fl_cstring_append(&flags, flag);
+                    fl_cstring_append(&flags, " ");
+                    fl_cstring_free(flag);
+                }
+            }
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s", build->context->toolchain->archiver.bin, archive_flags);
+            char *command = fl_cstring_vdup("%s %s", build->context->toolchain->archiver.bin, flags);
 
             for (size_t i=0; i < fl_vector_length(archive_objects); i++)
                 fl_cstring_append(fl_cstring_append(&command, " "), *(char**) fl_vector_ref_get(archive_objects, i));
@@ -171,7 +195,8 @@ char** sbs_build_target_archive(SbsBuild *build)
             
 
             fl_cstring_free(command);
-            fl_cstring_free(archive_flags);
+            fl_cstring_free(flags);
+            fl_hashtable_remove(build->context->symbols->variables, "sbs.output_file", true, true);
         }
         else
         {
@@ -186,7 +211,7 @@ char** sbs_build_target_archive(SbsBuild *build)
 
     fl_cstring_free(archive_tc_file);
     fl_vector_free(archive_objects);
-    fl_cstring_free(flags);
+    fl_cstring_free(readonly_flags);
 
     if (!success)
     {

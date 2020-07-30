@@ -4,23 +4,23 @@
 #include "string.h"
 
 typedef struct SbsConfigCompile {
-    char *extension;
+    SbsString *extension;
     SbsString **flags;
 } SbsConfigCompile;
 
 typedef struct SbsConfigArchive {
-    char *extension;
-    char **flags;
+    SbsString *extension;
+    SbsString **flags;
 } SbsConfigArchive;
 
 typedef struct SbsConfigShared {
-    char *extension;
-    char **flags;
+    SbsString *extension;
+    SbsString **flags;
 } SbsConfigShared;
 
 typedef struct SbsConfigExecutable {
-    char *extension;
-    char **flags;
+    SbsString *extension;
+    SbsString **flags;
 } SbsConfigExecutable;
 
 typedef struct SbsConfiguration {

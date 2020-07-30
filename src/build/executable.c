@@ -12,7 +12,11 @@
 static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *executable, const char *output_dir, const char *output_name)
 {
     // File
-    const char *extension = executable->extension ? executable->extension : ".a";
+    const char *extension = !executable->extension 
+                                ? ""
+                                : executable->extension->is_constant
+                                    ? executable->extension->format
+                                    : sbs_string_interpolate(build->context, executable->extension);
 
     // Path
     char *output_filename = sbs_io_to_host_path(build->context->env->host->os, output_dir);
@@ -31,6 +35,9 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *e
     // Create the fullname
     fl_cstring_append(fl_cstring_append(&output_filename, output_name), extension);
 
+    if (executable->extension && !executable->extension->is_constant && extension != NULL)
+        fl_cstring_free(extension);
+
     return output_filename;
 }
 
@@ -40,13 +47,16 @@ char** sbs_build_target_executable(SbsBuild *build)
     const SbsConfigExecutable *config_executable = &build->context->config->executable;
 
     // Collect all the executable flags in the configuration hierarchy
-    char *flags = fl_cstring_new(0);
+    char *readonly_flags = fl_cstring_new(0);
     if (config_executable->flags)
     {
         for (size_t i = 0; i < fl_array_length(config_executable->flags); i++)
         {
-            fl_cstring_append(&flags, config_executable->flags[i]);
-            fl_cstring_append(&flags, " ");
+            if (!config_executable->flags[i]->is_constant)
+                continue;
+
+            fl_cstring_append(&readonly_flags, config_executable->flags[i]->format);
+            fl_cstring_append(&readonly_flags, " ");
         }
     }
 
@@ -164,11 +174,25 @@ char** sbs_build_target_executable(SbsBuild *build)
     {
         if (build->context->toolchain->linker.bin != NULL)
         {
-            // Replace the special ${sbs.output_file} variable in the flag
-            char *executable_flags = fl_cstring_replace(flags, "${sbs.output_file}", output_filename);
+            fl_hashtable_add(build->context->symbols->variables, "sbs.output_file", output_filename);
+
+            char *flags = fl_cstring_dup(readonly_flags);
+            if (config_executable->flags)
+            {
+                for (size_t i = 0; i < fl_array_length(config_executable->flags); i++)
+                {
+                    if (config_executable->flags[i]->is_constant)
+                        continue;
+
+                    char *flag = sbs_string_interpolate(build->context, config_executable->flags[i]);
+                    fl_cstring_append(&flags, flag);
+                    fl_cstring_append(&flags, " ");
+                    fl_cstring_free(flag);
+                }
+            }
 
             // Build the compile command
-            char *command = fl_cstring_vdup("%s %s ", build->context->toolchain->linker.bin, executable_flags);
+            char *command = fl_cstring_vdup("%s %s ", build->context->toolchain->linker.bin, flags);
 
             for (size_t i=0; i < fl_vector_length(executable_objects); i++)
                 fl_cstring_append(fl_cstring_append(&command, " "), *(char**) fl_vector_ref_get(executable_objects, i));
@@ -200,7 +224,8 @@ char** sbs_build_target_executable(SbsBuild *build)
             }
 
             fl_cstring_free(command);
-            fl_cstring_free(executable_flags);
+            fl_cstring_free(flags);
+            fl_hashtable_remove(build->context->symbols->variables, "sbs.output_file", true, true);
         }
         else
         {
@@ -216,7 +241,7 @@ char** sbs_build_target_executable(SbsBuild *build)
     fl_cstring_free(executable_tc_file);
     fl_vector_free(executable_objects);
     fl_cstring_free(executable_libraries);
-    fl_cstring_free(flags);
+    fl_cstring_free(readonly_flags);
 
     if (!success)
     {

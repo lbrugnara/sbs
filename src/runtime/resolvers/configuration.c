@@ -10,33 +10,33 @@
 static void merge_compile_config(SbsContext *context, SbsConfigCompile *extend, const SbsNodeConfigCompile *source)
 {
     if (source->extension)
-        extend->extension = sbs_cstring_set(extend->extension, source->extension);
+        extend->extension = sbs_string_set(extend->extension, source->extension);
     
-    extend->flags = sbs_cstring_array_extend_convert(extend->flags, source->flags);
+    extend->flags = sbs_string_array_extend_convert(extend->flags, source->flags);
 }
 
 static void merge_archive_config(SbsContext *context, SbsConfigArchive *extend, const SbsNodeConfigArchive *source)
 {
     if (source->extension)
-        extend->extension = sbs_cstring_set(extend->extension, source->extension);
+        extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_cstring_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_string_array_extend_convert(extend->flags, source->flags);
 }
 
 static void merge_shared_config(SbsContext *context, SbsConfigShared *extend, const SbsNodeConfigShared *source)
 {
     if (source->extension)
-        extend->extension = sbs_cstring_set(extend->extension, source->extension);
+        extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_cstring_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_string_array_extend_convert(extend->flags, source->flags);
 }
 
 static void merge_executable_config(SbsContext *context, SbsConfigExecutable *extend, const SbsNodeConfigExecutable *source)
 {
     if (source->extension)
-        extend->extension = sbs_cstring_set(extend->extension, source->extension);
+        extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_cstring_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_string_array_extend_convert(extend->flags, source->flags);
 }
 
 static bool try_resolve_config_with_hierarchy(SbsContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)

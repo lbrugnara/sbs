@@ -11,28 +11,28 @@ static void sbs_config_entry_free(struct SbsNodeConfig *config)
         fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) sbs_value_string_free);
 
     if (config->compile.extension)
-        fl_cstring_free(config->compile.extension);
+        sbs_value_string_free(config->compile.extension);
 
 
     if (config->archive.flags)
-        fl_array_free_each_pointer(config->archive.flags, (FlArrayFreeElementFunc) fl_cstring_free);
+        fl_array_free_each_pointer(config->archive.flags, (FlArrayFreeElementFunc) sbs_value_string_free);
 
     if (config->archive.extension)
-        fl_cstring_free(config->archive.extension);
+        sbs_value_string_free(config->archive.extension);
 
 
     if (config->shared.flags)
-        fl_array_free_each_pointer(config->shared.flags, (FlArrayFreeElementFunc) fl_cstring_free);
+        fl_array_free_each_pointer(config->shared.flags, (FlArrayFreeElementFunc) sbs_value_string_free);
     
     if (config->shared.extension)
-        fl_cstring_free(config->shared.extension);
+        sbs_value_string_free(config->shared.extension);
 
 
     if (config->executable.flags)
-        fl_array_free_each_pointer(config->executable.flags, (FlArrayFreeElementFunc) fl_cstring_free);
+        fl_array_free_each_pointer(config->executable.flags, (FlArrayFreeElementFunc) sbs_value_string_free);
 
     if (config->executable.extension)
-        fl_cstring_free(config->executable.extension);
+        sbs_value_string_free(config->executable.extension);
 
     if (config->condition)
         sbs_stmt_conditional_free(config->condition);

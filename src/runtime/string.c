@@ -4,7 +4,7 @@
 
 char* sbs_string_interpolate(SbsContext *context, SbsString *string)
 {
-    if (fl_array_length(string->args) == 0)
+    if (string->is_constant)
         return fl_cstring_dup(string->format);        
 
     size_t format_length = strlen(string->format);

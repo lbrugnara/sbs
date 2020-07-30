@@ -48,7 +48,7 @@ static SbsValueExpr* eval_variable_node(SbsVariableExpr *var_node, SbsEvalContex
     result->kind = SBS_EXPR_VALUE;
     result->type = SBS_EXPR_VALUE_TYPE_UNK;
 
-    if (flm_cstring_equals(var_node->info->namespace, "env"))
+    if (var_node->info->namespace && flm_cstring_equals(var_node->info->namespace, "env"))
     {
         #ifdef _WIN32
         {

@@ -27,8 +27,19 @@ v0.2.0:
         [ ] Allow defining/extending variable in the command line
             Example: a $my.flags variable within a compile's flag property can be extended/overridden by a command line argument
         [x] Textual replacement 
-    [ ] String interpolation for variables and probably a ternary if or something like that
+    [ ] String interpolation for variables
+        [ ] Add support for actions
+        [ ] Add support for environments
+        [ ] Add support for presets
+        [ ] Add support for targets
+        [ ] Add support for toolchains
+        [x] Add support for the configuration section (compile, archive, shared, and executable)
         [x] Initial support for string interpolation (compile flags support interpolated strings)
+    [ ] String interpolation for expressions
+        Example: "/path/to/lib.{$sbs.os == win ? "lib" : "a"}"
+        [ ] Escape with double brace: 
+            Example 1: "The variable {{$sbs.env}} is not interpolated" -> The variable {$sbs.env} is not interpolated
+            Example 2: "The expression {{$sbs.env == win-cmd}} is not interpolated" -> The expression {$sbs.env == win-cmd} is not interpolated
     [ ] sbs init command (scaffolding): Add basic elements and common toolchains
         [ ] Init specific "identifier"? -e=my-env1,my-env2 --> my-env1{} my-env2{}
         [ ] Default win-cmd, linux-bash, osx-bash envs??
@@ -86,3 +97,4 @@ backlog:
     [ ] Improve error handling throughout the project
     [ ] Validate SbsFile object once it is completely parsed
     [ ] Add "extends" support for targets (Rationale behind this?)
+    [ ] Build targets: a lot of code to reuse and/or encapsulate between the different targets

@@ -5,9 +5,25 @@
 #include "../context.h"
 #include "../../lang/string.h"
 
-SbsString* sbs_string_resolve(SbsValueString *value_string);
+SbsString* sbs_string_resolve(const SbsValueString *value_string);
 
-static inline SbsString** sbs_cstring_array_extend_convert(SbsString **dest, SbsValueString **source)
+static inline SbsString* sbs_string_set(SbsString *dest, const SbsValueString *src)
+{
+    if (!src)
+        return dest;
+
+    if (!dest)
+    {
+        dest = sbs_string_resolve(src);
+        return dest;
+    }
+
+    sbs_string_free(dest);
+    dest = sbs_string_resolve(src);
+    return dest;
+}
+
+static inline SbsString** sbs_string_array_extend_convert(SbsString **dest, SbsValueString **source)
 {    
     if (!source)
         return dest;

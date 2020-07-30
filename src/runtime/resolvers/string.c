@@ -1,6 +1,6 @@
 #include "string.h"
 
-SbsString* sbs_string_resolve(SbsValueString *value_string)
+SbsString* sbs_string_resolve(const SbsValueString *value_string)
 {
     SbsString *string = fl_malloc(sizeof(SbsString));
     string->format = fl_cstring_dup(value_string->format);

@@ -212,10 +212,19 @@ static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile
     fl_vector_pop(source_file_parts, &filename);
 
     // If the user supplied an extension, use it. If not take the default ".o"
-    const char *extension = config_compile->extension ? config_compile->extension : ".o";
+    {
+        const char *extension = !config_compile->extension 
+                                    ? ".o"
+                                    : (config_compile->extension->is_constant 
+                                        ? config_compile->extension->format 
+                                        : sbs_string_interpolate(build->context, config_compile->extension));
 
-    filename = fl_cstring_replace_realloc(filename, ".cpp", extension);
-    filename = fl_cstring_replace_realloc(filename, ".c", extension);
+        filename = fl_cstring_replace_realloc(filename, ".cpp", extension);
+        filename = fl_cstring_replace_realloc(filename, ".c", extension);
+
+        if (config_compile->extension && !config_compile->extension->is_constant && extension != NULL) 
+            fl_cstring_free(extension);
+    }
 
     // Get the source file path to replicate it under the output path
     //  ex: from the original filename "src/path/to/file.c" we get "src/path/to/"
