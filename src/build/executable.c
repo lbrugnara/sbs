@@ -7,7 +7,7 @@
 #include "../utils.h"
 #include "../lang/command.h"
 #include "../runtime/context.h"
-#include "../runtime/resolvers/target.h"
+#include "../runtime/target.h"
 
 static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *executable, const char *output_dir, const char *output_name)
 {
@@ -16,7 +16,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *e
                                 ? ""
                                 : executable->extension->is_constant
                                     ? executable->extension->format
-                                    : sbs_string_interpolate(build->context, executable->extension);
+                                    : sbs_string_interpolate(build->context->evalctx, executable->extension);
 
     // Path
     char *output_filename = sbs_io_to_host_path(build->context->env->host->os, output_dir);
@@ -111,7 +111,7 @@ char** sbs_build_target_executable(SbsBuild *build)
     {
         if (target_executable->objects[i].type == SBS_SOURCE_NAME)
         {
-            SbsTarget *dep_target = sbs_target_resolve(build->context, target_executable->objects[i].value, (const SbsTarget*) target_executable);
+            SbsTarget *dep_target = sbs_target_resolve(build->context->resolvectx, target_executable->objects[i].value, (const SbsTarget*) target_executable);
 
             // target_objects is an array of pointers to char allocated by the target
             char **target_objects = sbs_build_target(&(SbsBuild) {
@@ -174,7 +174,7 @@ char** sbs_build_target_executable(SbsBuild *build)
     {
         if (build->context->toolchain->linker.bin != NULL)
         {
-            fl_hashtable_add(build->context->symbols->variables, "sbs.output_file", output_filename);
+            fl_hashtable_add(build->context->evalctx->variables, "sbs.output_file", output_filename);
 
             char *flags = fl_cstring_dup(readonly_flags);
             if (config_executable->flags)
@@ -184,7 +184,7 @@ char** sbs_build_target_executable(SbsBuild *build)
                     if (config_executable->flags[i]->is_constant)
                         continue;
 
-                    char *flag = sbs_string_interpolate(build->context, config_executable->flags[i]);
+                    char *flag = sbs_string_interpolate(build->context->evalctx, config_executable->flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);
@@ -225,7 +225,7 @@ char** sbs_build_target_executable(SbsBuild *build)
 
             fl_cstring_free(command);
             fl_cstring_free(flags);
-            fl_hashtable_remove(build->context->symbols->variables, "sbs.output_file", true, true);
+            fl_hashtable_remove(build->context->evalctx->variables, "sbs.output_file", true, true);
         }
         else
         {

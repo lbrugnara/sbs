@@ -1,6 +1,8 @@
 #ifndef SBS_RUNTIME_TOOLCHAIN_H
 #define SBS_RUNTIME_TOOLCHAIN_H
 
+#include "resolve.h"
+
 typedef struct SbsToolchainCompiler {
     char *bin;
     char *include_dir_flag;
@@ -26,5 +28,6 @@ typedef struct SbsToolchain {
 
 SbsToolchain* sbs_toolchain_new(const char *name);
 void sbs_toolchain_free(SbsToolchain *toolchain);
+SbsToolchain* sbs_toolchain_resolve(SbsResolveContext *context, const char *toolchain_name);
 
 #endif /* SBS_RUNTIME_TOOLCHAIN_H */

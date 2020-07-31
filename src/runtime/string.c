@@ -1,8 +1,10 @@
+#include <fllib/Array.h>
+#include <fllib/Cstring.h>
 #include "string.h"
 #include "eval.h"
-#include "context.h"
+#include "../lang/string.h"
 
-char* sbs_string_interpolate(SbsContext *context, SbsString *string)
+char* sbs_string_interpolate(SbsEvalContext *context, SbsString *string)
 {
     if (string->is_constant)
         return fl_cstring_dup(string->format);        
@@ -27,7 +29,7 @@ char* sbs_string_interpolate(SbsContext *context, SbsString *string)
         // At this offset, we need to place our interpolated value
         // TODO: If we support other type of expressions, we need to update this
         SbsExpression *var_expr = (SbsExpression*) sbs_expression_make_variable(placeholder->variable->name, placeholder->variable->namespace);
-        SbsValueExpr *value = sbs_expression_eval(context->symbols, var_expr);
+        SbsValueExpr *value = sbs_expression_eval(context, var_expr);
 
         if (value == NULL)
         {
@@ -91,4 +93,34 @@ void sbs_string_free(SbsString *string)
         fl_array_free_each_pointer(string->args, (FlArrayFreeElementFunc) free_string_placeholder);
 
     fl_free(string);
+}
+
+SbsString* sbs_string_resolve(const SbsValueString *value_string)
+{
+    SbsString *string = fl_malloc(sizeof(SbsString));
+    string->format = fl_cstring_dup(value_string->format);
+
+    size_t value_string_length = fl_array_length(value_string->args);
+
+    if (value_string_length == 0)
+    {
+        string->is_constant = true;
+        return string;
+    }
+
+    string->is_constant = false;
+    string->args = fl_array_new(sizeof(SbsStringPlaceholder*), value_string_length);
+
+    for (size_t i = 0; i < value_string_length; i++)
+    {
+        SbsValueStringVariablePlaceholder *value_ph = value_string->args[i];
+        
+        SbsStringPlaceholder *ph = fl_malloc(sizeof(SbsStringPlaceholder));
+        ph->index = value_ph->index;
+        ph->variable = sbs_varinfo_new(value_ph->variable->name, value_ph->variable->namespace);
+
+        string->args[i] = ph;
+    }
+
+    return string;
 }

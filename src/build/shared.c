@@ -6,7 +6,7 @@
 #include "../io.h"
 #include "../utils.h"
 #include "../runtime/context.h"
-#include "../runtime/resolvers/target.h"
+#include "../runtime/target.h"
 
 static char* build_output_filename(SbsBuild *build, const SbsConfigShared *shared, const char *output_dir, const char *output_name)
 {
@@ -15,7 +15,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigShared *share
                                 ? ".so"
                                 : shared->extension->is_constant
                                     ? shared->extension->format
-                                    : sbs_string_interpolate(build->context, shared->extension);
+                                    : sbs_string_interpolate(build->context->evalctx, shared->extension);
 
     // Path
     char *output_filename = sbs_io_to_host_path(build->context->env->host->os, output_dir);
@@ -89,7 +89,7 @@ char** sbs_build_target_shared(SbsBuild *build)
     {
         if (target_shared->objects[i].type == SBS_SOURCE_NAME)
         {
-            SbsTarget *dep_target = sbs_target_resolve(build->context, target_shared->objects[i].value, (const SbsTarget*) target_shared);
+            SbsTarget *dep_target = sbs_target_resolve(build->context->resolvectx, target_shared->objects[i].value, (const SbsTarget*) target_shared);
 
             // target_objects is an array of pointers to char allocated by the target
             char **target_objects = sbs_build_target(&(SbsBuild) {
@@ -147,7 +147,7 @@ char** sbs_build_target_shared(SbsBuild *build)
     {
         if (build->context->toolchain->linker.bin != NULL)
         {
-            fl_hashtable_add(build->context->symbols->variables, "sbs.output_file", output_filename);
+            fl_hashtable_add(build->context->evalctx->variables, "sbs.output_file", output_filename);
 
             char *flags = fl_cstring_dup(readonly_flags);
             if (config_shared->flags)
@@ -157,7 +157,7 @@ char** sbs_build_target_shared(SbsBuild *build)
                     if (config_shared->flags[i]->is_constant)
                         continue;
 
-                    char *flag = sbs_string_interpolate(build->context, config_shared->flags[i]);
+                    char *flag = sbs_string_interpolate(build->context->evalctx, config_shared->flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);
@@ -196,7 +196,7 @@ char** sbs_build_target_shared(SbsBuild *build)
 
             fl_cstring_free(command);
             fl_cstring_free(flags);
-            fl_hashtable_remove(build->context->symbols->variables, "sbs.output_file", true, true);
+            fl_hashtable_remove(build->context->evalctx->variables, "sbs.output_file", true, true);
         }
         else
         {

@@ -12,11 +12,13 @@
 #include "preset.h"
 #include "target.h"
 #include "toolchain.h"
+#include "resolve.h"
 
 typedef struct SbsContext {
     const SbsFile *file;
     SbsHostInfo *host;
-    SbsEvalContext *symbols;
+    SbsResolveContext *resolvectx;
+    SbsEvalContext *evalctx;
     SbsExecutor *executor;
     SbsEnv *env;
     SbsToolchain *toolchain;
@@ -32,13 +34,13 @@ SbsContext* sbs_context_copy(const SbsContext *ctx);
 static inline char* sbs_context_interpolate_string_realloc(SbsContext *context, char *interpolated_string)
 {
     // TODO: Implement proper string interpolation
-    char **keys = fl_hashtable_keys(context->symbols->variables);
+    char **keys = fl_hashtable_keys(context->evalctx->variables);
 
     for (size_t i=0; i < fl_array_length(keys); i++)
     {
         char *key = fl_cstring_vdup("${%s}", keys[i]);
 
-        interpolated_string = fl_cstring_replace_realloc(interpolated_string, key, (char*) fl_hashtable_get(context->symbols->variables, keys[i]));
+        interpolated_string = fl_cstring_replace_realloc(interpolated_string, key, (char*) fl_hashtable_get(context->evalctx->variables, keys[i]));
 
         fl_cstring_free(key);
     }

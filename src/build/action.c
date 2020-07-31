@@ -4,7 +4,7 @@
 #include "action.h"
 #include "build.h"
 #include "../result.h"
-#include "../runtime/resolvers/action.h"
+#include "../runtime/action.h"
 
 static bool run_command(SbsBuild *build, const char *actioncmd)
 {
@@ -36,7 +36,7 @@ static bool run_actions(SbsBuild *build, SbsValueCommand *actions)
         }
         else
         {
-            SbsAction *action_obj = sbs_action_resolve(build->context, action->value);
+            SbsAction *action_obj = sbs_action_resolve(build->context->resolvectx, action->value);
 
             if (!action_obj)
                 continue;

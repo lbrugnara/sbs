@@ -2,6 +2,7 @@
 #define SBS_RUNTIME_CONFIGURATION_H
 
 #include "string.h"
+#include "resolve.h"
 
 typedef struct SbsConfigCompile {
     SbsString *extension;
@@ -33,5 +34,6 @@ typedef struct SbsConfiguration {
 
 SbsConfiguration* sbs_config_new(const char *name);
 void sbs_config_free(SbsConfiguration *config);
+SbsConfiguration* sbs_config_resolve(SbsResolveContext *context, const char *config_name);
 
 #endif /* SBS_RUNTIME_CONFIGURATION_H */

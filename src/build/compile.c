@@ -217,7 +217,7 @@ static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile
                                     ? ".o"
                                     : (config_compile->extension->is_constant 
                                         ? config_compile->extension->format 
-                                        : sbs_string_interpolate(build->context, config_compile->extension));
+                                        : sbs_string_interpolate(build->context->evalctx, config_compile->extension));
 
         filename = fl_cstring_replace_realloc(filename, ".cpp", extension);
         filename = fl_cstring_replace_realloc(filename, ".c", extension);
@@ -372,8 +372,8 @@ char** sbs_build_compile(SbsBuild *build)
 
         if (build->context->toolchain->compiler.bin)
         {
-            fl_hashtable_add(build->context->symbols->variables, "sbs.input_file", source_file);
-            fl_hashtable_add(build->context->symbols->variables, "sbs.output_file", object_file);
+            fl_hashtable_add(build->context->evalctx->variables, "sbs.input_file", source_file);
+            fl_hashtable_add(build->context->evalctx->variables, "sbs.output_file", object_file);
 
             // Process the flags
             char *flags = fl_cstring_dup(readonly_flags);
@@ -384,7 +384,7 @@ char** sbs_build_compile(SbsBuild *build)
                     if (config_compile->flags[i]->is_constant)
                         continue;
 
-                    char *flag = sbs_string_interpolate(build->context, config_compile->flags[i]);
+                    char *flag = sbs_string_interpolate(build->context->evalctx, config_compile->flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);
@@ -422,8 +422,8 @@ char** sbs_build_compile(SbsBuild *build)
             fl_cstring_free(command);
             fl_cstring_free(flags);
 
-            fl_hashtable_remove(build->context->symbols->variables, "sbs.input_file", true, true);
-            fl_hashtable_remove(build->context->symbols->variables, "sbs.output_file", true, true);
+            fl_hashtable_remove(build->context->evalctx->variables, "sbs.input_file", true, true);
+            fl_hashtable_remove(build->context->evalctx->variables, "sbs.output_file", true, true);
         }
         else
         {

@@ -2,6 +2,7 @@
 #define SBS_RUNTIME_ENVIRONMENT_H
 
 #include "host.h"
+#include "resolve.h"
 #include "../lang/action.h"
 
 typedef struct SbsEnv {
@@ -18,5 +19,6 @@ typedef struct SbsEnv {
 
 SbsEnv* sbs_env_new(const char *name);
 void sbs_env_free(SbsEnv *env);
+SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name);
 
 #endif /* SBS_RUNTIME_ENVIRONMENT_H */

@@ -10,7 +10,7 @@
 #include "../lang/variable.h"
 #include "../runtime/context.h"
 #include "../runtime/triplet.h"
-#include "../runtime/resolvers/target.h"
+#include "../runtime/target.h"
 
 static inline bool init_variables(SbsContext *context, SbsResult *result)
 {
@@ -24,7 +24,7 @@ static inline bool init_variables(SbsContext *context, SbsResult *result)
        // TODO: Check for other variable types
        // TODO: Implement proper string interpolation
        char *str = sbs_context_interpolate_string(context, var_def->value.s);
-       fl_hashtable_add(context->symbols->variables, var_def->name->fqn, str);
+       fl_hashtable_add(context->evalctx->variables, var_def->name->fqn, str);
        // NOTE: The variables hashtable creates a copy of the interpolated string
        fl_cstring_free(str);
     }
@@ -34,7 +34,7 @@ static inline bool init_variables(SbsContext *context, SbsResult *result)
     return true;
 }
 
-static inline bool resolve_target(SbsContext *context, const char *targetarg, SbsResult *result)
+static inline bool resolve_target(SbsResolveContext *resolvectx, SbsContext *context, const char *targetarg, SbsResult *result)
 {
     if (targetarg == NULL)
     {
@@ -52,7 +52,7 @@ static inline bool resolve_target(SbsContext *context, const char *targetarg, Sb
             char *target_name = context->preset->targets[i];
 
             // Resolve target
-            SbsTarget *tmp = sbs_target_resolve(context, target_name, NULL);
+            SbsTarget *tmp = sbs_target_resolve(resolvectx, target_name, NULL);
             if (tmp == NULL)
             {
                 *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
@@ -64,7 +64,7 @@ static inline bool resolve_target(SbsContext *context, const char *targetarg, Sb
     }
     else
     {
-        SbsTarget *tmp = sbs_target_resolve(context, targetarg, NULL);
+        SbsTarget *tmp = sbs_target_resolve(resolvectx, targetarg, NULL);
         if (tmp == NULL)
         {
             *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, targetarg);
@@ -73,7 +73,7 @@ static inline bool resolve_target(SbsContext *context, const char *targetarg, Sb
 
         context->targets = fl_array_new(sizeof(SbsTarget*), 1);
         context->targets[0] = tmp;
-        fl_hashtable_add(context->symbols->variables, "sbs.target", targetarg);
+        fl_hashtable_add(context->evalctx->variables, "sbs.target", targetarg);
     }
 
     return true;
@@ -137,11 +137,11 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
 
     // Add a built-in variable with the sbs binary
     fl_scoped_resource(char* sbs_bin = fl_io_realpath(args->argv[0]), fl_cstring_free(sbs_bin)) {
-        fl_hashtable_add(triplet->context->symbols->variables, "sbs.bin", sbs_bin);
+        fl_hashtable_add(triplet->context->evalctx->variables, "sbs.bin", sbs_bin);
     }
 
     // Resolve all the targets
-    if (!resolve_target(triplet->context, args->target, &result))
+    if (!resolve_target(triplet->context->resolvectx, triplet->context, args->target, &result))
         goto error_before_targets;
 
     if (!init_variables(triplet->context, &result))
@@ -150,7 +150,7 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
     // Create the build object needed by the build process
     SbsBuild build = {
         .context = triplet->context,
-        .script_mode = args->script_mode
+        .script_mode = args->script_mode,
     };
 
     // At this point we resolved all the resources needed to run the build, so
@@ -172,7 +172,7 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
     {
         build.current_target = build.context->targets[i];
 
-        fl_hashtable_add(build.context->symbols->variables, "sbs.target", build.current_target->name);
+        fl_hashtable_add(build.context->evalctx->variables, "sbs.target", build.current_target->name);
 
         targets_result[i] = sbs_build_run_target_actions(&build, SBS_BUILD_ACTION_BEFORE);
 
@@ -181,7 +181,7 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
 
         char **target_output = sbs_build_target(&build);
         
-        fl_hashtable_remove(build.context->symbols->variables, "sbs.target", true, true);
+        fl_hashtable_remove(build.context->evalctx->variables, "sbs.target", true, true);
 
         if (target_output == NULL)
         {

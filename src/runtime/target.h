@@ -3,6 +3,7 @@
 
 #include <fllib.h>
 
+#include "resolve.h"
 #include "../lang/action.h"
 #include "../lang/target.h"
 #include "../lang/file.h"
@@ -54,5 +55,7 @@ SbsTargetArchive* sbs_target_archive_new(const char *name);
 SbsTargetShared* sbs_target_shared_new(const char *name);
 SbsTargetExecutable* sbs_target_executable_new(const char *name);
 void sbs_target_free(SbsTarget *target);
+
+SbsTarget* sbs_target_resolve(SbsResolveContext *context, const char *target_name, const SbsTarget *parent);
 
 #endif /* SBS_RUNTIME_TARGET_H */
