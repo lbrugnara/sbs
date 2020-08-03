@@ -7,7 +7,7 @@
 #include "../utils.h"
 #include "../lang/command.h"
 #include "../runtime/context.h"
-#include "../runtime/target.h"
+#include "../runtime/target-executable.h"
 
 static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *executable, const char *output_dir, const char *output_name)
 {
@@ -83,7 +83,7 @@ char** sbs_build_target_executable(SbsBuild *build)
     }
 
     // Build the target's output filename
-    char *output_filename = build_output_filename(build, config_executable, target_executable->output_dir, target_executable->output_name);
+    char *output_filename = build_output_filename(build, config_executable, target_executable->base.output_dir, target_executable->output_name);
 
     // Get the target command's file
     char *executable_tc_file = fl_cstring_vdup("%s.stc", output_filename);

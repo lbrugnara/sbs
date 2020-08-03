@@ -5,5 +5,6 @@
 #include "../target.h"
 
 SbsAbstractSectionTarget* sbs_section_target_parse(SbsParser *parser);
+void sbs_section_target_for_condition_parse(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionTargetType target_type);
 
 #endif /* SBS_PARSER_TARGET_H */

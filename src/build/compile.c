@@ -5,7 +5,7 @@
 #include "compile.h" 
 #include "../io.h"
 #include "../utils.h"
-#include "../runtime/configuration.h"
+#include "../runtime/target-compile.h"
 
 // FIXME: Poor man's kind-of topological sort
 static void resolve_c_file_dependencies(SbsBuild *build, const char *target_file, char ***resolved_files, char **include_folders, FlVector *visited_files)
@@ -322,7 +322,7 @@ char** sbs_build_compile(SbsBuild *build)
         fl_io_file_get_modified_timestamp(source_file, &source_timestamp);
 
         // Get the object file path
-        char *object_file = build_object_filename(build, config_compile, source_file, target_compile->output_dir);
+        char *object_file = build_object_filename(build, config_compile, source_file, target_compile->base.output_dir);
 
         /// Get the target command's file
         char *object_tc_file = fl_cstring_vdup("%s.stc", object_file);

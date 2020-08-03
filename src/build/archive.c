@@ -6,7 +6,7 @@
 #include "../io.h"
 #include "../utils.h"
 #include "../runtime/context.h"
-#include "../runtime/target.h"
+#include "../runtime/target-archive.h"
 
 static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *archive, const char *output_dir, const char *output_name)
 {
@@ -60,7 +60,7 @@ char** sbs_build_target_archive(SbsBuild *build)
     }
 
     // Build the target's output filename
-    char *output_filename = build_output_filename(build, config_archive, target_archive->output_dir, target_archive->output_name);
+    char *output_filename = build_output_filename(build, config_archive, target_archive->base.output_dir, target_archive->output_name);
 
     // Get the target command's file
     char *archive_tc_file = fl_cstring_vdup("%s.stc", output_filename);

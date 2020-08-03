@@ -6,7 +6,7 @@
 #include "../io.h"
 #include "../utils.h"
 #include "../runtime/context.h"
-#include "../runtime/target.h"
+#include "../runtime/target-shared.h"
 
 static char* build_output_filename(SbsBuild *build, const SbsConfigShared *shared, const char *output_dir, const char *output_name)
 {
@@ -61,7 +61,7 @@ char** sbs_build_target_shared(SbsBuild *build)
     }
 
     // Build the target's output filename
-    char *output_filename = build_output_filename(build, config_shared, target_shared->output_dir, target_shared->output_name);
+    char *output_filename = build_output_filename(build, config_shared, target_shared->base.output_dir, target_shared->output_name);
 
     // Get the target command's file
     char *shared_tc_file = fl_cstring_vdup("%s.stc", output_filename);
