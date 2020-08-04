@@ -14,7 +14,7 @@
  *  char** - Parsed array of strings or identifiers
  *
  */
-SbsValueSource* sbs_value_source_array_parse(SbsParser *parser)
+SbsValueSource** sbs_value_source_array_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
@@ -29,37 +29,39 @@ SbsValueSource* sbs_value_source_array_parse(SbsParser *parser)
         nelements++;
     }
 
-    SbsValueSource *elements = NULL;
+    SbsValueSource **elements = NULL;
 
     if (nelements > 0)
     {
         
         // Parse the elements
-        elements = fl_array_new(sizeof(SbsValueSource), nelements);
+        elements = fl_array_new(sizeof(SbsValueSource*), nelements);
         size_t index = 0;
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
             const SbsToken *element = sbs_parser_peek(parser);
 
+            SbsValueSource *source = NULL;
+
             if (element->type == SBS_TOKEN_STRING)
             {
-                elements[index++] = (SbsValueSource) {
-                    .type = SBS_SOURCE_STRING, 
-                    .value = sbs_parse_string(parser) 
-                };
+                source = fl_malloc(sizeof(SbsValueSource));
+                source->type = SBS_VALUE_SOURCE_STRING;
+                source->value = sbs_parse_string(parser);
             }
             else if (element->type == SBS_TOKEN_IDENTIFIER)
             {
-                elements[index++] = (SbsValueSource) {
-                    .type = SBS_SOURCE_NAME,
-                    .value = sbs_parse_identifier(parser)
-                };
+                source = fl_malloc(sizeof(SbsValueSource));
+                source->type = SBS_VALUE_SOURCE_NAME;
+                source->value = sbs_parse_identifier(parser);
             }
             else
             {
                 sbs_parser_error(parser, element, "while parsing an array of strings or IDs");
             }
+
+            elements[index++] = source;
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
         }

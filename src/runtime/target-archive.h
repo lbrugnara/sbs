@@ -3,12 +3,13 @@
 
 #include "target.h"
 #include "resolve.h"
+#include "source.h"
 #include "../lang/target-archive.h"
 
 typedef struct SbsTargetArchive {
     SbsTarget base;
     char *output_name;
-    SbsValueSource *objects;
+    SbsSource **objects;
 } SbsTargetArchive;
 
 SbsTargetArchive* sbs_target_archive_new(const char *name);

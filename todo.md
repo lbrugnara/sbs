@@ -10,7 +10,6 @@ v0.2.0:
         [ ] sbs-mkdir
         [ ] sbs-whereis
         [ ] sbs-pkg-config like command?
-    [ ] Executable targets should support sources too?
     [ ] sbs run command to run actions
     [ ] Environments review the API and the properties
         [ ] Expose builtin variables (like $sbs.shell)
@@ -75,6 +74,12 @@ v0.2.x:
         Example: sbs build debug -s -tc=msvc -c=msvc-config -e=linux-bash --> The toolchaing 'msvc' does not exist (it is actually not valid for the requested environment)
     [ ] Passing arguments to actions and using positional variables for it ${1}, ${2}, ... ${n} where ${n} is equals to ${argc}. ${*} is a wildcard for all the arguments
         [ ] Create some common actions implemented as C functions, like reading input from the user
+    [ ] Value sources: allow different sources:
+        - Plain strings (currently supported)
+        - Command strings
+        - Regexes (currently supported but it could be great to implement the ~"" syntax for it)
+        - Identifiers (currently supported -refer to other targets-)
+    [ ] Add a "sources" property to targets archive, shared, and executable to directly compile sources??
 
 backlog:
     [ ] Find a workaround for the limitation of Windows' cmd to run commands larger than 8192 characters

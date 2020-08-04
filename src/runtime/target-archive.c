@@ -23,7 +23,7 @@ void sbs_target_archive_free(SbsTargetArchive *target)
     sbs_target_base_free_members((SbsTarget*) target);
 
     if (target->objects)
-        fl_array_free_each(target->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
+        fl_array_free_each_pointer(target->objects, (FlArrayFreeElementFunc) sbs_source_free);
 
     if (target->output_name)
         fl_cstring_free(target->output_name);
@@ -45,7 +45,7 @@ SbsTargetArchive* sbs_target_archive_resolve(SbsResolveContext *context, const S
         sbs_target_base_resolve_members((SbsTarget*) archive_target, (const SbsAbstractNodeTarget*) archive_entry);
 
         archive_target->output_name = sbs_cstring_set(archive_target->output_name, archive_entry->output_name);
-        archive_target->objects = sbs_value_source_array_extend(archive_target->objects, archive_entry->objects);
+        archive_target->objects = sbs_source_array_extend_from_value_source(archive_target->objects, archive_entry->objects);
     }
 
     return archive_target;

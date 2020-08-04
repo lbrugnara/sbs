@@ -37,7 +37,7 @@ void sbs_target_executable_free(SbsTargetExecutable *target)
     sbs_target_base_free_members((SbsTarget*) target);
 
     if (target->objects)
-        fl_array_free_each(target->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
+        fl_array_free_each_pointer(target->objects, (FlArrayFreeElementFunc) sbs_source_free);
 
     if (target->libraries)
         fl_array_free_each(target->libraries, free_library);
@@ -84,7 +84,7 @@ SbsTargetExecutable* sbs_target_executable_resolve(SbsResolveContext *context, c
         sbs_target_base_resolve_members((SbsTarget*) executable_target, (const SbsAbstractNodeTarget*) executable_entry);
 
         executable_target->output_name = sbs_cstring_set(executable_target->output_name, executable_entry->output_name);
-        executable_target->objects = sbs_value_source_array_extend(executable_target->objects, executable_entry->objects);
+        executable_target->objects = sbs_source_array_extend_from_value_source(executable_target->objects, executable_entry->objects);
         executable_target->libraries = sbs_array_extend_copy_element(executable_target->libraries, executable_entry->libraries, (SbsArrayCopyElementFn) convert_library_node_to_library);
         executable_target->defines = sbs_cstring_array_extend(executable_target->defines, executable_entry->defines);
     }

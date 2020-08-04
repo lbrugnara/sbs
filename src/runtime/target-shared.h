@@ -3,12 +3,13 @@
 
 #include "target.h"
 #include "resolve.h"
+#include "source.h"
 #include "../lang/target-shared.h"
 
 typedef struct SbsTargetShared {
     SbsTarget base;
     char *output_name;
-    SbsValueSource *objects;
+    SbsSource **objects;
 } SbsTargetShared;
 
 SbsTargetShared* sbs_target_shared_new(const char *name);

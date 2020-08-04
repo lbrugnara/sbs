@@ -43,7 +43,7 @@ void sbs_node_executable_free(SbsNodeExecutable *node)
     sbs_node_target_free_members((SbsAbstractNodeTarget*) node);
 
     if (node->objects)
-        fl_array_free_each(node->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
+        fl_array_free_each_pointer(node->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
 
     if (node->libraries)
         fl_array_free_each(node->libraries, free_library_node);

@@ -23,7 +23,7 @@ void sbs_target_shared_free(SbsTargetShared *target)
     sbs_target_base_free_members((SbsTarget*) target);
 
     if (target->objects)
-        fl_array_free_each(target->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
+        fl_array_free_each_pointer(target->objects, (FlArrayFreeElementFunc) sbs_source_free);
 
     if (target->output_name)
         fl_cstring_free(target->output_name);
@@ -45,7 +45,7 @@ SbsTargetShared* sbs_target_shared_resolve(SbsResolveContext *context, const Sbs
         sbs_target_base_resolve_members((SbsTarget*) shared_target, (const SbsAbstractNodeTarget*) shared_entry);
 
         shared_target->output_name = sbs_cstring_set(shared_target->output_name, shared_entry->output_name);
-        shared_target->objects = sbs_value_source_array_extend(shared_target->objects, shared_entry->objects);
+        shared_target->objects = sbs_source_array_extend_from_value_source(shared_target->objects, shared_entry->objects);
     }
 
     return shared_target;

@@ -12,7 +12,7 @@ typedef struct SbsNodeExecutable {
     SbsAbstractNodeTarget base;
     const char *output_name;
     SbsPropertyLibrary *libraries;
-    SbsValueSource *objects;
+    SbsValueSource **objects;
     char **defines;
 } SbsNodeExecutable;
 

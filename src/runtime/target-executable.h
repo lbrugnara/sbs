@@ -3,6 +3,7 @@
 
 #include "target.h"
 #include "resolve.h"
+#include "source.h"
 #include "../lang/target-executable.h"
 
 typedef struct SbsTargetLibrary {
@@ -14,7 +15,7 @@ typedef struct SbsTargetExecutable {
     SbsTarget base;
     char *output_name;
     SbsTargetLibrary *libraries;
-    SbsValueSource *objects;
+    SbsSource **objects;
     char **defines;
 } SbsTargetExecutable;
 

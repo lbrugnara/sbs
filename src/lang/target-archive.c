@@ -29,7 +29,7 @@ void sbs_node_archive_free(SbsNodeArchive *node)
     sbs_node_target_free_members((SbsAbstractNodeTarget*) node);
 
     if (node->objects)
-        fl_array_free_each(node->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
+        fl_array_free_each_pointer(node->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
 
     if (node->output_name)
         fl_cstring_free(node->output_name);    

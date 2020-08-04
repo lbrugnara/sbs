@@ -6,7 +6,7 @@
 typedef struct SbsNodeArchive {
     SbsAbstractNodeTarget base;
     const char *output_name;
-    SbsValueSource *objects;
+    SbsValueSource **objects;
 } SbsNodeArchive;
 
 typedef struct SbsSectionArchive {

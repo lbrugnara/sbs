@@ -109,9 +109,9 @@ char** sbs_build_target_executable(SbsBuild *build)
     bool success = true;
     for (size_t i = 0; i < n_objects; i++)
     {
-        if (target_executable->objects[i].type == SBS_SOURCE_NAME)
+        if (target_executable->objects[i]->type == SBS_SOURCE_NAME)
         {
-            SbsTarget *dep_target = sbs_target_resolve(build->context->resolvectx, target_executable->objects[i].value, (const SbsTarget*) target_executable);
+            SbsTarget *dep_target = sbs_target_resolve(build->context->resolvectx, target_executable->objects[i]->value, (const SbsTarget*) target_executable);
 
             // target_objects is an array of pointers to char allocated by the target
             char **target_objects = sbs_build_target(&(SbsBuild) {
@@ -151,7 +151,7 @@ char** sbs_build_target_executable(SbsBuild *build)
         }
         else
         {
-            char *object_filename = fl_cstring_dup(target_executable->objects[i].value);
+            char *object_filename = fl_cstring_dup(target_executable->objects[i]->value);
 
             // TODO: Implement proper string interpolation
             object_filename = sbs_context_interpolate_string_realloc(build->context, object_filename);

@@ -86,9 +86,9 @@ char** sbs_build_target_archive(SbsBuild *build)
     bool success = true;
     for (size_t i = 0; i < n_objects; i++)
     {
-        if (target_archive->objects[i].type == SBS_SOURCE_NAME)
+        if (target_archive->objects[i]->type == SBS_SOURCE_NAME)
         {
-            SbsTarget *dep_target = sbs_target_resolve(build->context->resolvectx, target_archive->objects[i].value, (const SbsTarget*) target_archive);
+            SbsTarget *dep_target = sbs_target_resolve(build->context->resolvectx, target_archive->objects[i]->value, (const SbsTarget*) target_archive);
 
             // target_objects is an array of pointers to char allocated by the target
             char **target_objects = sbs_build_target(&(SbsBuild) {
@@ -131,13 +131,13 @@ char** sbs_build_target_archive(SbsBuild *build)
             // We also check here to see if the object pointed by the string is newer than the archive
             // in order to set the needs_archive flag
             unsigned long long obj_timestamp;
-            if (!fl_io_file_get_modified_timestamp(target_archive->objects[i].value, &obj_timestamp))
+            if (!fl_io_file_get_modified_timestamp(target_archive->objects[i]->value, &obj_timestamp))
                 needs_archive = true;
 
             if (archive_timestamp < obj_timestamp)
                 needs_archive = true;
 
-            char *object_file = sbs_io_to_host_path(build->context->env->host->os, target_archive->objects[i].value);
+            char *object_file = sbs_io_to_host_path(build->context->env->host->os, target_archive->objects[i]->value);
             fl_vector_add(archive_objects, &object_file);
         }        
     }
