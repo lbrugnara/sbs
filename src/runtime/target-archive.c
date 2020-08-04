@@ -23,7 +23,7 @@ void sbs_target_archive_free(SbsTargetArchive *target)
     sbs_target_base_free_members((SbsTarget*) target);
 
     if (target->objects)
-        fl_array_free_each(target->objects, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each(target->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
 
     if (target->output_name)
         fl_cstring_free(target->output_name);

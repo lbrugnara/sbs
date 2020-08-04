@@ -30,10 +30,10 @@ void sbs_preset_free(SbsPreset *preset)
         fl_array_free_each_pointer(preset->targets, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (preset->actions.before)
-        fl_array_free_each(preset->actions.before, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(preset->actions.before, (FlArrayFreeElementFunc) sbs_command_free);
 
     if (preset->actions.after)
-        fl_array_free_each(preset->actions.after, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(preset->actions.after, (FlArrayFreeElementFunc) sbs_command_free);
 
     fl_free(preset);
 }
@@ -52,8 +52,8 @@ SbsPreset* sbs_preset_resolve(SbsResolveContext *context, const char *preset_nam
     preset_object->configs = sbs_cstring_array_extend(preset_object->configs, preset_section->configs);
     preset_object->targets = sbs_cstring_array_extend(preset_object->targets, preset_section->targets);
     
-    preset_object->actions.before = sbs_value_command_array_extend(preset_object->actions.before, preset_section->actions.before);
-    preset_object->actions.after = sbs_value_command_array_extend(preset_object->actions.after, preset_section->actions.after);
+    preset_object->actions.before = sbs_command_array_extend_from_value_command(preset_object->actions.before, preset_section->actions.before);
+    preset_object->actions.after = sbs_command_array_extend_from_value_command(preset_object->actions.after, preset_section->actions.after);
 
     return preset_object;
 }

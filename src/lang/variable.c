@@ -39,6 +39,17 @@ void sbs_value_variable_free(SbsValueVariable *variable)
     fl_free(variable);
 }
 
+SbsValueVariable* sbs_value_variable_copy(const SbsValueVariable *variable)
+{
+    SbsValueVariable *copy = fl_malloc(sizeof(SbsValueVariable));
+
+    copy->name = fl_cstring_dup(variable->name);
+    copy->namespace = variable->namespace != NULL ? fl_cstring_dup(variable->namespace) : NULL;
+    copy->fqn = fl_cstring_dup(variable->fqn);
+
+    return copy;
+}
+
 SbsNodeVariableDefinition* sbs_node_variable_definition_new(void)
 {
     SbsNodeVariableDefinition *var_def = fl_malloc(sizeof(SbsNodeVariableDefinition));

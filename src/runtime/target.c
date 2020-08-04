@@ -13,10 +13,10 @@ void sbs_target_base_free_members(SbsTarget *target)
         fl_cstring_free(target->name);
 
     if (target->actions.before)
-        fl_array_free_each(target->actions.before, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(target->actions.before, (FlArrayFreeElementFunc) sbs_command_free);
 
     if (target->actions.after)
-        fl_array_free_each(target->actions.after, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(target->actions.after, (FlArrayFreeElementFunc) sbs_command_free);
 
     if (target->output_dir)
         fl_cstring_free(target->output_dir);
@@ -48,8 +48,8 @@ void sbs_target_base_resolve_members(SbsTarget *extend, const SbsAbstractNodeTar
 {
     extend->output_dir = sbs_cstring_set(extend->output_dir, source->output_dir);
 
-    extend->actions.before = sbs_value_command_array_extend(extend->actions.before, source->actions.before);
-    extend->actions.after = sbs_value_command_array_extend(extend->actions.after, source->actions.after);
+    extend->actions.before = sbs_command_array_extend_from_value_command(extend->actions.before, source->actions.before);
+    extend->actions.after = sbs_command_array_extend_from_value_command(extend->actions.after, source->actions.after);
 }
 
 SbsTarget* sbs_target_resolve(SbsResolveContext *context, const char *target_name, const SbsTarget *parent)

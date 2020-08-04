@@ -10,24 +10,26 @@ static void parse_action_body(SbsParser *parser, SbsNodeAction *current_node)
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_IF)
     { 
+        SbsValueCommand *command = NULL;
         if (token->type == SBS_TOKEN_COMMAND_STRING)
         {
-            size_t size = fl_array_length(current_node->commands);
-            current_node->commands = fl_array_resize(current_node->commands, size + 1);
-            current_node->commands[size].type = SBS_COMMAND_STRING;
-            current_node->commands[size].value = sbs_parse_command_string(parser);
+            command = fl_malloc(sizeof(SbsValueCommand));
+            command->type = SBS_VALUE_COMMAND_STRING;
+            command->value = sbs_value_command_string_parse(parser);
         }
         else if (token->type == SBS_TOKEN_IDENTIFIER)
         {
-            size_t size = fl_array_length(current_node->commands);
-            current_node->commands = fl_array_resize(current_node->commands, size + 1);
-            current_node->commands[size].type = SBS_COMMAND_NAME;
-            current_node->commands[size].value = sbs_parse_identifier(parser);
+            command = fl_malloc(sizeof(SbsValueCommand));
+            command->type = SBS_VALUE_COMMAND_NAME;
+            command->value = sbs_value_string_new(sbs_parse_identifier(parser));
         }
         else
         {
             sbs_parser_error(parser, token, "while parsing an action body");
         }
+
+        current_node->commands = fl_array_append(current_node->commands, &command);
+
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
     }
 }

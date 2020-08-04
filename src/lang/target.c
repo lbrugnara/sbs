@@ -29,16 +29,16 @@ void sbs_section_target_free(SbsAbstractSectionTarget *section)
 {
     switch (section->type)
     {
-        case SBS_TARGET_COMPILE:
+        case SBS_SECTION_TARGET_COMPILE:
             sbs_section_compile_free((SbsSectionCompile*) section);
             break;
-        case SBS_TARGET_ARCHIVE:
+        case SBS_SECTION_TARGET_ARCHIVE:
             sbs_section_archive_free((SbsSectionArchive*) section);
             break;
-        case SBS_TARGET_SHARED:
+        case SBS_SECTION_TARGET_SHARED:
             sbs_section_shared_free((SbsSectionShared*) section);
             break;
-        case SBS_TARGET_EXECUTABLE:
+        case SBS_SECTION_TARGET_EXECUTABLE:
             sbs_section_executable_free((SbsSectionExecutable*) section);
             break;
     }

@@ -18,17 +18,18 @@ v0.2.0:
         [ ] Add sbs-mkdir commands to the output scripts
         [x] Don't create directories in the host
         [x] Use host default triplet if -e|--env is not provided
+    [ ] Conditional statements and variables: support different data type
     [ ] Defining and using variables
-        [x] Define variables at the top-level scope
-            Notes: Variables should only be defined/declared at the top-level?
-        [x] Add builtin variables: $sbs.compiler, $sbs.archiver, $sbs.linker
-        [x] $env.<name> syntax to get environment variables
-            [ ] Check that "system" executor and custom executors correctly set and retrieve ENV variables
+        [ ] Allow defining variables within sections
+        [ ] Check that "system" executor and custom executors correctly set and retrieve ENV variables
         [ ] Allow defining/extending variable in the command line
             Example: a $my.flags variable within a compile's flag property can be extended/overridden by a command line argument
+        [x] Define variables at the top-level scope
+        [x] Add builtin variables: $sbs.compiler, $sbs.archiver, $sbs.linker
+        [x] $env.<name> syntax to get environment variables
         [x] Textual replacement 
     [ ] String interpolation for variables
-        [ ] Add support for actions
+        [x] Add support for actions
         [ ] Add support for environments
         [ ] Add support for presets
         [ ] Add support for targets
@@ -76,6 +77,7 @@ v0.2.x:
         [ ] Create some common actions implemented as C functions, like reading input from the user
 
 backlog:
+    [ ] Find a workaround for the limitation of Windows' cmd to run commands larger than 8192 characters
     [ ] A custom/binary/command target able to run a program to generate the output of the target
         Notes: If you need to run a specific/custom step in the build process (different to compile, archive, shared, and executable) you can do it through actions, 
         but it is not part of the build per-se and it is not checked/considered as a dependency, so it is useful to have a custom target able to perform custom actions

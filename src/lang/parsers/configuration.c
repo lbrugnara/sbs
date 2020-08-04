@@ -17,13 +17,13 @@ static void parse_compile_block(SbsParser *parser, SbsNodeConfigCompile *compile
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->flags = sbs_parse_interpolated_string_array(parser);
+            compile->flags = sbs_value_string_array_parse(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->extension = sbs_parse_interpolated_string(parser);
+            compile->extension = sbs_value_string_parse(parser);
         }
         else
         {
@@ -43,13 +43,13 @@ static void parse_archive_block(SbsParser *parser, SbsNodeConfigArchive *archive
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            archive->flags = sbs_parse_interpolated_string_array(parser);
+            archive->flags = sbs_value_string_array_parse(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            archive->extension = sbs_parse_interpolated_string(parser);
+            archive->extension = sbs_value_string_parse(parser);
         }
         else
         {
@@ -69,13 +69,13 @@ static void parse_shared_block(SbsParser *parser, SbsNodeConfigShared *shared)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            shared->flags = sbs_parse_interpolated_string_array(parser);
+            shared->flags = sbs_value_string_array_parse(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            shared->extension = sbs_parse_interpolated_string(parser);
+            shared->extension = sbs_value_string_parse(parser);
         }
         else
         {
@@ -95,13 +95,13 @@ static void parse_executable_block(SbsParser *parser, SbsNodeConfigExecutable *e
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->flags = sbs_parse_interpolated_string_array(parser);
+            executable->flags = sbs_value_string_array_parse(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->extension = sbs_parse_interpolated_string(parser);
+            executable->extension = sbs_value_string_parse(parser);
         }
         else
         {

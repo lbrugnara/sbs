@@ -18,7 +18,7 @@
  * 
  */
 typedef struct SbsNodeAction {
-    SbsValueCommand *commands;
+    SbsValueCommand **commands;
     SbsStmtConditional *condition;
 } SbsNodeAction;
 
@@ -55,8 +55,8 @@ typedef struct SbsSectionAction {
  * 
  */
 typedef struct SbsPropertyActions {
-    SbsValueCommand *before;
-    SbsValueCommand *after;
+    SbsValueCommand **before;
+    SbsValueCommand **after;
 } SbsPropertyActions;
 
 SbsSectionAction* sbs_section_action_new(const struct FlSlice *name);

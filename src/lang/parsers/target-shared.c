@@ -17,7 +17,7 @@ void sbs_section_shared_body_parse(SbsParser *parser, SbsSectionShared *target_s
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            target->objects = sbs_value_source_array_prase(parser);
+            target->objects = sbs_value_source_array_parse(parser);
         }
         else if (sbs_token_equals(token, "output_name"))
         {
@@ -37,7 +37,7 @@ void sbs_section_shared_body_parse(SbsParser *parser, SbsSectionShared *target_s
         }
         else if (token->type == SBS_TOKEN_IF)
         {
-            sbs_section_target_for_condition_parse(parser, (SbsAbstractSectionTarget*) target_section, SBS_TARGET_SHARED);
+            sbs_section_target_for_condition_parse(parser, (SbsAbstractSectionTarget*) target_section, SBS_SECTION_TARGET_SHARED);
         }
         else
         {

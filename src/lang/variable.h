@@ -24,6 +24,7 @@ typedef struct SbsNodeVariableDefinition {
 
 SbsValueVariable* sbs_value_variable_new(const struct FlSlice *name, const struct FlSlice *namespace);
 void sbs_value_variable_free(SbsValueVariable *variable);
+SbsValueVariable* sbs_value_variable_copy(const SbsValueVariable *variable);
 SbsNodeVariableDefinition* sbs_node_variable_definition_new(void);
 void sbs_node_variable_definition_free(SbsNodeVariableDefinition *var_def);
 

@@ -31,38 +31,6 @@ char* sbs_parse_string(SbsParser *parser)
 }
 
 /*
- * Function: sbs_parse_command_string
- *  Returns an array of strings (that represents executable commands)
- *
- * Parameters:
- *  parser - Parser object
- *
- * Returns:
- *  char** - Parsed array of strings (that represents executable commands)
- *
- */
-char* sbs_parse_command_string(SbsParser *parser)
-{
-    const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_COMMAND_STRING);
-    
-    char *string = fl_cstring_dup_n((const char*)token->value.sequence, token->value.length);
-    if (fl_cstring_contains(string, "\\`"))
-    {
-        char *tmp = fl_cstring_replace_realloc(string, "\\`", "`");
-        if (!tmp)
-            return NULL;
-        fl_cstring_free(string);
-        string = tmp;
-    }
-
-    string = fl_cstring_replace_realloc(string, "\\\r\n", "");
-    string = fl_cstring_replace_realloc(string, "\\\n", "");
-    
-    return string;
-}
-
-
-/*
  * Function: sbs_parse_identifier
  *  Returns an string that represents an identifier
  *

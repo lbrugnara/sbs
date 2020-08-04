@@ -3,7 +3,7 @@
 
 #include "host.h"
 #include "resolve.h"
-#include "../lang/action.h"
+#include "command.h"
 
 typedef struct SbsEnv {
     SbsHostInfo *host;
@@ -12,7 +12,10 @@ typedef struct SbsEnv {
     char *terminal;
     char **args;
     char **variables;
-    SbsPropertyActions actions;
+    struct {
+        SbsCommand **before;
+        SbsCommand **after;
+    } actions;
     SbsHostOs os;
     SbsHostArch *arch;
 } SbsEnv;

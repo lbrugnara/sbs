@@ -8,7 +8,7 @@ SbsSectionCompile* sbs_section_compile_new(const struct FlSlice *name)
 {
     SbsSectionCompile *section = fl_malloc(sizeof(SbsSectionCompile));
 
-    section->base.type = SBS_TARGET_COMPILE;
+    section->base.type = SBS_SECTION_TARGET_COMPILE;
     section->base.name = sbs_slice_to_cstring(name);
     section->entries = fl_array_new(sizeof(SbsNodeCompile*), 0);
 

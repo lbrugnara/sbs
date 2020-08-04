@@ -124,3 +124,24 @@ SbsString* sbs_string_resolve(const SbsValueString *value_string)
 
     return string;
 }
+
+SbsString* sbs_string_copy(const SbsString *string)
+{
+    SbsString *copy = fl_malloc(sizeof(SbsString));
+    copy->format = fl_cstring_dup(string->format);
+    copy->is_constant = string->is_constant;
+
+    if (!string->is_constant)
+    {
+        copy->args = fl_array_new(sizeof(SbsStringPlaceholder*), fl_array_length(string->args));
+
+        for (size_t i=0; i < fl_array_length(string->args); i++)
+        {
+            copy->args[i] = fl_malloc(sizeof(SbsStringPlaceholder));
+            copy->args[i]->index = string->args[i]->index;
+            copy->args[i]->variable = sbs_varinfo_copy(string->args[i]->variable);
+        }
+    }
+
+    return copy;
+}

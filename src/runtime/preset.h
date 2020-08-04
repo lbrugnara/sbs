@@ -2,7 +2,7 @@
 #define SBS_RUNTIME_PRESET_H
 
 #include "resolve.h"
-#include "../lang/action.h"
+#include "command.h"
 
 typedef struct SbsPreset {
     char *name;
@@ -10,7 +10,10 @@ typedef struct SbsPreset {
     char **toolchains;
     char **configs;
     char **targets;
-    SbsPropertyActions actions;
+    struct {
+        SbsCommand **before;
+        SbsCommand **after;
+    } actions;
 } SbsPreset;
 
 SbsPreset* sbs_preset_new(const char *name);

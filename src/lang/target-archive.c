@@ -8,7 +8,7 @@ SbsSectionArchive* sbs_section_archive_new(const struct FlSlice *name)
 {
     SbsSectionArchive *section = fl_malloc(sizeof(SbsSectionArchive));
 
-    section->base.type = SBS_TARGET_ARCHIVE;
+    section->base.type = SBS_SECTION_TARGET_ARCHIVE;
     section->base.name = sbs_slice_to_cstring(name);
     section->entries = fl_array_new(sizeof(SbsNodeArchive*), 0);
 
@@ -29,7 +29,7 @@ void sbs_node_archive_free(SbsNodeArchive *node)
     sbs_node_target_free_members((SbsAbstractNodeTarget*) node);
 
     if (node->objects)
-        fl_array_free_each(node->objects, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each(node->objects, (FlArrayFreeElementFunc) sbs_value_source_free);
 
     if (node->output_name)
         fl_cstring_free(node->output_name);    

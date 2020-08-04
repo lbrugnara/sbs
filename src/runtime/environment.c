@@ -39,10 +39,10 @@ void sbs_env_free(SbsEnv *env)
         fl_array_free_each_pointer(env->args, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (env->actions.before)
-        fl_array_free_each(env->actions.before, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(env->actions.before, (FlArrayFreeElementFunc) sbs_command_free);
     
     if (env->actions.after)
-        fl_array_free_each(env->actions.after, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(env->actions.after, (FlArrayFreeElementFunc) sbs_command_free);
 
     free(env);
 }
@@ -113,8 +113,8 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name)
     env_object->os = variable_to_host_os(env_section->os);
     env_object->arch = variable_array_to_host_arch(env_section->arch);
 
-    env_object->actions.before = sbs_value_command_array_extend(env_object->actions.before, env_section->actions.before);
-    env_object->actions.after = sbs_value_command_array_extend(env_object->actions.after, env_section->actions.after);
+    env_object->actions.before = sbs_command_array_extend_from_value_command(env_object->actions.before, env_section->actions.before);
+    env_object->actions.after = sbs_command_array_extend_from_value_command(env_object->actions.after, env_section->actions.after);
 
     // TODO: Allow override of the architecture using arguments
     env_object->host = sbs_host_new(env_object->os, sbs_host_arch());

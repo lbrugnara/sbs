@@ -14,6 +14,8 @@ typedef struct SbsValueString {
     SbsValueStringVariablePlaceholder **args;
 } SbsValueString;
 
+SbsValueString* sbs_value_string_new(char *format);
 void sbs_value_string_free(SbsValueString *string);
+SbsValueString* sbs_value_string_copy(const SbsValueString *string);
 
 #endif /* SBS_LANG_STRING_H */

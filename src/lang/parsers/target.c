@@ -23,28 +23,28 @@ void sbs_section_target_for_condition_parse(SbsParser *parser, SbsAbstractSectio
     
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
-    if (target_type == SBS_TARGET_COMPILE)
+    if (target_type == SBS_SECTION_TARGET_COMPILE)
     {
         SbsSectionCompile *compile_section = (SbsSectionCompile*) target_section;
         SbsNodeCompile *compile_entry = sbs_section_compile_add_node(compile_section);
         compile_entry->base.condition = condition;
         sbs_section_compile_body_parse(parser, compile_section, compile_entry);
     }
-    else if (target_type == SBS_TARGET_ARCHIVE)
+    else if (target_type == SBS_SECTION_TARGET_ARCHIVE)
     {
         SbsSectionArchive *archive_section = (SbsSectionArchive*) target_section;
         SbsNodeArchive *archive_entry = sbs_section_archive_add_node(archive_section);
         archive_entry->base.condition = condition;
         sbs_section_archive_body_parse(parser, archive_section, archive_entry);
     }
-    else if (target_type == SBS_TARGET_SHARED)
+    else if (target_type == SBS_SECTION_TARGET_SHARED)
     {
         SbsSectionShared *shared_section = (SbsSectionShared*) target_section;
         SbsNodeShared *shared_entry = sbs_section_shared_add_node(shared_section);
         shared_entry->base.condition = condition;
         sbs_section_shared_body_parse(parser, shared_section, shared_entry);
     }
-    else if (target_type == SBS_TARGET_EXECUTABLE)
+    else if (target_type == SBS_SECTION_TARGET_EXECUTABLE)
     {
         SbsSectionExecutable *executable_section = (SbsSectionExecutable*) target_section;
         SbsNodeExecutable *executable_entry = sbs_section_executable_add_node(executable_section);

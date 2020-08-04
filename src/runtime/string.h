@@ -5,6 +5,8 @@
 #include <fllib/Array.h>
 #include "variable.h"
 #include "eval.h"
+#include "../utils.h"
+#include "../lang/command.h"
 #include "../lang/string.h"
 
 typedef struct SbsStringPlaceholder {
@@ -21,6 +23,7 @@ typedef struct SbsString {
 char* sbs_string_interpolate(SbsEvalContext *context, SbsString *string);
 void sbs_string_free(SbsString *string);
 SbsString* sbs_string_resolve(const SbsValueString *value_string);
+SbsString* sbs_string_copy(const SbsString *string);
 
 static inline SbsString* sbs_string_set(SbsString *dest, const SbsValueString *src)
 {
@@ -38,7 +41,12 @@ static inline SbsString* sbs_string_set(SbsString *dest, const SbsValueString *s
     return dest;
 }
 
-static inline SbsString** sbs_string_array_extend_convert(SbsString **dest, SbsValueString **source)
+static inline SbsString** sbs_string_array_extend(SbsString **dest, SbsString **source)
+{    
+    return sbs_array_extend_copy_pointer(dest, source, (SbsArrayCopyPointerFn) sbs_string_copy);
+}
+
+static inline SbsString** sbs_string_array_extend_from_value_string(SbsString **dest, SbsValueString **source)
 {    
     if (!source)
         return dest;
@@ -62,6 +70,5 @@ static inline SbsString** sbs_string_array_extend_convert(SbsString **dest, SbsV
 
     return dest;
 }
-
 
 #endif /* SBS_RUNTIME_STRING_H */

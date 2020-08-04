@@ -48,10 +48,10 @@ action install {
     }
 
     if $sbs.env == linux-bash {
-        `if [ -f "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs" ]; then            \
-            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../fllib/sbs;          \
-            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../zenit/sbs;          \
-            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../gkit/sbs;           \
+        `if [ -f "build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs" ]; then          \
+            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../fllib/;           \
+            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../zenit/;           \
+            cp build/${sbs.env}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../gkit/;            \
         fi`
     }
 }

@@ -4,9 +4,21 @@
 #include "conditional.h"
 #include "variable.h"
 
-SbsValueString* sbs_parse_interpolated_string(SbsParser *parser)
+SbsValueString* sbs_value_string_parse(SbsParser *parser)
 {
-    const SbsToken *token = sbs_parser_consume(parser, SBS_TOKEN_STRING);
+    SbsTokenType token_type = sbs_parser_next_is(parser, SBS_TOKEN_STRING)
+                            ? SBS_TOKEN_STRING
+                            : sbs_parser_next_is(parser, SBS_TOKEN_COMMAND_STRING)
+                                ? SBS_TOKEN_COMMAND_STRING
+                                : SBS_TOKEN_UNKNOWN;
+
+    if (token_type == SBS_TOKEN_UNKNOWN)
+    {
+        sbs_parser_warning(parser, sbs_parser_peek(parser), "Expecting a string or command string");
+        return NULL;
+    }
+
+    const SbsToken *token = sbs_parser_consume(parser, token_type);
 
     SbsValueStringVariablePlaceholder **placeholders = fl_array_new(sizeof(SbsValueStringVariablePlaceholder*), 0);
     char *format = fl_cstring_new(0);
@@ -18,6 +30,23 @@ SbsValueString* sbs_parse_interpolated_string(SbsParser *parser)
 
         if (c != '$' || i == token->value.length - 1 || (char) token->value.sequence[i + 1] != '{')
         {
+            if (c == '\\')
+            {
+                // If it is a \ followed by a newline, the string continues in the next line, so we 
+                // consume both '\' and '\n'
+                if (i < token->value.length - 1 && (char) token->value.sequence[i + 1] == '\n')
+                {
+                    i++; // consume the '\' and let the for increment consume the '\n'
+                    continue;
+                }
+                else if (i < token->value.length - 2 && (char) token->value.sequence[i + 1] == '\r' && (char) token->value.sequence[i + 2] == '\n')
+                {
+                    i++; // consume the '\'
+                    i++; // consume the '\r' and let the for increment consume the '\n'
+                    continue;
+                }
+            }
+
             format_index++;
             fl_cstring_append_char(&format, c);
             continue;
@@ -91,9 +120,11 @@ SbsValueString* sbs_parse_interpolated_string(SbsParser *parser)
         placeholders = fl_array_append(placeholders, &placeholder);
     }
     
-    if (fl_cstring_contains(format, "\\\""))
+    const char *escape = token_type == SBS_TOKEN_STRING ? "\\\"" : "\\`";
+    const char *escape_repl = token_type == SBS_TOKEN_STRING ? "\"" : "`";
+    if (fl_cstring_contains(format, escape))
     {
-        char *tmp = fl_cstring_replace(format, "\\\"", "\"");
+        char *tmp = fl_cstring_replace(format, escape, escape_repl);
         if (!tmp)
             return NULL;
         fl_cstring_free(format);
@@ -107,7 +138,7 @@ SbsValueString* sbs_parse_interpolated_string(SbsParser *parser)
     return string;
 }
 
-SbsValueString** sbs_parse_interpolated_string_array(SbsParser *parser)
+SbsValueString** sbs_value_string_array_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
@@ -132,7 +163,7 @@ SbsValueString** sbs_parse_interpolated_string_array(SbsParser *parser)
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
-            strings[index++] = sbs_parse_interpolated_string(parser);
+            strings[index++] = sbs_value_string_parse(parser);
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
         }

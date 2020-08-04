@@ -5,26 +5,20 @@
 void sbs_value_command_free(SbsValueCommand *str)
 {
     if (str->value)
-        fl_cstring_free(str->value);
+        sbs_value_string_free(str->value);
 
-    // SbsValueCommand are not malloc'ed
+    fl_free(str);
 }
 
-void sbs_value_command_copy(SbsValueCommand *dest, const SbsValueCommand *src_obj)
+SbsValueCommand* sbs_value_command_copy(const SbsValueCommand *src_obj)
 {
-    if (!dest)
-        return;
-
     if (!src_obj)
-    {
-        memset(dest, 0, sizeof(SbsValueCommand));
-        return;
-    }
+        return NULL;
 
-    SbsValueCommand copy = {
-        .type = src_obj->type,
-        .value = fl_cstring_dup(src_obj->value)
-    };
+    SbsValueCommand *copy = fl_malloc(sizeof(SbsValueCommand));
 
-    memcpy(dest, &copy, sizeof(SbsValueCommand));
+    copy->type = src_obj->type;
+    copy->value = sbs_value_string_copy(src_obj->value);
+
+    return copy;
 }

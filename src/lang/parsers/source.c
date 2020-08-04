@@ -4,7 +4,7 @@
 #include "helpers.h"
 
 /*
- * Function: sbs_value_source_array_prase
+ * Function: sbs_value_source_array_parse
  *  Returns an array of strings or identifiers
  *
  * Parameters:
@@ -14,7 +14,7 @@
  *  char** - Parsed array of strings or identifiers
  *
  */
-SbsValueSource* sbs_value_source_array_prase(SbsParser *parser)
+SbsValueSource* sbs_value_source_array_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 

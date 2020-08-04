@@ -7,10 +7,10 @@
 #include "conditional.h"
 
 typedef enum SbsSectionTargetType {
-    SBS_TARGET_COMPILE,
-    SBS_TARGET_ARCHIVE,
-    SBS_TARGET_SHARED,
-    SBS_TARGET_EXECUTABLE,
+    SBS_SECTION_TARGET_COMPILE,
+    SBS_SECTION_TARGET_ARCHIVE,
+    SBS_SECTION_TARGET_SHARED,
+    SBS_SECTION_TARGET_EXECUTABLE,
 } SbsSectionTargetType;
 
 typedef struct SbsAbstractNodeTarget {

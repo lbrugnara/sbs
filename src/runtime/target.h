@@ -4,14 +4,24 @@
 #include <fllib.h>
 
 #include "resolve.h"
-#include "../lang/action.h"
+#include "command.h"
 #include "../lang/target.h"
 
+typedef enum SbsTargetType {
+    SBS_TARGET_COMPILE,
+    SBS_TARGET_ARCHIVE,
+    SBS_TARGET_SHARED,
+    SBS_TARGET_EXECUTABLE,
+} SbsTargetType;
+
 typedef struct SbsTarget {
-    SbsSectionTargetType type;
+    SbsTargetType type;
     char *name;
     char *output_dir;
-    SbsPropertyActions actions;
+    struct {
+        SbsCommand **before;
+        SbsCommand **after;
+    } actions;
 } SbsTarget;
 
 SbsTarget* sbs_target_resolve(SbsResolveContext *context, const char *target_name, const SbsTarget *parent);
