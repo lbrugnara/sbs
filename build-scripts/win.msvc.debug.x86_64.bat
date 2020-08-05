@@ -4,7 +4,7 @@ mkdir     obj\win-cmd\x86_64\msvc\msvc-debug\sbs\tests     obj\win-cmd\x86_64\ms
 mkdir     obj\win-cmd\x86_64\msvc\msvc-debug\sbs-tests\tests     obj\win-cmd\x86_64\msvc\msvc-debug\sbs-tests\tests\integration     obj\win-cmd\x86_64\msvc\msvc-debug\sbs-tests\tests\parser 
 mkdir build\win-cmd\x86_64\msvc\msvc-debug 
 if not exist .\include (md .\include)
-if exist ..\fllib\include\fllib.h (copy ..\fllib\include\fllib.h .\include\ )
+if exist ..\fllib\include\fllib.h (copy /Y ..\fllib\include\fllib.h .\include\ )
 if not exist .\lib\fllib\win-cmd\x86_64\msvc\msvc-debug (            md .\lib\fllib\win-cmd\x86_64\msvc\msvc-debug )
 if exist ..\fllib\build\win-cmd\x86_64\msvc\msvc-debug\libfl.lib (             copy /Y ..\fllib\build\win-cmd\x86_64\msvc\msvc-debug\libfl.lib                  .\lib\fllib\win-cmd\x86_64\msvc\msvc-debug\ )
 cl.exe  /I..\fllib\include  /W1 /Od /Z7 /DEBUG:FULL /c .\src\build\action.c /Fo.\\obj\win-cmd\x86_64\msvc\msvc-debug\sbs\src\build\action.o 

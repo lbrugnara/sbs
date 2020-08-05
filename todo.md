@@ -1,6 +1,17 @@
 v0.2.0:
+    [ ] Environments
+        [ ] Add for clauses to the environments
+        [ ] Create a "default" environment for the current os-arch that uses "system" if there is no environment defined in the build file
+        [ ] Fix and improve the shell drivers (currently "system" is the only reliable way of using sbs)
+            [ ] Check directory separator in the case of a win-bash combination
+                Note: sbs_io_to_env_path_realloc(SbsEnv *environment, char *path); ??
+                Note: sbs_io_to_env_path(SbsEnv *environment, const char *path); ??
+            [ ] Within the same environment, a way to detect the terminal to use
+                Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
+        [x] Environments review the API and the properties
+            [x] Rename env properties from type, terminal, and args to shell_type, shell_command, and shell_args
+            [x] Expose builtin variables (like $sbs.shell)
     [ ] Advanced support for triplets
-        [ ] Use the executor to find environment's shell binaries
         [ ] Use the executor to find toolchain's executable files
         [ ] Add a preconditions property that can contain actions and is evaluated in the process of getting all the available triplets
             Notes: for env? for toolchian? both?
@@ -11,8 +22,6 @@ v0.2.0:
         [ ] sbs-whereis
         [ ] sbs-pkg-config like command?
     [ ] sbs run command to run actions
-    [ ] Environments review the API and the properties
-        [ ] Expose builtin variables (like $sbs.shell)
     [ ] Script mode
         [ ] Add sbs-mkdir commands to the output scripts
         [x] Don't create directories in the host
@@ -40,12 +49,12 @@ v0.2.0:
         [ ] Escape with double brace: 
             Example 1: "The variable {{$sbs.env}} is not interpolated" -> The variable {$sbs.env} is not interpolated
             Example 2: "The expression {{$sbs.env == win-cmd}} is not interpolated" -> The expression {$sbs.env == win-cmd} is not interpolated
+    [ ] Eval context: create the API to avoid directly using fl_hashtable_* functions
+    [ ] All types: Add specific inline functions to interop with FlHashtables and FlArrays
     [ ] sbs init command (scaffolding): Add basic elements and common toolchains
         [ ] Init specific "identifier"? -e=my-env1,my-env2 --> my-env1{} my-env2{}
         [ ] Default win-cmd, linux-bash, osx-bash envs??
-        [ ] Default clang, gcc, msvc toolchains?
-    [ ] Within the same environment, a way to detect the terminal to use
-        Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
+        [ ] Default clang, gcc, msvc toolchains?    
     [ ] Update grammar file
     [x] --working-dir|-cwd flag accepted by the main program along with the build subcommand
         Example: `sbs -cwd=../ build debug` is equals to `sbs build debug -cwd=../`. The advantage is that a command like

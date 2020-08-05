@@ -76,7 +76,7 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
     {
         SbsNodeAction *action_node = action_section->nodes[i];
 
-        if (action_node->condition && !sbs_expression_eval_bool(context->symbols, action_node->condition->expr))
+        if (action_node->condition && !sbs_expression_eval_bool(context->evalctx, action_node->condition->expr))
             continue;
 
         for (size_t i=0; i < fl_array_length(action_node->commands); i++)

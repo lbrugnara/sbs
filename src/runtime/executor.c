@@ -17,7 +17,7 @@ enum SbsExecutorType {
 
 struct SbsExecutor {
     enum SbsExecutorType type;
-    const char *typestr;
+    SbsEnv *env;
     bool script_mode;
 };
 
@@ -60,18 +60,44 @@ struct SbsCommandDriver {
     }
 ;
 
-SbsExecutor* sbs_executor_new(char *typestr, char **args, char **variables, char *terminal)
+static const char* get_shell_command(SbsExecutor *executor)
 {
-    enum SbsExecutorType type = typestr && !flm_cstring_equals("system", typestr) ? SBS_EXEC_CUSTOM : SBS_EXEC_SYSTEM;
+    if (executor->env->shell_command != NULL)
+        return executor->env->shell_command;
+
+    switch (executor->env->shell_type)
+    {
+        case SBS_SHELL_BASH:
+            return "bash";
+
+        case SBS_SHELL_CMD:
+            return "cmd";
+
+        case SBS_SHELL_POWERSHELL:
+            return "powershell";
+
+        default: break;
+    }
+
+    return NULL;
+}
+
+SbsExecutor* sbs_executor_new(SbsEnv *environment)
+{
+    if (environment->shell_type == SBS_SHELL_UNK)
+        return NULL;
+
+    enum SbsExecutorType type = environment->shell_type == SBS_SHELL_SYSTEM ? SBS_EXEC_SYSTEM : SBS_EXEC_CUSTOM;
 
     SbsExecutor *executor = NULL;
 
     if (type == SBS_EXEC_CUSTOM)
     {
         SbsCustomExecutor *cexec = fl_malloc(sizeof(SbsCustomExecutor));
+        cexec->base.env = environment;
         
         char **envp = NULL;
-        if (variables)
+        if (cexec->base.env->variables)
         {
             // Make room for the current environment variables
             size_t env_req_length = 0;
@@ -80,7 +106,7 @@ SbsExecutor* sbs_executor_new(char *typestr, char **args, char **variables, char
                 env_req_length++;            
 
             // Make room for the custom environment variables
-            env_req_length += fl_array_length(variables);
+            env_req_length += fl_array_length(cexec->base.env->variables);
 
             // Make room for the last NULL
             env_req_length++;
@@ -92,18 +118,18 @@ SbsExecutor* sbs_executor_new(char *typestr, char **args, char **variables, char
             while(*curenv)
                 envp[i++] = *curenv++;
 
-            for (size_t j=0; j < fl_array_length(variables); j++)
-                envp[i++] = variables[j];
+            for (size_t j=0; j < fl_array_length(cexec->base.env->variables); j++)
+                envp[i++] = cexec->base.env->variables[j];
 
             envp[i] = NULL;
         }
 
-        bool is_bash = flm_cstring_equals_n(typestr, "bash", 4);
+        bool is_bash = cexec->base.env->shell_type == SBS_SHELL_BASH;
         char **argv = NULL;
-        if (args || is_bash)
+        if (cexec->base.env->shell_args || is_bash)
         {
 
-            size_t env_args_length = args ? fl_array_length(args) : 0;
+            size_t env_args_length = cexec->base.env->shell_args ? fl_array_length(cexec->base.env->shell_args) : 0;
             size_t argv_req_length = env_args_length;
 
             if (is_bash)
@@ -120,12 +146,17 @@ SbsExecutor* sbs_executor_new(char *typestr, char **args, char **variables, char
 
             if (env_args_length > 0)
                 for (size_t j=0; j < env_args_length; j++)
-                    argv[i++] = args[j];
+                    argv[i++] = cexec->base.env->shell_args[j];
 
             argv[i] = NULL;
         }
 
-        cexec->process = fl_process_create(terminal ? terminal : typestr, argv, envp, fl_process_pipe_new(), fl_process_pipe_new(), NULL);
+        const char *shell_command = get_shell_command((SbsExecutor*) cexec);
+
+        if (shell_command == NULL)
+            return NULL;
+
+        cexec->process = fl_process_create(shell_command, argv, envp, fl_process_pipe_new(), fl_process_pipe_new(), NULL);
 
         if (!cexec->process)
             return NULL;
@@ -135,21 +166,21 @@ SbsExecutor* sbs_executor_new(char *typestr, char **args, char **variables, char
     else
     {
         executor = fl_malloc(sizeof(SbsExecutor));
+        executor->env = environment;
 
-        if (variables)
+        if (executor->env->variables)
         {
-            for (size_t i=0; i < fl_array_length(variables); i++)
+            for (size_t i=0; i < fl_array_length(executor->env->variables); i++)
             {
                 #ifdef _WIN32
-                _putenv(variables[i]);
+                _putenv(executor->env->variables[i]);
                 #else
-                putenv(variables[i]);
+                putenv(executor->env->variables[i]);
                 #endif
             }
         }
     }
-    
-    executor->typestr = typestr;
+
     executor->type = type;
 
     return executor;
@@ -175,6 +206,20 @@ static unsigned long djb2_hash(const char *key, size_t size)
     return hash;
 }
 
+static struct SbsCommandDriver* get_shell_driver(const SbsExecutor *executor)
+{
+    if (executor->env->shell_type == SBS_SHELL_BASH)
+        return &BashCommandDriver;
+    
+    if (executor->env->shell_type == SBS_SHELL_CMD)
+        return &CmdCommandDriver;
+
+    if (executor->env->shell_type == SBS_SHELL_POWERSHELL)
+        return &PowershellCommandDriver;
+    
+    return NULL;
+}
+
 bool sbs_executor_run_command(const SbsExecutor *executor, const char *command)
 {
     if (executor->script_mode)
@@ -189,18 +234,13 @@ bool sbs_executor_run_command(const SbsExecutor *executor, const char *command)
         return system(command) == 0;
     }
 
-    // SBS_EXEC_CUSTOM
-    SbsCustomExecutor *custom_executor = (SbsCustomExecutor*)executor;
-    struct SbsCommandDriver *driver = NULL;
+    struct SbsCommandDriver *driver = get_shell_driver(executor);
 
-    if (flm_cstring_equals_n(custom_executor->base.typestr, "cmd", 3))
-        driver = &CmdCommandDriver;
-    else if (flm_cstring_equals_n(custom_executor->base.typestr, "bash", 4))
-        driver = &BashCommandDriver;
-    else if (flm_cstring_equals_n(custom_executor->base.typestr, "powershell", 10))
-        driver = &PowershellCommandDriver;
-    else
+    if (driver == NULL)
         return false;
+
+    // SBS_EXEC_CUSTOM
+    SbsCustomExecutor *custom_executor = (SbsCustomExecutor*) executor;
 
     bool success = false;
 

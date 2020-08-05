@@ -21,14 +21,14 @@ void sbs_section_env_free(SbsSectionEnv *env)
     if (env->variables)
         fl_array_free_each_pointer(env->variables, (FlArrayFreeElementFunc) fl_cstring_free);
 
-    if (env->type)
-        fl_cstring_free(env->type);
+    if (env->shell_type)
+        fl_cstring_free(env->shell_type);
 
-    if (env->terminal)
-        fl_cstring_free(env->terminal);
+    if (env->shell_command)
+        fl_cstring_free(env->shell_command);
 
-    if (env->args)
-        fl_array_free_each_pointer(env->args, (FlArrayFreeElementFunc) fl_cstring_free);
+    if (env->shell_args)
+        fl_array_free_each_pointer(env->shell_args, (FlArrayFreeElementFunc) fl_cstring_free);
 
     sbs_property_actions_free(&env->actions);
 

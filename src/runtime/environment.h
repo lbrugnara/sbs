@@ -5,19 +5,27 @@
 #include "resolve.h"
 #include "command.h"
 
+typedef enum SbsShellType {
+    SBS_SHELL_UNK,
+    SBS_SHELL_SYSTEM,
+    SBS_SHELL_BASH,
+    SBS_SHELL_CMD,
+    SBS_SHELL_POWERSHELL,
+} SbsShellType;
+
 typedef struct SbsEnv {
     SbsHostInfo *host;
     char *name;
-    char *type;
-    char *terminal;
-    char **args;
+    char *shell_command;
+    char **shell_args;
     char **variables;
     struct {
         SbsCommand **before;
         SbsCommand **after;
     } actions;
-    SbsHostOs os;
     SbsHostArch *arch;
+    SbsHostOs os;
+    SbsShellType shell_type;
 } SbsEnv;
 
 SbsEnv* sbs_env_new(const char *name);

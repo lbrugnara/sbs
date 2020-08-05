@@ -6,7 +6,7 @@ SbsResolveContext* sbs_resolve_context_new(const SbsFile *file, const SbsHostInf
     SbsResolveContext *context = fl_malloc(sizeof(SbsResolveContext));
 
     context->file = file;
-    context->symbols = evalctx;
+    context->evalctx = evalctx;
     context->host = host;
 
     return context;

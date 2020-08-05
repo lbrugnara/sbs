@@ -50,7 +50,7 @@ SbsToolchain* sbs_toolchain_resolve(SbsResolveContext *context, const char *tool
     if (!toolchain_section)
         return NULL;
 
-    if (toolchain_section->condition && !sbs_expression_eval_bool(context->symbols, toolchain_section->condition->expr))
+    if (toolchain_section->condition && !sbs_expression_eval_bool(context->evalctx, toolchain_section->condition->expr))
         return NULL;
 
     SbsToolchain *toolchain_object = sbs_toolchain_new(toolchain_section->name);
@@ -59,7 +59,7 @@ SbsToolchain* sbs_toolchain_resolve(SbsResolveContext *context, const char *tool
     {
         SbsNodeToolchain *toolchain_node = toolchain_section->entries[i];
 
-        if (toolchain_node->condition && !sbs_expression_eval_bool(context->symbols, toolchain_node->condition->expr))
+        if (toolchain_node->condition && !sbs_expression_eval_bool(context->evalctx, toolchain_node->condition->expr))
             continue;
         
         toolchain_object->compiler.bin = sbs_cstring_set(toolchain_object->compiler.bin, toolchain_node->compiler.bin);
@@ -72,6 +72,17 @@ SbsToolchain* sbs_toolchain_resolve(SbsResolveContext *context, const char *tool
         toolchain_object->linker.lib_dir_flag = sbs_cstring_set(toolchain_object->linker.lib_dir_flag, toolchain_node->linker.lib_dir_flag);
         toolchain_object->linker.lib_flag = sbs_cstring_set(toolchain_object->linker.lib_flag, toolchain_node->linker.lib_flag);
     }
+
+    fl_hashtable_add(context->evalctx->variables, "sbs.toolchain", toolchain_object->name);
+
+    if (toolchain_object->compiler.bin != NULL)
+        fl_hashtable_add(context->evalctx->variables, "sbs.compiler", toolchain_object->compiler.bin);
+
+    if (toolchain_object->archiver.bin != NULL)
+        fl_hashtable_add(context->evalctx->variables, "sbs.archiver", toolchain_object->archiver.bin);
+
+    if (toolchain_object->linker.bin != NULL)
+        fl_hashtable_add(context->evalctx->variables, "sbs.linker", toolchain_object->linker.bin);
 
     return toolchain_object;
 }

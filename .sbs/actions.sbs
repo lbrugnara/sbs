@@ -14,7 +14,7 @@ action copy-fllib {
         `if not exist .\include (md .\include)`,
 
         # Copy the fllib header
-        `if exist ..\fllib\include\fllib.h (copy ..\fllib\include\fllib.h .\include\ )`,
+        `if exist ..\fllib\include\fllib.h (copy /Y ..\fllib\include\fllib.h .\include\ )`,
 
         # Create the fllib library directory
         `if not exist .\lib\fllib\${sbs.env}\${sbs.arch}\${sbs.toolchain}\${sbs.config} (\

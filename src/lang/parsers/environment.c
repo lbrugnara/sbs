@@ -10,9 +10,9 @@
 /*
  * Function: sbs_section_env_parse
  *  Parses an *env* block which supports the following properties:
- *      - args: array of strings that represents the *argv* of the shell to be used
- *      - type: The type property allows 3 predefined identifiers: bash, cmd, powershell.
- *      - terminal: The path to an executable shell
+ *      - shell_args: array of strings that represents the *argv* of the shell to be used
+ *      - shell_type: The type property allows 3 predefined identifiers: bash, cmd, powershell.
+ *      - shell_command: The path to an executable shell
  *      - variables: Array of strings with the form of "key=value"
  *      - actions: <SbsPropertyActions> object with commands to be run before and after the build process
  *
@@ -37,31 +37,38 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
     {
         const SbsToken *token = sbs_parser_peek(parser);
 
-        if (sbs_token_equals(token, "args"))
+        if (sbs_token_equals(token, "shell_args"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->args = sbs_parse_string_array(parser);
-            if (env->args)
+            env->shell_args = sbs_parse_string_array(parser);
+            if (env->shell_args)
             {
                 // argv[argc] must be NULL, so we make room for it
                 // and set the last element to NULL
-                size_t length = fl_array_length(env->args);
-                env->args = fl_array_resize(env->args, length + 1);
-                env->args[length] = NULL;
+                size_t length = fl_array_length(env->shell_args);
+                env->shell_args = fl_array_resize(env->shell_args, length + 1);
+                env->shell_args[length] = NULL;
             }
         }
-        else if (sbs_token_equals(token, "type"))
+        else if (sbs_token_equals(token, "shell_type"))
         {
-            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            const SbsToken *shell_token = sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->type = sbs_parse_identifier(parser);
+            env->shell_type = sbs_parse_identifier(parser);
+
+            if (!flm_cstring_equals(env->shell_type, "bash")
+                && !flm_cstring_equals(env->shell_type, "cmd")
+                && !flm_cstring_equals(env->shell_type, "powershell"))
+            {
+                sbs_parser_warning(parser, shell_token, "Unknown shell type");
+            }
         }
-        else if (sbs_token_equals(token, "terminal"))
+        else if (sbs_token_equals(token, "shell_command"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->terminal = sbs_parse_string(parser);
+            env->shell_command = sbs_parse_string(parser);
         }
         else if (sbs_token_equals(token, "variables"))
         {

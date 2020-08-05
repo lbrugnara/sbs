@@ -4,14 +4,15 @@
 #include "action.h"
 #include "variable.h"
 
+
 typedef struct SbsSectionEnv {
+    const char *name;
+    const char *shell_type;
+    const char *shell_command;
+    char **shell_args;
+    char **variables;
     SbsValueVariable *os;
     SbsValueVariable **arch;
-    const char *name;
-    const char *type;
-    const char *terminal;
-    char **args;
-    char **variables;
     SbsPropertyActions actions;
 } SbsSectionEnv;
 

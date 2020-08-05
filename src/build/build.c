@@ -73,7 +73,6 @@ static inline bool resolve_target(SbsResolveContext *resolvectx, SbsContext *con
 
         context->targets = fl_array_new(sizeof(SbsTarget*), 1);
         context->targets[0] = tmp;
-        fl_hashtable_add(context->evalctx->variables, "sbs.target", targetarg);
     }
 
     return true;

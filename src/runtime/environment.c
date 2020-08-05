@@ -29,14 +29,11 @@ void sbs_env_free(SbsEnv *env)
     if (env->variables)
         fl_array_free_each_pointer(env->variables, (FlArrayFreeElementFunc) fl_cstring_free);
 
-    if (env->type)
-        fl_cstring_free(env->type);
+    if (env->shell_command)
+        fl_cstring_free(env->shell_command);
 
-    if (env->terminal)
-        fl_cstring_free(env->terminal);
-
-    if (env->args)
-        fl_array_free_each_pointer(env->args, (FlArrayFreeElementFunc) fl_cstring_free);
+    if (env->shell_args)
+        fl_array_free_each_pointer(env->shell_args, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (env->actions.before)
         fl_array_free_each_pointer(env->actions.before, (FlArrayFreeElementFunc) sbs_command_free);
@@ -97,6 +94,23 @@ static SbsHostArch* variable_array_to_host_arch(SbsValueVariable **variables)
     return arch;
 }
 
+SbsShellType parse_shell_type(const char *shell_type)
+{
+    if (shell_type == NULL)
+        return SBS_SHELL_SYSTEM;
+
+    if (flm_cstring_equals(shell_type, "bash"))
+        return SBS_SHELL_BASH;
+
+    if (flm_cstring_equals(shell_type, "cmd"))
+        return SBS_SHELL_CMD;
+    
+    if (flm_cstring_equals(shell_type, "powershell"))
+        return SBS_SHELL_POWERSHELL;
+
+    return SBS_SHELL_UNK;
+}
+
 SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name)
 {
     SbsSectionEnv *env_section = fl_hashtable_get(context->file->envs, env_name);
@@ -105,10 +119,10 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name)
         return NULL;
 
     SbsEnv *env_object = sbs_env_new(env_section->name);
-
-    env_object->type = sbs_cstring_set(env_object->type, env_section->type);
-    env_object->terminal = sbs_cstring_set(env_object->terminal, env_section->terminal);
-    env_object->args = sbs_cstring_array_extend(env_object->args, env_section->args);
+    
+    env_object->shell_type = parse_shell_type(env_section->shell_type);
+    env_object->shell_command = sbs_cstring_set(env_object->shell_command, env_section->shell_command);
+    env_object->shell_args = sbs_cstring_array_extend(env_object->shell_args, env_section->shell_args);
     env_object->variables = sbs_cstring_array_extend(env_object->variables, env_section->variables);
     env_object->os = variable_to_host_os(env_section->os);
     env_object->arch = variable_array_to_host_arch(env_section->arch);
@@ -118,6 +132,30 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name)
 
     // TODO: Allow override of the architecture using arguments
     env_object->host = sbs_host_new(env_object->os, sbs_host_arch());
+
+    fl_hashtable_add(context->evalctx->variables, "sbs.env", env_object->name);
+
+    char *shell_type = NULL;
+    switch (env_object->shell_type)
+    {
+        case SBS_SHELL_BASH:
+            shell_type = "bash";
+            break;
+        case SBS_SHELL_CMD:
+            shell_type = "cmd";
+            break;
+        case SBS_SHELL_POWERSHELL:
+            shell_type = "powershell";
+            break;
+        case SBS_SHELL_SYSTEM:
+            shell_type = "system";
+            break;
+
+        default: break;
+    }
+
+    if (shell_type != NULL)
+        fl_hashtable_add(context->evalctx->variables, "sbs.shell", shell_type);
 
     return env_object;
 }

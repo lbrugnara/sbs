@@ -84,7 +84,7 @@ static void merge_executable_config(SbsResolveContext *context, SbsConfigExecuta
 
 static bool try_resolve_config_with_hierarchy(SbsResolveContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)
 {
-    if (config_section->condition && !sbs_expression_eval_bool(context->symbols, config_section->condition->expr))
+    if (config_section->condition && !sbs_expression_eval_bool(context->evalctx, config_section->condition->expr))
         return false;
 
     if (config_section->extends)
@@ -101,7 +101,7 @@ static bool try_resolve_config_with_hierarchy(SbsResolveContext *context, SbsCon
     {
         struct SbsNodeConfig *config_node = config_section->entries[i];
 
-        if (config_node->condition && !sbs_expression_eval_bool(context->symbols, config_node->condition->expr))
+        if (config_node->condition && !sbs_expression_eval_bool(context->evalctx, config_node->condition->expr))
             continue;
         
 
@@ -128,6 +128,8 @@ SbsConfiguration* sbs_config_resolve(SbsResolveContext *context, const char *con
         sbs_config_free(configuration);
         return NULL;
     }
+
+    fl_hashtable_add(context->evalctx->variables, "sbs.config", configuration->name);
     
     return configuration;
 }

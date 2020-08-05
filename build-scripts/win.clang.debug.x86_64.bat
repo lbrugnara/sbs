@@ -4,7 +4,7 @@ mkdir     obj\win-cmd\x86_64\clang\clang-debug\sbs\tests     obj\win-cmd\x86_64\
 mkdir     obj\win-cmd\x86_64\clang\clang-debug\sbs-tests\tests     obj\win-cmd\x86_64\clang\clang-debug\sbs-tests\tests\integration     obj\win-cmd\x86_64\clang\clang-debug\sbs-tests\tests\parser 
 mkdir build\win-cmd\x86_64\clang\clang-debug 
 if not exist .\include (md .\include)
-if exist ..\fllib\include\fllib.h (copy ..\fllib\include\fllib.h .\include\ )
+if exist ..\fllib\include\fllib.h (copy /Y ..\fllib\include\fllib.h .\include\ )
 if not exist .\lib\fllib\win-cmd\x86_64\clang\clang-debug (            md .\lib\fllib\win-cmd\x86_64\clang\clang-debug )
 if exist ..\fllib\build\win-cmd\x86_64\clang\clang-debug\libfl.lib (             copy /Y ..\fllib\build\win-cmd\x86_64\clang\clang-debug\libfl.lib                  .\lib\fllib\win-cmd\x86_64\clang\clang-debug\ )
 clang  -I..\fllib\include  -std=c99 -Wall -Werror -Wextra -pedantic -Wmissing-field-initializers -Wno-unused-value -Wno-unused-parameter -Wno-unused-variable -Wno-unused-function -Wno-missing-braces -fstrict-aliasing -Wvla -finput-charset=UTF-8 -fexec-charset=UTF-8 -D_FORTIFY_SOURCE=2 -ggdb -O0 -c .\src\build\action.c -o obj\win-cmd\x86_64\clang\clang-debug\sbs\src\build\action.o 

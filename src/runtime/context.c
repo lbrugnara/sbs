@@ -53,22 +53,13 @@ SbsContext* sbs_context_copy(const SbsContext *ctx)
     copy->preset = ctx->preset != NULL ? sbs_preset_resolve(copy->resolvectx, ctx->preset->name) : NULL;
     
     if (ctx->env != NULL)
-    {
         copy->env = sbs_env_resolve(copy->resolvectx, ctx->env->name);
-        fl_hashtable_add(copy->evalctx->variables, "sbs.env", copy->env->name);
-    }
     
     if (ctx->toolchain != NULL)
-    {
         copy->toolchain = sbs_toolchain_resolve(copy->resolvectx, ctx->toolchain->name);
-        fl_hashtable_add(copy->evalctx->variables, "sbs.toolchain", copy->toolchain->name);
-    }
     
     if (ctx->config != NULL)
-    {
         copy->config = sbs_config_resolve(copy->resolvectx, ctx->config->name);
-        fl_hashtable_add(copy->evalctx->variables, "sbs.config", copy->config->name);
-    }
 
     // We copy first the variables
     char **variables = fl_hashtable_keys(ctx->evalctx->variables);

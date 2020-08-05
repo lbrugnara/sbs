@@ -26,7 +26,7 @@ void sbs_triplet_free(SbsTriplet *triplet)
 
 static inline bool resolve_executor(SbsContext *context, bool script_mode)
 {
-    context->executor = sbs_executor_new(context->env->type, context->env->args, context->env->variables, context->env->terminal);
+    context->executor = sbs_executor_new(context->env);
 
     if (context->executor == NULL)
         return false;
@@ -40,10 +40,6 @@ static inline bool resolve_executor(SbsContext *context, bool script_mode)
 static inline bool resolve_preset(SbsContext *context, const char *preset_name)
 {
     context->preset = sbs_preset_resolve(context->resolvectx, preset_name);
-
-    if (context->preset != NULL)
-        fl_hashtable_add(context->evalctx->variables, "sbs.preset", preset_name);
-
     return context->preset != NULL;
 }
 
@@ -114,11 +110,7 @@ FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char
             goto env_clean_ctx;
 
         // At this point it is safe to create a triplet
-        SbsTriplet *triplet = sbs_triplet_new(triplet_ctx);
-
-        fl_hashtable_add(triplet->context->evalctx->variables, "sbs.env", triplet->context->env->name);
-
-        fl_list_append(triplets, triplet);
+        fl_list_append(triplets, sbs_triplet_new(triplet_ctx));
 
         continue;
 
@@ -144,22 +136,7 @@ FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char
                 goto tc_clean_ctx;
 
             // At this point it is safe to create a triplet
-            SbsTriplet *new_triplet = sbs_triplet_new(triplet_ctx);
-
-            fl_hashtable_set(new_triplet->context->evalctx->variables, "sbs.env", new_triplet->context->env->name);
-
-            fl_hashtable_add(new_triplet->context->evalctx->variables, "sbs.toolchain", new_triplet->context->toolchain->name);
-
-            if (new_triplet->context->toolchain->compiler.bin != NULL)
-                fl_hashtable_add(new_triplet->context->evalctx->variables, "sbs.compiler", new_triplet->context->toolchain->compiler.bin);
-
-            if (new_triplet->context->toolchain->archiver.bin != NULL)
-                fl_hashtable_add(new_triplet->context->evalctx->variables, "sbs.archiver", new_triplet->context->toolchain->archiver.bin);
-
-            if (new_triplet->context->toolchain->linker.bin != NULL)
-                fl_hashtable_add(new_triplet->context->evalctx->variables, "sbs.linker", new_triplet->context->toolchain->linker.bin);
-
-            fl_list_insert_before(triplets, node, new_triplet);
+            fl_list_insert_before(triplets, node, sbs_triplet_new(triplet_ctx));
 
             continue;
 
@@ -192,13 +169,7 @@ FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char
                 goto config_clean_ctx;
 
             // At this point it is safe to create a triplet
-            SbsTriplet *new_triplet = sbs_triplet_new(triplet_ctx);
-
-            fl_hashtable_set(new_triplet->context->evalctx->variables, "sbs.env", new_triplet->context->env->name);
-            fl_hashtable_set(new_triplet->context->evalctx->variables, "sbs.toolchain", new_triplet->context->toolchain->name);
-            fl_hashtable_add(new_triplet->context->evalctx->variables, "sbs.config", new_triplet->context->config->name);
-
-            fl_list_insert_before(triplets, node, new_triplet);
+            fl_list_insert_before(triplets, node, sbs_triplet_new(triplet_ctx));
 
             continue;
 

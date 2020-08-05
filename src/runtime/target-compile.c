@@ -43,7 +43,7 @@ SbsTargetCompile* sbs_target_compile_resolve(SbsResolveContext *context, const S
     {
         const SbsNodeCompile *compile_entry = compile_section->entries[i];
 
-        if (compile_entry->base.condition && !sbs_expression_eval_bool(context->symbols, compile_entry->base.condition->expr))
+        if (compile_entry->base.condition && !sbs_expression_eval_bool(context->evalctx, compile_entry->base.condition->expr))
             continue;
 
         sbs_target_base_resolve_members((SbsTarget*) compile_target, (const SbsAbstractNodeTarget*) compile_entry);
