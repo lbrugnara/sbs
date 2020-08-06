@@ -21,7 +21,7 @@ static void parse_action_body(SbsParser *parser, SbsNodeAction *current_node)
         {
             command = fl_malloc(sizeof(SbsValueCommand));
             command->type = SBS_VALUE_COMMAND_NAME;
-            command->value = sbs_value_string_new(sbs_parse_identifier(parser));
+            command->value = sbs_string_new(sbs_parse_identifier(parser), true);
         }
         else
         {

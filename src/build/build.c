@@ -15,7 +15,7 @@
 static inline bool init_variables(SbsContext *context, SbsResult *result)
 {
     // Init the user-defined variables
-    SbsValueVariable **var_names = fl_hashtable_keys(context->file->variables);
+    SbsVariableInfo **var_names = fl_hashtable_keys(context->file->variables);
 
     for (size_t i = 0; i < fl_array_length(var_names); i++)
     {
@@ -108,7 +108,7 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
     SbsResult result = SBS_RES_OK;
 
     // Get all the available combinations of environments, toolchains, and configurations.
-    SbsTriplet **triplets = sbs_triplet_find(file, args->preset, args->environment, args->toolchain, args->config, args->script_mode);
+    SbsTriplet **triplets = sbs_triplet_find(file, args->preset, args->environment, args->arch, args->toolchain, args->config, args->script_mode);
 
     if (triplets == NULL || fl_array_length(triplets) == 0)
     {
@@ -116,22 +116,24 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
         goto error_before_targets;
     }
 
-    // Fail-safe triplet
+    // Default triplet is the first one
     SbsTriplet *triplet = triplets[0];
 
-    // Search for the default triplet for this host
-    for (size_t i=0; i < fl_array_length(triplets); i++)
+    // If there is no --env|-e argument, we should search for the most appropriate
+    // environment: the one matching its OS and architecture properties with the 
+    // host machine. If there is no environment, we try with the first one.
+    if (args->env == NULL)
     {
-        SbsContext *triplet_ctx = triplets[i]->context;
+        for (size_t i=0; i < fl_array_length(triplets); i++)
+        {
+            SbsContext *tripletctx = triplets[i]->context;
 
-        if (triplet_ctx->host->os != triplet_ctx->env->host->os)
-            continue;
+            if (tripletctx->host->os != tripletctx->env->host->os)
+                continue;
 
-        if (!fl_array_contains(triplet_ctx->env->arch, &triplet_ctx->host->arch))
-            continue;
-
-        triplet = triplets[i];
-        break;
+            triplet = triplets[i];
+            break;
+        }
     }
 
     // Add a built-in variable with the sbs binary

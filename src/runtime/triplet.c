@@ -43,7 +43,7 @@ static inline bool resolve_preset(SbsContext *context, const char *preset_name)
     return context->preset != NULL;
 }
 
-SbsTriplet** sbs_triplet_find(const SbsFile *file, const char *preset, const char *env, const char *toolchain, const char *config, bool script_mode)
+SbsTriplet** sbs_triplet_find(const SbsFile *file, const char *preset, const char *env, const char *arch, const char *toolchain, const char *config, bool script_mode)
 {
     // Our return value
     SbsTriplet **triplets_array = NULL;
@@ -54,12 +54,15 @@ SbsTriplet** sbs_triplet_find(const SbsFile *file, const char *preset, const cha
     if (context == NULL)
         return NULL;
 
+    // TODO: check if this is ok here
+    context->resolvectx->script_mode = script_mode;
+
     // Check if the build uses a preset and in that case make sure it is a valid preset
     if (preset != NULL && !resolve_preset(context, preset))
         goto preset_error;
 
     triplets_array = fl_array_new(sizeof(SbsTriplet*), 0);
-    FlList *triplets_list = sbs_triplet_resolve_all(context, env, toolchain, config, script_mode);
+    FlList *triplets_list = sbs_triplet_resolve_all(context, env, arch, toolchain, config, script_mode);
 
     struct FlListNode *node = fl_list_head(triplets_list);
     while (node)
@@ -87,34 +90,39 @@ preset_error:
     return triplets_array;
 }
 
-FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char *toolchain, const char *config, bool script_mode)
+FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char *arch, const char *toolchain, const char *config, bool script_mode)
 {
     FlList *triplets = fl_list_new();
 
-    for (size_t i=0; i < fl_array_length(context->preset->envs); i++)
+    if (context->preset == NULL)
+    {
+        SbsContext *tripletctx = sbs_context_copy(context);
+        tripletctx->env = sbs_env_resolve(tripletctx->resolvectx, env, arch);
+        tripletctx->toolchain = sbs_toolchain_resolve(tripletctx->resolvectx, toolchain);
+        tripletctx->config = sbs_config_resolve(tripletctx->resolvectx, config);
+        fl_list_append(triplets, sbs_triplet_new(tripletctx));
+        return triplets;
+    }
+
+    const char **environments = env != NULL ? (const char *[]){ env } : (const char **) context->preset->envs;
+    size_t environments_count = env != NULL ? 1 : fl_array_length(context->preset->envs);
+    for (size_t i=0; i < environments_count; i++)
     {
         // Start with environments
-        const char *env_name = context->preset->envs[i];
+        const char *env_name = environments[i];
 
-        if (env != NULL && !flm_cstring_equals(env, env_name))
-            continue;
+        SbsContext *tripletctx = sbs_context_copy(context);
+        tripletctx->env = sbs_env_resolve(tripletctx->resolvectx, env_name, arch); // get the env
 
-        SbsContext *triplet_ctx = sbs_context_copy(context);
-        triplet_ctx->env = sbs_env_resolve(triplet_ctx->resolvectx, env_name); // get the env
-
-        if (!triplet_ctx->env)
-            goto env_clean_ctx;
-
-        // Make sure the environment can run on the host
-        if (!script_mode && (triplet_ctx->host->os != triplet_ctx->env->os || !fl_array_contains(triplet_ctx->env->arch, &triplet_ctx->host->arch)))
+        if (!tripletctx->env)
             goto env_clean_ctx;
 
         // At this point it is safe to create a triplet
-        fl_list_append(triplets, sbs_triplet_new(triplet_ctx));
+        fl_list_append(triplets, sbs_triplet_new(tripletctx));
 
         continue;
 
-        env_clean_ctx: sbs_context_free(triplet_ctx);
+        env_clean_ctx: sbs_context_free(tripletctx);
     }
 
     struct FlListNode *node = fl_list_head(triplets);
@@ -129,18 +137,18 @@ FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char
             if (toolchain != NULL && !flm_cstring_equals(toolchain, toolchain_name))
                 continue;
             
-            SbsContext *triplet_ctx = sbs_context_copy(triplet->context);
-            triplet_ctx->toolchain = sbs_toolchain_resolve(triplet_ctx->resolvectx, toolchain_name); // get the toolchain
+            SbsContext *tripletctx = sbs_context_copy(triplet->context);
+            tripletctx->toolchain = sbs_toolchain_resolve(tripletctx->resolvectx, toolchain_name); // get the toolchain
             
-            if (!triplet_ctx->toolchain)
+            if (!tripletctx->toolchain)
                 goto tc_clean_ctx;
 
             // At this point it is safe to create a triplet
-            fl_list_insert_before(triplets, node, sbs_triplet_new(triplet_ctx));
+            fl_list_insert_before(triplets, node, sbs_triplet_new(tripletctx));
 
             continue;
 
-            tc_clean_ctx: sbs_context_free(triplet_ctx);
+            tc_clean_ctx: sbs_context_free(tripletctx);
         }
 
         struct FlListNode *to_rem = node;
@@ -162,18 +170,18 @@ FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char
             if (config != NULL && !flm_cstring_equals(config, config_name))
                 continue;
             
-            SbsContext *triplet_ctx = sbs_context_copy(triplet->context);
-            triplet_ctx->config = sbs_config_resolve(triplet_ctx->resolvectx, config_name); // get the config
+            SbsContext *tripletctx = sbs_context_copy(triplet->context);
+            tripletctx->config = sbs_config_resolve(tripletctx->resolvectx, config_name); // get the config
             
-            if (!triplet_ctx->config)
+            if (!tripletctx->config)
                 goto config_clean_ctx;
 
             // At this point it is safe to create a triplet
-            fl_list_insert_before(triplets, node, sbs_triplet_new(triplet_ctx));
+            fl_list_insert_before(triplets, node, sbs_triplet_new(tripletctx));
 
             continue;
 
-            config_clean_ctx: sbs_context_free(triplet_ctx);
+            config_clean_ctx: sbs_context_free(tripletctx);
         }
 
         struct FlListNode *to_rem = node;

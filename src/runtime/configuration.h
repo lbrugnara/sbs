@@ -1,7 +1,7 @@
 #ifndef SBS_RUNTIME_CONFIGURATION_H
 #define SBS_RUNTIME_CONFIGURATION_H
 
-#include "string.h"
+#include "../lang/string.h"
 #include "resolve.h"
 
 typedef struct SbsConfigCompile {

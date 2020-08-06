@@ -3,7 +3,6 @@ config clang-config for toolchain(clang, gcc) {
     compile: {
         extension: ".o",
         flags: [
-            "-std=c99",
             "-Wall",
             "-Werror",
             "-Wextra",
@@ -19,6 +18,13 @@ config clang-config for toolchain(clang, gcc) {
             "-finput-charset=UTF-8",
             "-fexec-charset=UTF-8",
             "-D_FORTIFY_SOURCE=2",
+            "-DSBS_BUILD_ARCH=\\\"${sbs.arch}\\\"",
+            "-DSBS_BUILD_OS=\\\"${sbs.os}\\\"",
+            "-DSBS_BUILD_HOST_ARCH=\\\"${sbs.host.arch}\\\"",
+            "-DSBS_BUILD_HOST_OS=\\\"${sbs.host.os}\\\"",
+            "-DSBS_BUILD_COMPILER=\\\"${sbs.compiler}\\\"" 
+            "-DSBS_BUILD_LINKER=\\\"${sbs.linker}\\\"" 
+            "-DSBS_BUILD_CONFIGURATION=\\\"${sbs.config}\\\"" 
             # ${sbs.input_file} is a special variable that contains the source filename
             "-c ${sbs.input_file}",
             # The ${sbs.output_file} variable contains the output name for the compiled object
@@ -27,8 +33,8 @@ config clang-config for toolchain(clang, gcc) {
     },    
 
     # Specific overrides for linux envs
-    if $sbs.env == linux-bash {
-        compile: { flags: [ "-fPIC" ] },
+    if $sbs.os == linux {
+        compile: { flags: [ "-std=gnu99", "-fPIC" ] },
         archive: { extension: ".a", flags: [ "rcs" ] },
         shared: {
             extension: ".so",
@@ -41,7 +47,8 @@ config clang-config for toolchain(clang, gcc) {
     },
 
     # Specific overrides for Windows envs
-    if $sbs.env == win-cmd {
+    if $sbs.os == win {
+        compile: { flags: [ "-std=c99" ] },
         archive: {
             extension: ".lib",
             flags: [ "/NOLOGO", "/OUT:${sbs.output_file}" ]
@@ -55,13 +62,58 @@ config clang-config for toolchain(clang, gcc) {
             flags: [ "/OUT:${sbs.output_file}", "/DEFAULTLIB:libcmt.lib", "/NOLOGO", "/SUBSYSTEM:CONSOLE" ]
         }
     }
+
+    if $sbs.toolchain == clang
+    {
+        if $sbs.os == win
+        {
+            if $sbs.arch == x86 
+            {
+                compile: { flags: [ "--target=i386-pc-win32" ] }
+            } 
+            else if $sbs.arch == x86_64
+            {
+                compile: { flags: [ "--target=x86_64-pc-win32" ] }
+            }
+        }
+        else if $sbs.os == linux
+        {
+            if $sbs.arch == x86
+            {
+                compile: { flags: [ "--target=i386-pc-linux" ] }
+                shared: { flags: [ "--target=i386-pc-linux" ] }
+                executable: { flags: [ "--target=i386-pc-linux" ] }
+            }
+            else if $sbs.arch == x86_64
+            {
+                compile: { flags: [ "--target=x86_64-pc-linux" ] }
+                shared: { flags: [ "--target=x86_64-pc-linux" ] }
+                executable: { flags: [ "--target=x86_64-pc-linux" ] }
+            }
+        }
+    }
+    else if $sbs.toolchain == gcc
+    {
+        if $sbs.arch == x86
+        {
+            compile: { flags: [ "-m32" ] }
+            shared: { flags: [ "-m32" ] }
+            executable: { flags: [ "-m32" ] }
+        }
+        else if $sbs.arch == x86_64
+        {
+            compile: { flags: [ "-m64" ] }
+            shared: { flags: [ "-m64" ] }
+            executable: { flags: [ "-m64" ] }
+        }
+    }
 }
 
 # The debug configuration adds flags to generate debug information
 config clang-debug extends clang-config {
     compile: { flags: [ "-ggdb", "-O0" ] }
 
-    if $sbs.env == win-cmd {
+    if $sbs.os == win {
         shared: { flags: [ "/DEBUG:FULL" ] },
         executable: { flags: [ "/DEBUG:FULL" ] }
     }
@@ -75,4 +127,17 @@ config clang-release extends clang-config {
 # The sanitize config adds the -fsanitize flag to compile with Clang's sanitizers
 config clang-sanitize extends clang-release {
     compile: { flags: [ "-O0", "-fsanitize=address,undefined" ] },
+}
+
+# The sanitize config adds the -fsanitize flag to compile with Clang's sanitizers
+config clang-debug-sanitize extends clang-debug {
+
+    if $sbs.os == win {
+        compile: { flags: [ "-fsanitize=address,undefined" ] }
+    }
+
+    if $sbs.os == linux {
+        compile: { flags: [ "-fsanitize=address,undefined,function" ] }
+        executable: { flags: [ "-fsanitize=address,undefined,function" ] }
+    }
 }

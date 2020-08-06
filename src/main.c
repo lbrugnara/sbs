@@ -6,6 +6,7 @@
 #include "cli/cmdhelp.h"
 #include "cli/cmdinit.h"
 #include "cli/cmdlist.h"
+#include "cli/cmdver.h"
 
 #ifndef SBS_TESTS
 int main(int argc, char **argv, char **env)
@@ -25,6 +26,7 @@ int main(int argc, char **argv, char **env)
     SbsArgsResult parsed_args = SBS_ARGS_OK;
     char *subcommand = NULL;
     char *flag_cwd = NULL;
+    bool flag_version = false;
     {
         sbs_args_parse(argv+1, {
             sbs_args_retval(&parsed_args);
@@ -33,17 +35,22 @@ int main(int argc, char **argv, char **env)
             sbs_args_list(
                 sbs_args_subcmd(subcommand, "init", "list", "build")
                 sbs_args_string("--working-dir", "-cwd", &flag_cwd)
+                sbs_args_flag("--version", "-v", &flag_version)
             );
         });
-    }    
+    }
 
     // Increment the offset for each parsed argument
     if (subcommand != NULL) argv_offset++;
     if (flag_cwd != NULL) argv_offset++;
+    if (flag_version) argv_offset++;
 
     // Show the help message if requested
     if (parsed_args == SBS_ARGS_HELP)
         return sbs_command_help(argc, argv, env, argv_offset);
+
+    if (flag_version)
+        return sbs_command_version(argc, argv, env, argv_offset);
 
     if (flag_cwd)
     {

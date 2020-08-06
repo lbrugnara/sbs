@@ -2,7 +2,18 @@
 config msvc-config for toolchain(msvc) {
     compile: {
         extension: ".o",
-        flags: [ "/W1", "/c ${sbs.input_file}", "/Fo.\\${sbs.output_file}" ]
+        flags: [ 
+            "/W1", 
+            "/c ${sbs.input_file}", 
+            "/Fo.\\${sbs.output_file}", 
+            "/DSBS_BUILD_ARCH=\\\"${sbs.arch}\\\"", 
+            "/DSBS_BUILD_OS=\\\"${sbs.os}\\\"",
+            "/DSBS_BUILD_HOST_ARCH=\\\"${sbs.host.arch}\\\"", 
+            "/DSBS_BUILD_HOST_OS=\\\"${sbs.host.os}\\\"" 
+            "/DSBS_BUILD_COMPILER=\\\"${sbs.compiler}\\\"" 
+            "/DSBS_BUILD_LINKER=\\\"${sbs.linker}\\\"" 
+            "/DSBS_BUILD_CONFIGURATION=\\\"${sbs.config}\\\"" 
+        ]
     },    
     archive: {
         extension: ".lib",
@@ -15,6 +26,17 @@ config msvc-config for toolchain(msvc) {
     executable: {
         extension: ".exe",
         flags: [ "/OUT:${sbs.output_file}", "/DEFAULTLIB:libcmt.lib", "/NOLOGO", "/SUBSYSTEM:CONSOLE" ]
+    }
+
+    if $sbs.arch == x86 
+    {
+        shared: { flags: [ "/MACHINE:x86" ] }
+        executable: { flags: [ "/MACHINE:x86" ] }
+    } 
+    else if $sbs.arch == x86_64
+    {
+        shared: { flags: [ "/MACHINE:x64" ] }
+        executable: { flags: [ "/MACHINE:x64" ] }
     }
 }
 

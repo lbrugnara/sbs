@@ -15,9 +15,9 @@
  *  char** - Parsed array of strings (that represents executable commands)
  *
  */
-SbsValueString* sbs_value_command_string_parse(SbsParser *parser)
+SbsString* sbs_value_command_string_parse(SbsParser *parser)
 {
-    return sbs_value_string_parse(parser);
+    return sbs_string_parse(parser);
 }
 
 /*
@@ -71,7 +71,7 @@ SbsValueCommand** sbs_value_command_array_parse(SbsParser *parser)
             {
                 command = fl_malloc(sizeof(SbsValueCommand));
                 command->type = SBS_VALUE_COMMAND_NAME;
-                command->value = sbs_value_string_new(sbs_parse_identifier(parser));
+                command->value = sbs_string_new(sbs_parse_identifier(parser), true);
             }
             else
             {

@@ -2,6 +2,8 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "environment.h"
+#include "conditional.h"
+#include "expression.h"
 #include "helpers.h"
 #include "parser.h"
 #include "action.h"
@@ -30,6 +32,9 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
     
     // Consume IDENTIFIER
     SbsSectionEnv *env = sbs_section_env_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
+
+    if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
+        env->condition = sbs_stmt_conditional_parse(parser);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
@@ -90,17 +95,7 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-
-            if (sbs_parser_peek(parser)->type == SBS_TOKEN_LBRACKET)
-            {
-                env->arch = sbs_parse_variable_array(parser);
-            }
-            else
-            {
-                SbsValueVariable *variable = sbs_parse_variable(parser);
-                env->arch = fl_array_new(sizeof(SbsValueVariable*), 1);
-                env->arch[0] = variable;
-            }
+            env->arch = sbs_expression_parse(parser);
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

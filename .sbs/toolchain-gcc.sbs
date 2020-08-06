@@ -9,7 +9,7 @@ toolchain gcc {
     }    
 
     # Linux specifics
-    if $sbs.env == linux-bash {
+    if $sbs.os == linux {
         archiver: {
             bin: "ar"
         },

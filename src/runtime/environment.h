@@ -23,13 +23,13 @@ typedef struct SbsEnv {
         SbsCommand **before;
         SbsCommand **after;
     } actions;
-    SbsHostArch *arch;
-    SbsHostOs os;
+    SbsOs os;
+    SbsArch arch;
     SbsShellType shell_type;
 } SbsEnv;
 
 SbsEnv* sbs_env_new(const char *name);
 void sbs_env_free(SbsEnv *env);
-SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name);
+SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name, const char *arch);
 
 #endif /* SBS_RUNTIME_ENVIRONMENT_H */

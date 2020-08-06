@@ -6,6 +6,7 @@
 typedef enum SbsArgsResult {
     SBS_ARGS_OK,
     SBS_ARGS_HELP,
+    SBS_ARGS_WARNING,
     SBS_ARGS_ERROR
 } SbsArgsResult;
 
@@ -66,7 +67,7 @@ do { \
             else \
                 sbs_print_err("Unknown option '%s'.", sbs_arg, sbs_arg); \
         } \
-        if (sbs_resultptr) *sbs_resultptr = SBS_ARGS_ERROR; \
+        if (sbs_resultptr) *sbs_resultptr = SBS_ARGS_WARNING; \
     } \
 } while (1)
 

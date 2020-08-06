@@ -1,7 +1,7 @@
 #ifndef SBS_RUNTIME_COMMAND_H
 #define SBS_RUNTIME_COMMAND_H
 
-#include "string.h"
+#include "../lang/command.h"
 #include "../utils.h"
 
 typedef enum SbsCommandType {

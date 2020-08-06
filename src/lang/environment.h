@@ -6,13 +6,14 @@
 
 
 typedef struct SbsSectionEnv {
+    SbsStmtConditional *condition;
     const char *name;
     const char *shell_type;
     const char *shell_command;
     char **shell_args;
     char **variables;
-    SbsValueVariable *os;
-    SbsValueVariable **arch;
+    SbsVariableInfo *os;
+    SbsExpression *arch;
     SbsPropertyActions actions;
 } SbsSectionEnv;
 

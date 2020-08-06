@@ -28,7 +28,7 @@ SbsCommand* sbs_command_resolve(const SbsValueCommand *value_command)
     SbsCommand *copy = fl_malloc(sizeof(SbsCommand));
 
     copy->type = value_command->type == SBS_VALUE_COMMAND_NAME ? SBS_COMMAND_NAME : SBS_COMMAND_STRING;
-    copy->value = sbs_string_resolve(value_command->value);
+    copy->value = sbs_string_copy(value_command->value);
 
     return copy;
 }

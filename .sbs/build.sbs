@@ -1,19 +1,29 @@
 # This is the main build file, just a bunch of includes...
 
 include [
-    "actions.sbs",
+    "variables.sbs",
 
-    "toolchains/gcc.sbs",
-    "toolchains/clang.sbs",
-    "toolchains/msvc.sbs",
+    "env-linux.sbs",
+    "env-win.sbs",
 
-    "configs/clang.sbs",
-    "configs/msvc.sbs",
+    "action-clean.sbs",
+    "action-copy-fllib.sbs",
+    "action-install.sbs",
 
-    "envs.sbs",
+    "config-clang.sbs",
+    "config-msvc.sbs",
+
+    "toolchain-gcc.sbs",
+    "toolchain-clang.sbs",
+    "toolchain-msvc.sbs",
+    
     "presets.sbs",
-    "targets.sbs",
 
+    "target-compile-sbs-objects.sbs",
+    "target-compile-sbs-tests-objects.sbs",
+    "target-executable-sbs.sbs",
+    "target-executable-sbs-sanitize.sbs",
+    "target-executable-sbs-tests.sbs",
 
     "dummy.sbs"
 ]

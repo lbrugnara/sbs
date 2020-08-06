@@ -11,9 +11,9 @@ typedef struct SbsTriplet {
     SbsContext *context;
 } SbsTriplet;
 
-SbsTriplet** sbs_triplet_find(const SbsFile *file, const char *preset, const char *env, const char *toolchain, const char *config, bool script_mode);
+SbsTriplet** sbs_triplet_find(const SbsFile *file, const char *preset, const char *env, const char *arch, const char *toolchain, const char *config, bool script_mode);
 SbsTriplet* sbs_triplet_new(SbsContext *context);
 void sbs_triplet_free(SbsTriplet *triplet);
-FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char *toolchain, const char *config, bool script_mode);
+FlList* sbs_triplet_resolve_all(SbsContext *context, const char *env, const char *arch, const char *toolchain, const char *config, bool script_mode);
 
 #endif /* SBS_RUNTIME_TRIPLET_H */

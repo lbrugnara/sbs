@@ -1,5 +1,5 @@
 
-toolchain msvc for env(win-cmd) {
+toolchain msvc for $sbs.os == win {
 
     # These are the same for both envs
     compiler: {

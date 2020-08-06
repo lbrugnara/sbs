@@ -2,7 +2,8 @@
 #define SBS_RUNTIME_EVAL_H
 
 #include <fllib/containers/Hashtable.h>
-#include "variable.h"
+#include "../lang/variable.h"
+#include "../lang/string.h"
 
 typedef enum SbsEvalOperatorKind {
     SBS_EVAL_OP_UNK,
@@ -21,7 +22,9 @@ typedef enum SbsExprKind {
     SBS_EXPR_BINARY,
     SBS_EXPR_ARRAY,
     SBS_EXPR_VARIABLE,
-    SBS_EXPR_VALUE
+    SBS_EXPR_VALUE,
+    SBS_EXPR_STRING,
+    SBS_EXPR_IF,
 } SbsExprKind;
 
 typedef struct SbsExpression {    
@@ -31,7 +34,7 @@ typedef struct SbsExpression {
 typedef enum SbsValueExprType {
     SBS_EXPR_VALUE_TYPE_UNK,
     SBS_EXPR_VALUE_TYPE_BOOL,
-    SBS_EXPR_VALUE_TYPE_STR,
+    SBS_EXPR_VALUE_TYPE_STRING,
     SBS_EXPR_VALUE_TYPE_ARRAY,
 } SbsValueExprType;
 
@@ -44,6 +47,11 @@ typedef struct SbsValueExpr {
         SbsExpression **a;
     } value;
 } SbsValueExpr;
+
+typedef struct SbsStringExpr {
+    SbsExprKind kind;
+    struct SbsString *value;
+} SbsStringExpr;
 
 typedef struct SbsVariableExpr {
     SbsExprKind kind;
@@ -68,6 +76,13 @@ typedef struct SbsBinaryExpr {
     SbsExpression *right;
 } SbsBinaryExpr;
 
+typedef struct SbsIfExpr {
+    SbsExprKind kind;
+    SbsExpression *condition;
+    SbsExpression *then_branch;
+    SbsExpression *else_branch;
+} SbsIfExpr;
+
 typedef struct SbsEvalContext {
     FlHashtable *variables;
 } SbsEvalContext;
@@ -86,5 +101,7 @@ void sbs_expression_array_add_item(SbsArrayExpr *array, SbsExpression *item);
 SbsVariableExpr* sbs_expression_make_variable(const char *name, const char *namespace);
 SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *left);
 SbsBinaryExpr* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right);
+SbsIfExpr* sbs_expression_make_if(SbsExpression *condition, SbsExpression *then_branch, SbsExpression *else_branch);
+SbsStringExpr* sbs_expression_make_string(struct SbsString *string);
 
 #endif /* SBS_RUNTIME_EVAL_H */

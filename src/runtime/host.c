@@ -1,4 +1,5 @@
 #include <fllib/Mem.h>
+#include <fllib/Cstring.h>
 #include "host.h"
 
 #ifdef SBS_HOST_OS_WIN
@@ -7,11 +8,10 @@
 #elif defined(SBS_HOST_OS_LINUX)
     #define _GNU_SOURCE
     #include <unistd.h>
-    #include <stdio.h>
-    #include <fllib/Cstring.h>
+    #include <stdio.h>    
 #endif
 
-SbsHostInfo* sbs_host_new(SbsHostOs os, SbsHostArch arch)
+SbsHostInfo* sbs_host_new(SbsOs os, SbsArch arch)
 {
     SbsHostInfo *host_info = fl_malloc(sizeof(SbsHostInfo));
 
@@ -60,7 +60,7 @@ void sbs_host_free(SbsHostInfo *host_info)
     fl_free(host_info);
 }
 
-SbsHostOs sbs_host_os(void)
+SbsOs sbs_host_os(void)
 {
     #ifdef SBS_HOST_OS_WIN
         return SBS_OS_WIN;
@@ -71,10 +71,10 @@ SbsHostOs sbs_host_os(void)
     #endif
 }
 
-SbsHostArch sbs_host_arch(void)
+SbsArch sbs_host_arch(void)
 #ifdef SBS_HOST_OS_WIN
 {
-    SbsHostArch arch = SBS_ARCH_UNK;
+    SbsArch arch = SBS_ARCH_UNK;
 
     SYSTEM_INFO sys_info = { 0 };
     GetNativeSystemInfo(&sys_info);
@@ -112,25 +112,30 @@ SbsHostArch sbs_host_arch(void)
 }
 #elif defined(SBS_HOST_OS_LINUX)
 {
-    FILE *pf = popen("uname -a", "r");
+    FILE *pf = popen("uname -m", "r");
 
     if (!pf) 
         return SBS_ARCH_UNK;
 
     char buffer[1024] = { 0 };
-    if (fgets(buffer, 1024, pf) == NULL)
+    size_t read = 0;
+    if ((read = fread(buffer, 1, 1024, pf)) == 0)
         return SBS_ARCH_UNK;
 
-    SbsHostArch arch = SBS_ARCH_UNK;
+    if (buffer[read-1] == '\n')
+        buffer[read-1] = '\0'; 
 
-    if (fl_cstring_contains(buffer, "x86_64"))
+    SbsArch arch = SBS_ARCH_UNK;
+
+    if (flm_cstring_equals(buffer, "x86_64"))
     {
         arch = SBS_ARCH_X86_64;
     }
-    else if (fl_cstring_contains(buffer, "i386") || fl_cstring_contains(buffer, "i686"))
+    else if (flm_cstring_equals(buffer, "i386") || flm_cstring_equals(buffer, "i686"))
     {
         arch = SBS_ARCH_X86;
     }
+    // TODO: Fix arm/arm64 arch identifier
 
     pclose(pf);
 
@@ -142,7 +147,7 @@ SbsHostArch sbs_host_arch(void)
 }
 #endif
 
-const char* sbs_host_os_to_str(SbsHostOs os)
+const char* sbs_os_to_str(SbsOs os)
 {
     switch (os)
     {
@@ -157,7 +162,7 @@ const char* sbs_host_os_to_str(SbsHostOs os)
     }
 }
 
-const char* sbs_host_arch_to_str(SbsHostArch arch)
+const char* sbs_arch_to_str(SbsArch arch)
 {
     switch (arch)
     {
@@ -167,13 +172,34 @@ const char* sbs_host_arch_to_str(SbsHostArch arch)
         case SBS_ARCH_X86_64:
             return "x86_64";
 
+        // TODO: Fix arm arch identifier
         case SBS_ARCH_ARM:
             return "arm";
 
+        // TODO: Fix arm64 arch identifier
         case SBS_ARCH_ARM64:
             return "arm64";
 
         default:
             return "unknown";
     }
+}
+
+SbsArch sbs_arch_from_str(const char *arch)
+{
+    if (flm_cstring_equals(arch, "x86"))
+        return SBS_ARCH_X86;
+
+    if (flm_cstring_equals(arch, "x86_64"))
+        return SBS_ARCH_X86_64;
+
+    // TODO: Fix arm arch identifier
+    if (flm_cstring_equals(arch, "arm"))
+        return SBS_ARCH_ARM;
+
+    // TODO: Fix arm64 arch identifier
+    if (flm_cstring_equals(arch, "arm64"))
+        return SBS_ARCH_ARM64;
+
+    return SBS_ARCH_UNK;
 }

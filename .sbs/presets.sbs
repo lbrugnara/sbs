@@ -6,7 +6,7 @@ preset release {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang, gcc, msvc ],
     configs: [ clang-release, msvc-release ],
-    targets: [ sbs, sbs-tests ],
+    targets: [ sbs ],
     actions: {
         before: [ copy-fllib ]
     }
@@ -17,7 +17,18 @@ preset debug {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang, gcc, msvc ],
     configs: [ clang-debug, msvc-debug ],
-    targets: [ sbs, sbs-tests ],
+    targets: [ sbs ],
+    actions: {
+        before: [ copy-fllib ]
+    }
+}
+
+# This preset builds the sbs build system in debug mode
+preset debug-sanitize {
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang ],
+    configs: [ clang-debug-sanitize ],
+    targets: [ sbs-sanitize],
     actions: {
         before: [ copy-fllib ]
     }

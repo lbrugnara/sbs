@@ -3,9 +3,9 @@
 #include "variable.h"
 #include "../utils.h"
 
-SbsValueVariable* sbs_value_variable_new(const struct FlSlice *name, const struct FlSlice *namespace)
+SbsVariableInfo* sbs_varinfo_new_from_slice(const struct FlSlice *name, const struct FlSlice *namespace)
 {
-    SbsValueVariable *variable = fl_malloc(sizeof(SbsValueVariable));
+    SbsVariableInfo *variable = fl_malloc(sizeof(SbsVariableInfo));
 
     variable->name = sbs_slice_to_cstring(name);
 
@@ -22,30 +22,37 @@ SbsValueVariable* sbs_value_variable_new(const struct FlSlice *name, const struc
     return variable;
 }
 
-void sbs_value_variable_free(SbsValueVariable *variable)
+SbsVariableInfo* sbs_varinfo_new(const char *name, const char *namespace)
 {
-    if (!variable)
-        return;
-
-    if (variable->name)
-        fl_cstring_free(variable->name);
-
-    if (variable->namespace)
-        fl_cstring_free(variable->namespace);
-
-    if (variable->fqn)
-        fl_cstring_free(variable->fqn);
-
-    fl_free(variable);
+    return sbs_varinfo_new_from_slice(
+            &flm_slice_new((const FlByte * const) name, 1, 0, strlen(name)), 
+            (namespace != NULL ? &flm_slice_new((const FlByte * const) namespace, 1, 0, strlen(namespace)) : NULL));
 }
 
-SbsValueVariable* sbs_value_variable_copy(const SbsValueVariable *variable)
+void sbs_varinfo_free(SbsVariableInfo *varinfo)
 {
-    SbsValueVariable *copy = fl_malloc(sizeof(SbsValueVariable));
+    if (!varinfo)
+        return;
 
-    copy->name = fl_cstring_dup(variable->name);
-    copy->namespace = variable->namespace != NULL ? fl_cstring_dup(variable->namespace) : NULL;
-    copy->fqn = fl_cstring_dup(variable->fqn);
+    if (varinfo->name)
+        fl_cstring_free(varinfo->name);
+
+    if (varinfo->namespace)
+        fl_cstring_free(varinfo->namespace);
+
+    if (varinfo->fqn)
+        fl_cstring_free(varinfo->fqn);
+
+    fl_free(varinfo);
+}
+
+SbsVariableInfo* sbs_varinfo_copy(const SbsVariableInfo *varinfo)
+{
+    SbsVariableInfo *copy = fl_malloc(sizeof(SbsVariableInfo));
+
+    copy->name = fl_cstring_dup(varinfo->name);
+    copy->namespace = varinfo->namespace != NULL ? fl_cstring_dup(varinfo->namespace) : NULL;
+    copy->fqn = fl_cstring_dup(varinfo->fqn);
 
     return copy;
 }
@@ -60,7 +67,7 @@ SbsNodeVariableDefinition* sbs_node_variable_definition_new(void)
 void sbs_node_variable_definition_free(SbsNodeVariableDefinition *var_def)
 {
     if (var_def->name)
-        sbs_value_variable_free(var_def->name);
+        sbs_varinfo_free(var_def->name);
 
     switch (var_def->kind)
     {

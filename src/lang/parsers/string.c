@@ -4,7 +4,7 @@
 #include "conditional.h"
 #include "variable.h"
 
-SbsValueString* sbs_value_string_parse(SbsParser *parser)
+SbsString* sbs_string_parse(SbsParser *parser)
 {
     SbsTokenType token_type = sbs_parser_next_is(parser, SBS_TOKEN_STRING)
                             ? SBS_TOKEN_STRING
@@ -18,9 +18,11 @@ SbsValueString* sbs_value_string_parse(SbsParser *parser)
         return NULL;
     }
 
+    char escape = token_type == SBS_TOKEN_STRING ? '"' : '`';
+
     const SbsToken *token = sbs_parser_consume(parser, token_type);
 
-    SbsValueStringVariablePlaceholder **placeholders = fl_array_new(sizeof(SbsValueStringVariablePlaceholder*), 0);
+    SbsStringPlaceholder **placeholders = NULL;
     char *format = fl_cstring_new(0);
     size_t format_index = 0;
 
@@ -45,6 +47,11 @@ SbsValueString* sbs_value_string_parse(SbsParser *parser)
                     i++; // consume the '\r' and let the for increment consume the '\n'
                     continue;
                 }
+                else if (i < token->value.length -1 && ((char) token->value.sequence[i + 1] == escape || (char) token->value.sequence[i + 1] == '\\'))
+                {
+                    i++; // consume the '\'
+                    c = token->value.sequence[i]; // Store one of the following characters: '\', '"', or '`'
+                }
             }
 
             format_index++;
@@ -52,7 +59,7 @@ SbsValueString* sbs_value_string_parse(SbsParser *parser)
             continue;
         }
 
-        SbsValueStringVariablePlaceholder *placeholder = fl_malloc(sizeof(SbsValueStringVariablePlaceholder));
+        SbsStringPlaceholder *placeholder = fl_malloc(sizeof(SbsStringPlaceholder));
         placeholder->index = format_index;
 
         i++; // consume the '$'
@@ -110,35 +117,28 @@ SbsValueString* sbs_value_string_parse(SbsParser *parser)
         if (ns_length > 0)
         {
             struct FlSlice namespace = fl_slice_new(token->value.sequence, 1, ns_index, ns_length);
-            placeholder->variable = sbs_value_variable_new(&name, &namespace);
+            placeholder->variable = sbs_varinfo_new_from_slice(&name, &namespace);
         }
         else
         {
-            placeholder->variable = sbs_value_variable_new(&name, NULL);
+            placeholder->variable = sbs_varinfo_new_from_slice(&name, NULL);
         }
+
+        if (placeholders == NULL)
+            placeholders = fl_array_new(sizeof(SbsStringPlaceholder*), 0);
 
         placeholders = fl_array_append(placeholders, &placeholder);
     }
-    
-    const char *escape = token_type == SBS_TOKEN_STRING ? "\\\"" : "\\`";
-    const char *escape_repl = token_type == SBS_TOKEN_STRING ? "\"" : "`";
-    if (fl_cstring_contains(format, escape))
-    {
-        char *tmp = fl_cstring_replace(format, escape, escape_repl);
-        if (!tmp)
-            return NULL;
-        fl_cstring_free(format);
-        format = tmp;
-    }
 
-    SbsValueString *string = fl_malloc(sizeof(SbsValueString));
+    SbsString *string = fl_malloc(sizeof(SbsString));
     string->format = format;
     string->args = placeholders;
+    string->is_constant = placeholders == NULL;
 
     return string;
 }
 
-SbsValueString** sbs_value_string_array_parse(SbsParser *parser)
+SbsString** sbs_string_array_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
@@ -153,17 +153,17 @@ SbsValueString** sbs_value_string_array_parse(SbsParser *parser)
         strings_count++;
     }
 
-    SbsValueString **strings = NULL;
+    SbsString **strings = NULL;
 
     if (strings_count != 0)
     {
         // Parse the strings
-        strings = fl_array_new(sizeof(SbsValueString*), strings_count);
+        strings = fl_array_new(sizeof(SbsString*), strings_count);
         size_t index = 0;
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
-            strings[index++] = sbs_value_string_parse(parser);
+            strings[index++] = sbs_string_parse(parser);
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
         }

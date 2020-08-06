@@ -13,14 +13,14 @@
 
 static unsigned long hash_variable_name(const FlByte *key)
 {
-    const SbsValueVariable *var = (const SbsValueVariable*) key;
+    const SbsVariableInfo *var = (const SbsVariableInfo*) key;
     return fl_hashtable_hash_string((const FlByte*) var->fqn);
 }
 
 static bool variable_equals(const FlByte *val1, const FlByte *val2)
 {
-    const SbsValueVariable *var1 = (const SbsValueVariable*) val1;
-    const SbsValueVariable *var2 = (const SbsValueVariable*) val2;
+    const SbsVariableInfo *var1 = (const SbsVariableInfo*) val1;
+    const SbsVariableInfo *var2 = (const SbsVariableInfo*) val2;
 
     return flm_cstring_equals(var1->fqn, var2->fqn);
 }

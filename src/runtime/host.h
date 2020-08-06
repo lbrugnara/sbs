@@ -7,32 +7,33 @@
     #define SBS_HOST_OS_LINUX
 #endif
 
-typedef enum SbsHostOs {
+typedef enum SbsOs {
     SBS_OS_UNK,
     SBS_OS_WIN,
     SBS_OS_LINUX
-} SbsHostOs;
+} SbsOs;
 
-typedef enum SbsHostArch {
+typedef enum SbsArch {
     SBS_ARCH_UNK,
     SBS_ARCH_X86,
     SBS_ARCH_X86_64,
     SBS_ARCH_ARM,
     SBS_ARCH_ARM64,
-} SbsHostArch;
+} SbsArch;
 
 typedef struct SbsHostInfo {
-    SbsHostOs os;
-    SbsHostArch arch;
+    SbsOs os;
+    SbsArch arch;
     char dir_separator;
 } SbsHostInfo;
 
-SbsHostInfo* sbs_host_new(SbsHostOs os, SbsHostArch arch);
+SbsHostInfo* sbs_host_new(SbsOs os, SbsArch arch);
 SbsHostInfo* sbs_host_get_info(void);
 void sbs_host_free(SbsHostInfo *host_info);
-SbsHostOs sbs_host_os(void);
-SbsHostArch sbs_host_arch(void);
-const char* sbs_host_os_to_str(SbsHostOs os);
-const char* sbs_host_arch_to_str(SbsHostArch arch);
+SbsOs sbs_host_os(void);
+SbsArch sbs_host_arch(void);
+const char* sbs_os_to_str(SbsOs os);
+const char* sbs_arch_to_str(SbsArch arch);
+SbsArch sbs_arch_from_str(const char *arch);
 
 #endif /* SBS_RUNTIME_HOST_H */

@@ -1,0 +1,20 @@
+action install
+{
+    if $sbs.os == win and $sbs.shell in [ system, cmd ]
+    {
+        `if exist .\\build\\${sbs.os}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe (                         \
+            copy /Y .\\build\\${sbs.os}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\fllib\\ &           \
+            copy /Y .\\build\\${sbs.os}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\zenit\\ &           \
+            copy /Y .\\build\\${sbs.os}\\${sbs.arch}\\${sbs.toolchain}\\${sbs.config}\\sbs.exe ..\\gkit\\              \
+        )`
+    }
+
+    if $sbs.os == linux and $sbs.shell in [ system, bash ]
+    {
+        `if [ -f "build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs" ]; then          \
+            cp build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../fllib/;           \
+            cp build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../zenit/;           \
+            cp build/${sbs.os}/${sbs.arch}/${sbs.toolchain}/${sbs.config}/sbs ../gkit/;            \
+        fi`
+    }
+}

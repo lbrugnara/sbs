@@ -10,9 +10,10 @@ SbsContext* sbs_context_new(const SbsFile *file)
     SbsContext *context = fl_malloc(sizeof(SbsContext));
 
     context->file = file;
-    context->evalctx = sbs_eval_context_new();
-    context->resolvectx = sbs_resolve_context_new(context->file, context->host, context->evalctx);
     context->host = sbs_host_get_info();
+    context->evalctx = sbs_eval_context_new();
+
+    context->resolvectx = sbs_resolve_context_new(context->file, context->host, context->evalctx);
 
     if (context->host->os == SBS_OS_UNK)
         goto error;
@@ -20,8 +21,14 @@ SbsContext* sbs_context_new(const SbsFile *file)
     if (context->host->arch == SBS_ARCH_UNK)
         goto error;
 
-    fl_hashtable_add(context->evalctx->variables, "sbs.os", sbs_host_os_to_str(context->host->os));
-    fl_hashtable_add(context->evalctx->variables, "sbs.arch", sbs_host_arch_to_str(context->host->arch));
+    // Init sbs variables
+    fl_hashtable_add(context->evalctx->variables, "sbs.host.os", sbs_os_to_str(context->host->os));
+    fl_hashtable_add(context->evalctx->variables, "sbs.host.arch", sbs_arch_to_str(context->host->arch));
+    fl_hashtable_add(context->evalctx->variables, "sbs.win", "win");
+    fl_hashtable_add(context->evalctx->variables, "sbs.linux", "linux");
+    fl_hashtable_add(context->evalctx->variables, "sbs.x86", "x86");
+    fl_hashtable_add(context->evalctx->variables, "sbs.x86_64", "x86_64");
+    fl_hashtable_add(context->evalctx->variables, "sbs.armv7l", "armv7l");
 
     return context;
 
@@ -48,12 +55,15 @@ void sbs_context_free(SbsContext *context)
 
 SbsContext* sbs_context_copy(const SbsContext *ctx)
 {
-    SbsContext *copy = sbs_context_new(ctx->file);    
+    SbsContext *copy = sbs_context_new(ctx->file);
+
+    // TODO: check if this is ok here
+    copy->resolvectx->script_mode = ctx->resolvectx->script_mode;
 
     copy->preset = ctx->preset != NULL ? sbs_preset_resolve(copy->resolvectx, ctx->preset->name) : NULL;
     
     if (ctx->env != NULL)
-        copy->env = sbs_env_resolve(copy->resolvectx, ctx->env->name);
+        copy->env = sbs_env_resolve(copy->resolvectx, ctx->env->name, sbs_arch_to_str(ctx->env->arch));
     
     if (ctx->toolchain != NULL)
         copy->toolchain = sbs_toolchain_resolve(copy->resolvectx, ctx->toolchain->name);

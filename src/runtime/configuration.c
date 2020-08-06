@@ -2,7 +2,7 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "configuration.h"
-#include "string.h"
+#include "../lang/string.h"
 #include "../utils.h"
 #include "../lang/configuration.h"
 #include "../lang/string.h"

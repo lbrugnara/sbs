@@ -11,7 +11,7 @@ typedef enum SbsValueCommandType {
 
 typedef struct SbsValueCommand {
     SbsValueCommandType type;
-    SbsValueString *value;
+    SbsString *value;
 } SbsValueCommand;
 
 void sbs_value_command_free(SbsValueCommand *str);

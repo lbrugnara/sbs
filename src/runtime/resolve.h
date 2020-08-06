@@ -10,6 +10,7 @@ typedef struct SbsResolveContext {
     const SbsFile *file;
     const SbsHostInfo *host;
     SbsEvalContext *evalctx;
+    bool script_mode;
 } SbsResolveContext;
 
 SbsResolveContext* sbs_resolve_context_new(const SbsFile *file, const SbsHostInfo *host, SbsEvalContext *evalctx);

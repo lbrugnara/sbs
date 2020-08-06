@@ -79,6 +79,7 @@ SbsResult sbs_command_build(int argc, char **argv, char **env, size_t argv_offse
             sbs_args_string("--file", "-f", &build_file_path)
             sbs_args_string("--working-dir", "-cwd", &args.cwd)
             sbs_args_flag("--script-mode", "-s", &args.script_mode)
+            sbs_args_string("--arch", "-a", &args.arch)
         );
     });
 

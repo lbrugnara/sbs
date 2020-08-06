@@ -85,7 +85,7 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
 
             if (command->type == SBS_VALUE_COMMAND_STRING)
             {
-                sbs_action_add_command(action_object, sbs_string_resolve(command->value));
+                sbs_action_add_command(action_object, sbs_string_copy(command->value));
             }
             else
             {
@@ -129,7 +129,7 @@ SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsValueCommand *
         else
         {
             SbsAction *action_object = sbs_action_new(NULL);
-            sbs_action_add_command(action_object, sbs_string_resolve(action->value));
+            sbs_action_add_command(action_object, sbs_string_copy(action->value));
             resolved_actions[i] = action_object;
         }
     }

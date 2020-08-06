@@ -17,13 +17,13 @@ static void parse_compile_block(SbsParser *parser, SbsNodeConfigCompile *compile
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->flags = sbs_value_string_array_parse(parser);
+            compile->flags = sbs_string_array_parse(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->extension = sbs_value_string_parse(parser);
+            compile->extension = sbs_string_parse(parser);
         }
         else
         {
@@ -43,13 +43,13 @@ static void parse_archive_block(SbsParser *parser, SbsNodeConfigArchive *archive
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            archive->flags = sbs_value_string_array_parse(parser);
+            archive->flags = sbs_string_array_parse(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            archive->extension = sbs_value_string_parse(parser);
+            archive->extension = sbs_string_parse(parser);
         }
         else
         {
@@ -69,13 +69,13 @@ static void parse_shared_block(SbsParser *parser, SbsNodeConfigShared *shared)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            shared->flags = sbs_value_string_array_parse(parser);
+            shared->flags = sbs_string_array_parse(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            shared->extension = sbs_value_string_parse(parser);
+            shared->extension = sbs_string_parse(parser);
         }
         else
         {
@@ -95,13 +95,13 @@ static void parse_executable_block(SbsParser *parser, SbsNodeConfigExecutable *e
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->flags = sbs_value_string_array_parse(parser);
+            executable->flags = sbs_string_array_parse(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->extension = sbs_value_string_parse(parser);
+            executable->extension = sbs_string_parse(parser);
         }
         else
         {
@@ -112,18 +112,18 @@ static void parse_executable_block(SbsParser *parser, SbsNodeConfigExecutable *e
     }
 }
 
-static void parse_config_body(SbsParser *parser, struct SbsNodeConfig *configuration)
+static void parse_config_body(SbsParser *parser, SbsSectionConfig *config_section, struct SbsNodeConfig *config_node)
 {
     const SbsToken *token = NULL;
 
-    while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_IF)
+    while ((token = sbs_parser_peek(parser)) != NULL && token->type != SBS_TOKEN_RBRACE)
     {
         if (sbs_token_equals(token, "compile"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_COMPILE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-            parse_compile_block(parser, &configuration->compile);
+            parse_compile_block(parser, &config_node->compile);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
         else if (sbs_token_equals(token, "archive"))
@@ -131,7 +131,7 @@ static void parse_config_body(SbsParser *parser, struct SbsNodeConfig *configura
             sbs_parser_consume(parser, SBS_TOKEN_ARCHIVE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-            parse_archive_block(parser, &configuration->archive);
+            parse_archive_block(parser, &config_node->archive);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
         else if (sbs_token_equals(token, "shared"))
@@ -139,7 +139,7 @@ static void parse_config_body(SbsParser *parser, struct SbsNodeConfig *configura
             sbs_parser_consume(parser, SBS_TOKEN_SHARED);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-            parse_shared_block(parser, &configuration->shared);
+            parse_shared_block(parser, &config_node->shared);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
         }
         else if (sbs_token_equals(token, "executable"))
@@ -147,8 +147,46 @@ static void parse_config_body(SbsParser *parser, struct SbsNodeConfig *configura
             sbs_parser_consume(parser, SBS_TOKEN_EXECUTABLE);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-            parse_executable_block(parser, &configuration->executable);
+            parse_executable_block(parser, &config_node->executable);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
+        }
+        else if (token->type == SBS_TOKEN_IF)
+        {
+            struct SbsNodeConfig *nested_config_node = sbs_section_config_add_node(config_section);
+            nested_config_node->condition = sbs_stmt_conditional_parse(parser);
+
+            // NOTE: This allows nested ifs but without too much effort, because of that we need
+            // to "merge" the condition of the nested if with the one in its parent node
+            // TODO: If we implement proper nested ifs, we need to update this
+            if (config_node->condition != NULL)
+            {
+                SbsBinaryExpr *merged_expressions = sbs_expression_make_binary(SBS_EVAL_OP_AND, 
+                                                                                sbs_expression_copy(config_node->condition->expr), 
+                                                                                nested_config_node->condition->expr);
+                nested_config_node->condition->expr = (SbsExpression*) merged_expressions;
+            }
+
+            // Parse the configuration info
+            sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
+            parse_config_body(parser, config_section, nested_config_node);
+            sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
+
+            if (sbs_parser_next_is(parser, SBS_TOKEN_ELSE))
+            {
+                // NOTE: We consume the else and check for the next token:
+                //  - SBS_TOKEN_IF: We iterate one more time "to fall" in the current else-if that will "merge"
+                //    the config_node object with a new nested_config_node object.
+                //  - any other: we call 'parse_config_body' with the same config_node object
+                // TODO: If we implement proper if-else, we need to update this
+                sbs_parser_consume(parser, SBS_TOKEN_ELSE);
+
+                if (sbs_parser_next_is(parser, SBS_TOKEN_IF))
+                    continue;
+
+                sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
+                parse_config_body(parser, config_section, config_node);
+                sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
+            }
         }
         else
         {
@@ -218,17 +256,25 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
 
         if (token->type == SBS_TOKEN_IF)
         {
-            // Parse the for declaration
+            // Parse the if declaration
             config_node->condition = sbs_stmt_conditional_parse(parser);
 
             // Parse the configuration info
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
-            parse_config_body(parser, config_node);
+            parse_config_body(parser, configuration, config_node);
             sbs_parser_consume(parser, SBS_TOKEN_RBRACE);
+
+            if (sbs_parser_next_is(parser, SBS_TOKEN_ELSE))
+            {
+                // NOTE: We consume the "else" and we let the next iteration to trigger the if
+                // in the case of an "else-if" or the "parse_config_body" if it is just an "else"
+                // TODO: If we implement proper if-else, we need to update this
+                sbs_parser_consume(parser, SBS_TOKEN_ELSE);
+            }
         }
         else
         {
-            parse_config_body(parser, config_node);
+            parse_config_body(parser, configuration, config_node);
         }        
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

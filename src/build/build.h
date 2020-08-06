@@ -21,6 +21,7 @@ typedef struct SbsBuildArgs {
     char *preset;
     bool script_mode;
     char *cwd;
+    char *arch;
     int argc;
     char **argv;
     char **env;

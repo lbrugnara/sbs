@@ -5,7 +5,7 @@
 #include "io.h"
 #include "runtime/host.h"
 
-char* sbs_io_to_host_path_realloc(SbsHostOs os, char *path)
+char* sbs_io_to_host_path_realloc(SbsOs os, char *path)
 {
     size_t length = strlen(path);
 
@@ -42,7 +42,7 @@ char* sbs_io_to_host_path_realloc(SbsHostOs os, char *path)
     return path;
 }
 
-char* sbs_io_to_host_path(SbsHostOs os, const char *path)
+char* sbs_io_to_host_path(SbsOs os, const char *path)
 {
     return sbs_io_to_host_path_realloc(os, fl_cstring_dup(path));
 }

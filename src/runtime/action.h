@@ -2,7 +2,7 @@
 #define SBS_RUNTIME_ACTION_H
 
 #include "resolve.h"
-#include "string.h"
+#include "../lang/string.h"
 #include "../lang/command.h"
 
 typedef struct SbsAction {
