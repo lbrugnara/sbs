@@ -3,5 +3,5 @@
 /obj
 .old.sbs
 /lib
-/releases
+/release
 *.pdb

@@ -1,13 +1,13 @@
 v0.2.0:
     [ ] Environments
-        [ ] Add for clauses to the environments
         [ ] Create a "default" environment for the current os-arch that uses "system" if there is no environment defined in the build file
         [ ] Fix and improve the shell drivers (currently "system" is the only reliable way of using sbs)
-            [ ] Check directory separator in the case of a win-bash combination
-                Note: sbs_io_to_env_path_realloc(SbsEnv *environment, char *path); ??
-                Note: sbs_io_to_env_path(SbsEnv *environment, const char *path); ??
             [ ] Within the same environment, a way to detect the terminal to use
                 Example: running "sbs build debug" within a PowerShell instance should recognize a Windows environment prepared to run in PowerShell
+            [x] Check directory separator in the case of a win-bash combination
+                Note: An environment with a for clause like $sbs.host.os == win can be combined with an os property with
+                      value $sbs.linux and the paths should be correctly changed to use '/' as directory separator
+        [x] Add for clauses to the environments
         [x] Environments review the API and the properties
             [x] Rename env properties from type, terminal, and args to shell_type, shell_command, and shell_args
             [x] Expose builtin variables (like $sbs.shell)
@@ -32,6 +32,8 @@ v0.2.0:
         [ ] Check that "system" executor and custom executors correctly set and retrieve ENV variables
         [ ] Allow defining/extending variable in the command line
             Example: a $my.flags variable within a compile's flag property can be extended/overridden by a command line argument
+        [x] Add more builtin variables: sbs.host.os and sbs.host
+        [x] Add constant-like variables: sbs.linux, sbs.win, sbs.x86, sbs.x86_64
         [x] Define variables at the top-level scope
         [x] Add builtin variables: $sbs.compiler, $sbs.archiver, $sbs.linker
         [x] $env.<name> syntax to get environment variables
@@ -45,10 +47,11 @@ v0.2.0:
         [x] Add support for the configuration section (compile, archive, shared, and executable)
         [x] Initial support for string interpolation (compile flags support interpolated strings)
     [ ] String interpolation for expressions
-        Example: "/path/to/lib.{$sbs.os == win ? "lib" : "a"}"
+        Example: "/path/to/lib.{$sbs.host.os == win ? "lib" : "a"}"
         [ ] Escape with double brace: 
             Example 1: "The variable {{$sbs.env}} is not interpolated" -> The variable {$sbs.env} is not interpolated
             Example 2: "The expression {{$sbs.env == win-cmd}} is not interpolated" -> The expression {$sbs.env == win-cmd} is not interpolated
+        [x] Fix bug with escaped characters (\" \` and \\)
     [ ] Eval context: create the API to avoid directly using fl_hashtable_* functions
     [ ] All types: Add specific inline functions to interop with FlHashtables and FlArrays
     [ ] sbs init command (scaffolding): Add basic elements and common toolchains
@@ -56,6 +59,11 @@ v0.2.0:
         [ ] Default win-cmd, linux-bash, osx-bash envs??
         [ ] Default clang, gcc, msvc toolchains?    
     [ ] Update grammar file
+    [x] Add version command (-v|--version) to get information about the program version
+    [x] Add the flag --arch|-a to provide an specific architecture(x86, x86_64)
+    [x] Configuration: Add support for nested ifs and if-else support
+    [x] Fix build command when preset name is not provided
+    [x] Scripting language: Add support for the ternary operator
     [x] --working-dir|-cwd flag accepted by the main program along with the build subcommand
         Example: `sbs -cwd=../ build debug` is equals to `sbs build debug -cwd=../`. The advantage is that a command like
         `sbs -cwd=../ list presets` works out-of-the-box
@@ -89,6 +97,8 @@ v0.2.x:
         - Regexes (currently supported but it could be great to implement the ~"" syntax for it)
         - Identifiers (currently supported -refer to other targets-)
     [ ] Add a "sources" property to targets archive, shared, and executable to directly compile sources??
+    [ ] sbs list command:
+        [ ] Targets: show the type of target next to the name
 
 backlog:
     [ ] Find a workaround for the limitation of Windows' cmd to run commands larger than 8192 characters

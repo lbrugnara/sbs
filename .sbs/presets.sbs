@@ -57,6 +57,16 @@ preset clean {
     }
 }
 
+preset clean-all {
+    envs: [ win-cmd, linux-bash ],
+    toolchains: [ clang, gcc, msvc ],
+    configs: [ clang-debug, clang-release, msvc-debug, msvc-release ],
+    target: dummy,
+    actions: {
+        before: [ clean-all ]
+    }
+}
+
 preset copy-fllib {
     envs: [ win-cmd, linux-bash ],
     toolchains: [ clang, gcc, msvc ],
