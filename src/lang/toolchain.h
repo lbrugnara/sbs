@@ -3,7 +3,7 @@
 
 #include <fllib.h>
 #include "environment.h"
-#include "../runtime/eval.h"
+#include "expression.h"
 
 typedef struct SbsNodeToolchainCompiler {
     const char *bin;

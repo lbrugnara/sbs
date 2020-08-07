@@ -25,7 +25,7 @@ static bool run_actions(SbsBuild *build, SbsCommand **actions)
 
         if (action->type == SBS_COMMAND_STRING)
         {
-            char *commandstr = sbs_string_interpolate(build->context->evalctx, action->value);
+            char *commandstr = sbs_expression_eval_string(build->context->evalctx, action->value);
             bool result = run_command(build, commandstr);
             fl_cstring_free(commandstr);
 
@@ -43,7 +43,7 @@ static bool run_actions(SbsBuild *build, SbsCommand **actions)
             bool result = true;
             for (size_t i=0; i < fl_array_length(action_obj->commands); i++)
             {
-                char *commandstr = sbs_string_interpolate(build->context->evalctx, action_obj->commands[i]); 
+                char *commandstr = sbs_expression_eval_string(build->context->evalctx, action_obj->commands[i]); 
                 result = run_command(build, commandstr);
                 fl_cstring_free(commandstr);
 

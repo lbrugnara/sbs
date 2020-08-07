@@ -2,7 +2,7 @@
 #define SBS_LANG_CONFIGURATION_H
 
 #include <fllib.h>
-#include "../runtime/eval.h"
+#include "expression.h"
 #include "string.h"
 
 typedef struct SbsNodeConfigCompile {

@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <fllib/Array.h>
 #include "variable.h"
-#include "../runtime/eval.h"
 #include "../utils.h"
 
 struct SbsEvalContext;
@@ -21,7 +20,6 @@ typedef struct SbsString {
 } SbsString;
 
 SbsString* sbs_string_new(char *format, bool is_constant);
-char* sbs_string_interpolate(struct SbsEvalContext *context, SbsString *string);
 void sbs_string_free(SbsString *string);
 SbsString* sbs_string_copy(const SbsString *string);
 

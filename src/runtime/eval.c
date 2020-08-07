@@ -3,20 +3,6 @@
 #include <fllib/Cstring.h>
 #include <fllib/containers/Hashtable.h>
 #include "eval.h"
-#include "../utils.h"
-
-static SbsEvalOperatorKind UnaryOperators[] = {
-    SBS_EVAL_OP_ID,
-    SBS_EVAL_OP_NOT,
-};
-
-static SbsEvalOperatorKind BinaryOperators[] = {
-    SBS_EVAL_OP_OR,
-    SBS_EVAL_OP_AND,
-    SBS_EVAL_OP_EQ,
-    SBS_EVAL_OP_NEQ,
-    SBS_EVAL_OP_IN,
-};
 
 static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node);
 
@@ -353,7 +339,7 @@ static SbsValueExpr* eval_string_node(SbsStringExpr *str_node, SbsEvalContext *c
 {
     SbsValueExpr *str_value = sbs_expression_make_value(SBS_EXPR_VALUE_TYPE_STRING);
 
-    str_value->value.s = sbs_string_interpolate(context, str_node->value);
+    str_value->value.s = sbs_expression_eval_string(context, str_node->value);
 
     return str_value;
 }
@@ -426,313 +412,74 @@ bool sbs_expression_eval_bool(SbsEvalContext *context, SbsExpression *node)
     return b;
 }
 
-static void free_value_node(SbsValueExpr *value)
+char* sbs_expression_eval_string(SbsEvalContext *context, SbsString *string)
 {
-    if (value->type == SBS_EXPR_VALUE_TYPE_STRING)
+    if (string->is_constant)
+        return fl_cstring_dup(string->format);        
+
+    size_t format_length = strlen(string->format);
+    size_t format_index = 0;
+
+    char *interpolated_string = fl_cstring_new(0);
+
+    for (size_t i = 0; i < fl_array_length(string->args); i++)
     {
-        fl_cstring_free(value->value.s);
-    }
-    else if (value->type == SBS_EXPR_VALUE_TYPE_ARRAY)
-    {
-        fl_array_free_each_pointer(value->value.a, (FlArrayFreeElementFunc) sbs_expression_free);
-    }
-
-    fl_free(value);
-}
-
-static void free_variable_node(SbsVariableExpr *value_node)
-{
-    if (value_node->info)
-        sbs_variable_free(value_node->info);
-
-    fl_free(value_node);
-}
-
-static void free_array_node(SbsArrayExpr *value_node)
-{
-    if (value_node->items)
-        fl_array_free_each_pointer(value_node->items, (FlArrayFreeElementFunc) sbs_expression_free);
-
-    fl_free(value_node);
-}
-
-static void free_unary_node(SbsUnaryExpr *unary_node)
-{
-    sbs_expression_free(unary_node->node);
-    fl_free(unary_node);
-}
-
-static void free_binary_node(SbsBinaryExpr *binary_node)
-{
-    sbs_expression_free(binary_node->left);
-    sbs_expression_free(binary_node->right);
-    fl_free(binary_node);
-}
-
-static void free_if_node(SbsIfExpr *if_node)
-{
-    sbs_expression_free(if_node->condition);
-    sbs_expression_free(if_node->then_branch);
-    sbs_expression_free(if_node->else_branch);
-    fl_free(if_node);
-}
-
-static void free_string_node(SbsStringExpr *str_expr)
-{
-    sbs_string_free(str_expr->value);
-    fl_free(str_expr);
-}
-
-void sbs_expression_free(SbsExpression *node)
-{
-    switch (node->kind)
-    {
-        case SBS_EXPR_VALUE:
-            free_value_node((SbsValueExpr*) node);
-            break;
-
-        case SBS_EXPR_VARIABLE:
-            free_variable_node((SbsVariableExpr*) node);
-            break;
-
-        case SBS_EXPR_ARRAY:
-            free_array_node((SbsArrayExpr*) node);
-            break;
-
-        case SBS_EXPR_UNARY:
-            free_unary_node((SbsUnaryExpr*) node);
-            break;
-
-        case SBS_EXPR_BINARY:
-            free_binary_node((SbsBinaryExpr*) node);
-            break;
-
-        case SBS_EXPR_IF:
-            free_if_node((SbsIfExpr*) node);
-            break;
-
-        case SBS_EXPR_STRING:
-            free_string_node((SbsStringExpr*) node);
-            break;
-
-        default:
-            return;
-    }
-}
-
-static SbsExpression* copy_value_node(SbsValueExpr* node)
-{
-    SbsValueExpr *copy = fl_malloc(sizeof(SbsValueExpr));
-
-    copy->kind = SBS_EXPR_VALUE;
-    copy->type = node->type;
-
-    if (node->type == SBS_EXPR_VALUE_TYPE_BOOL)
-    {
-        copy->value.b = node->value.b;
-    }
-    else if (node->type == SBS_EXPR_VALUE_TYPE_STRING)
-    {
-        copy->value.s = fl_cstring_dup(node->value.s);
-    }
-    else if (node->type == SBS_EXPR_VALUE_TYPE_ARRAY)
-    {
-        copy->value.a = fl_array_new(sizeof(SbsExpression*), fl_array_length(node->value.a));
-
-        for (size_t i=0; i < fl_array_length(node->value.a); i++)
+        // TODO: Change the type if in the future we allow other type of placeholders
+        SbsStringPlaceholder *placeholder = string->args[i];
+        
+        // Copy all the characters that are part of the format string up to reach
+        // the placeholder's index
+        for (; format_index < placeholder->index; format_index++)
         {
-            SbsExpression *item_copy = sbs_expression_copy(node->value.a[i]);
-            copy->value.a = fl_array_append(copy->value.a, &item_copy);
+            fl_cstring_append_char(&interpolated_string, string->format[format_index]);
         }
+
+        // At this offset, we need to place our interpolated value
+        // TODO: If we support other type of expressions, we need to update this
+        SbsExpression *var_expr = (SbsExpression*) sbs_expression_make_variable(placeholder->variable->name, placeholder->variable->namespace);
+        SbsValueExpr *value = sbs_expression_eval(context, var_expr);
+
+        if (value == NULL)
+        {
+            fl_cstring_append(&interpolated_string, "(null)");
+        }
+        else
+        {
+            switch (value->type)
+            {
+                case SBS_EXPR_VALUE_TYPE_BOOL:
+                    fl_cstring_vappend(&interpolated_string, "%s", (value->value.b ? "true" : "false"));
+                    break;
+
+                case SBS_EXPR_VALUE_TYPE_STRING:
+                    fl_cstring_vappend(&interpolated_string, "%s", value->value.s);
+                    break;
+
+                case SBS_EXPR_VALUE_TYPE_ARRAY:
+                    // TODO: Implement arrays?
+                    // for (size_t k = 0; k < fl_array_length(value->value.a); k++)
+                    // {
+                    //     SbsExpression *item = value->value.a[i];
+                    //     
+                    // }
+                    fl_cstring_append(&interpolated_string, "(array)");
+                    break;
+
+                default:
+                    fl_cstring_append(&interpolated_string, "(unk)");
+                    break;
+            }
+            sbs_expression_free((SbsExpression*) value);
+        }
+
+        sbs_expression_free(var_expr);
     }
 
-    return (SbsExpression*) copy;
-}
-
-static SbsExpression* copy_variable_node(SbsVariableExpr* node)
-{
-    SbsVariableExpr *copy = fl_malloc(sizeof(SbsVariableExpr));
-
-    copy->kind = SBS_EXPR_VARIABLE;
-    copy->info = sbs_variable_new(node->info->name, node->info->namespace);
-
-    return (SbsExpression*) copy;
-}
-
-static SbsExpression* copy_array_node(SbsArrayExpr* node)
-{
-    SbsArrayExpr *copy = fl_malloc(sizeof(SbsArrayExpr));
-
-    copy->kind = SBS_EXPR_ARRAY;
-    copy->items = fl_array_new(sizeof(SbsExpression*), fl_array_length(node->items));
-
-    for (size_t i=0; i < fl_array_length(node->items); i++)
+    if (format_index < format_length)
     {
-        copy->items[i] = sbs_expression_copy(node->items[i]);
+        for (size_t i=format_index; i < format_length; i++)
+            fl_cstring_append_char(&interpolated_string, string->format[i]);
     }
 
-    return (SbsExpression*) copy;
-}
-
-static SbsExpression* copy_unary_node(SbsUnaryExpr* node)
-{
-    SbsUnaryExpr *copy = fl_malloc(sizeof(SbsUnaryExpr));
-
-    copy->kind = SBS_EXPR_UNARY;
-    copy->op = node->op;
-    copy->node = sbs_expression_copy(node->node);
-
-    return (SbsExpression*) copy;
-}
-
-static SbsExpression* copy_binary_node(SbsBinaryExpr *node)
-{
-    SbsBinaryExpr *copy = fl_malloc(sizeof(SbsBinaryExpr));
-
-    copy->kind = SBS_EXPR_BINARY;
-    copy->op = node->op;
-    copy->left = sbs_expression_copy(node->left);
-    copy->right = sbs_expression_copy(node->right);
-
-    return (SbsExpression*) copy;
-}
-
-static SbsExpression* copy_if_node(SbsIfExpr *if_expr)
-{
-    SbsIfExpr *copy = fl_malloc(sizeof(SbsIfExpr));
-
-    copy->kind = SBS_EXPR_IF;
-    copy->condition = sbs_expression_copy(if_expr->condition);
-    copy->then_branch = sbs_expression_copy(if_expr->then_branch);
-    copy->else_branch = sbs_expression_copy(if_expr->else_branch);
-
-    return (SbsExpression*) copy;
-}
-
-SbsExpression* copy_string_node(SbsStringExpr *string)
-{
-    SbsStringExpr *copy = fl_malloc(sizeof(SbsStringExpr));
-
-    copy->kind = SBS_EXPR_STRING;
-    copy->value = sbs_string_copy(string->value);
-
-    return (SbsExpression*) copy;
-}
-
-SbsExpression* sbs_expression_copy(SbsExpression *node)
-{
-    switch (node->kind)
-    {
-        case SBS_EXPR_VALUE:
-            return copy_value_node((SbsValueExpr*) node);
-
-        case SBS_EXPR_VARIABLE:
-            return copy_variable_node((SbsVariableExpr*) node);
-
-        case SBS_EXPR_ARRAY:
-            return copy_array_node((SbsArrayExpr*) node);
-
-        case SBS_EXPR_UNARY:
-            return copy_unary_node((SbsUnaryExpr*) node);
-
-        case SBS_EXPR_BINARY:
-            return copy_binary_node((SbsBinaryExpr*) node);
-
-        case SBS_EXPR_IF:
-            return copy_if_node((SbsIfExpr*) node);
-
-        case SBS_EXPR_STRING:
-            return copy_string_node((SbsStringExpr*) node);
-
-        default:
-            break;
-    }
-
-    return NULL;
-}
-
-SbsValueExpr* sbs_expression_make_value(SbsValueExprType type)
-{
-    SbsValueExpr *value = fl_malloc(sizeof(SbsValueExpr));
-
-    value->kind = SBS_EXPR_VALUE;
-    value->type = type;
-
-    return value;
-}
-
-SbsArrayExpr* sbs_expression_make_array(void)
-{
-    SbsArrayExpr *array_node = fl_malloc(sizeof(SbsArrayExpr));
-
-    array_node->kind = SBS_EXPR_ARRAY;
-    array_node->items = fl_array_new(sizeof(SbsExpression*), 0);
-
-    return array_node;
-}
-
-void sbs_expression_array_add_item(SbsArrayExpr *array, SbsExpression *item)
-{
-    array->items = fl_array_append(array->items, &item);
-}
-
-SbsVariableExpr* sbs_expression_make_variable(const char *name, const char *namespace)
-{
-    SbsVariableExpr *var_node = fl_malloc(sizeof(SbsVariableExpr));
-
-    var_node->kind = SBS_EXPR_VARIABLE;
-    var_node->info = sbs_variable_new(name, namespace);
-
-    return var_node;
-}
-
-SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *left)
-{
-    if (!fl_array_contains_n(UnaryOperators, flm_array_length(UnaryOperators), &op, sizeof(SbsEvalOperatorKind)))
-        return NULL;
-
-    SbsUnaryExpr *unary_node = fl_malloc(sizeof(SbsUnaryExpr));
-
-    unary_node->kind = SBS_EXPR_UNARY;
-    unary_node->op = op;
-    unary_node->node = left;
-
-    return unary_node;
-}
-
-SbsBinaryExpr* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right)
-{
-    if (!fl_array_contains_n(BinaryOperators, flm_array_length(BinaryOperators), &op, sizeof(SbsEvalOperatorKind)))
-        return NULL;
-
-    SbsBinaryExpr *binode = fl_malloc(sizeof(SbsBinaryExpr));
-
-    binode->kind = SBS_EXPR_BINARY;
-    binode->op = op;
-    binode->left = left;
-    binode->right = right;
-
-    return binode;
-}
-
-SbsIfExpr* sbs_expression_make_if(SbsExpression *condition, SbsExpression *then_branch, SbsExpression *else_branch)
-{
-    SbsIfExpr *if_expr = fl_malloc(sizeof(SbsIfExpr));
-
-    if_expr->kind = SBS_EXPR_IF;
-    if_expr->condition = condition;
-    if_expr->then_branch = then_branch;
-    if_expr->else_branch = else_branch;
-
-    return if_expr;
-}
-
-SbsStringExpr* sbs_expression_make_string(SbsString *string)
-{
-    SbsStringExpr *str_expr = fl_malloc(sizeof(SbsStringExpr));
-
-    str_expr->kind = SBS_EXPR_STRING;
-    str_expr->value = string;
-
-    return str_expr;
+    return interpolated_string;
 }

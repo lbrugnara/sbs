@@ -16,7 +16,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigExecutable *e
                                 ? ""
                                 : executable->extension->is_constant
                                     ? executable->extension->format
-                                    : sbs_string_interpolate(build->context->evalctx, executable->extension);
+                                    : sbs_expression_eval_string(build->context->evalctx, executable->extension);
 
     // Path
     char *output_filename = sbs_io_to_host_path(build->context->env->host->os, output_dir);
@@ -184,7 +184,7 @@ char** sbs_build_target_executable(SbsBuild *build)
                     if (config_executable->flags[i]->is_constant)
                         continue;
 
-                    char *flag = sbs_string_interpolate(build->context->evalctx, config_executable->flags[i]);
+                    char *flag = sbs_expression_eval_string(build->context->evalctx, config_executable->flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);

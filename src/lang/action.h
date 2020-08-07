@@ -1,7 +1,7 @@
 #ifndef SBS_LANG_ACTION_H
 #define SBS_LANG_ACTION_H
 
-#include "../runtime/eval.h"
+#include "expression.h"
 #include "command.h"
 
 /*

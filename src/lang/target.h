@@ -4,7 +4,7 @@
 #include <fllib.h>
 #include "action.h"
 #include "source.h"
-#include "../runtime/eval.h"
+#include "expression.h"
 
 typedef enum SbsSectionTargetType {
     SBS_SECTION_TARGET_COMPILE,
