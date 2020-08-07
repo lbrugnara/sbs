@@ -4,7 +4,7 @@
 #include "helpers.h"
 
 /*
- * Function: sbs_value_source_array_parse
+ * Function: sbs_source_array_parse
  *  Returns an array of strings or identifiers
  *
  * Parameters:
@@ -14,7 +14,7 @@
  *  char** - Parsed array of strings or identifiers
  *
  */
-SbsValueSource** sbs_value_source_array_parse(SbsParser *parser)
+SbsSource** sbs_source_array_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
@@ -29,31 +29,31 @@ SbsValueSource** sbs_value_source_array_parse(SbsParser *parser)
         nelements++;
     }
 
-    SbsValueSource **elements = NULL;
+    SbsSource **elements = NULL;
 
     if (nelements > 0)
     {
         
         // Parse the elements
-        elements = fl_array_new(sizeof(SbsValueSource*), nelements);
+        elements = fl_array_new(sizeof(SbsSource*), nelements);
         size_t index = 0;
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
             const SbsToken *element = sbs_parser_peek(parser);
 
-            SbsValueSource *source = NULL;
+            SbsSource *source = NULL;
 
             if (element->type == SBS_TOKEN_STRING)
             {
-                source = fl_malloc(sizeof(SbsValueSource));
-                source->type = SBS_VALUE_SOURCE_STRING;
+                source = fl_malloc(sizeof(SbsSource));
+                source->type = SBS_SOURCE_STRING;
                 source->value = sbs_parse_string(parser);
             }
             else if (element->type == SBS_TOKEN_IDENTIFIER)
             {
-                source = fl_malloc(sizeof(SbsValueSource));
-                source->type = SBS_VALUE_SOURCE_NAME;
+                source = fl_malloc(sizeof(SbsSource));
+                source->type = SBS_SOURCE_NAME;
                 source->value = sbs_parse_identifier(parser);
             }
             else

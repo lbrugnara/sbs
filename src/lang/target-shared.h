@@ -6,7 +6,7 @@
 typedef struct SbsNodeShared {
     SbsAbstractNodeTarget base;
     const char *output_name;
-    SbsValueSource **objects;
+    SbsSource **objects;
 } SbsNodeShared;
 
 typedef struct SbsSectionShared {

@@ -46,7 +46,7 @@ FlArray* sbs_array_extend_copy_pointer(FlArray *dest, const FlArray *src, SbsArr
         return NULL;
 
     for (size_t i=0; i < src_size; i++, dest_size++)
-        ((void**) dest)[i] = copy_fn(((void**) src)[i]);
+        ((void**) dest)[dest_size] = copy_fn(((void**) src)[i]);
 
     return dest;
 }

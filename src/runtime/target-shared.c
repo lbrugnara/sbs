@@ -45,7 +45,7 @@ SbsTargetShared* sbs_target_shared_resolve(SbsResolveContext *context, const Sbs
         sbs_target_base_resolve_members((SbsTarget*) shared_target, (const SbsAbstractNodeTarget*) shared_entry);
 
         shared_target->output_name = sbs_cstring_set(shared_target->output_name, shared_entry->output_name);
-        shared_target->objects = sbs_source_array_extend_from_value_source(shared_target->objects, shared_entry->objects);
+        shared_target->objects = sbs_source_array_extend(shared_target->objects, shared_entry->objects);
     }
 
     return shared_target;

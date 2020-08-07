@@ -3,7 +3,7 @@
 
 #include "target.h"
 #include "resolve.h"
-#include "source.h"
+#include "../lang/source.h"
 #include "../lang/target-shared.h"
 
 typedef struct SbsTargetShared {

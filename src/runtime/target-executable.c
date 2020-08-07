@@ -84,7 +84,7 @@ SbsTargetExecutable* sbs_target_executable_resolve(SbsResolveContext *context, c
         sbs_target_base_resolve_members((SbsTarget*) executable_target, (const SbsAbstractNodeTarget*) executable_entry);
 
         executable_target->output_name = sbs_cstring_set(executable_target->output_name, executable_entry->output_name);
-        executable_target->objects = sbs_source_array_extend_from_value_source(executable_target->objects, executable_entry->objects);
+        executable_target->objects = sbs_source_array_extend(executable_target->objects, executable_entry->objects);
         executable_target->libraries = sbs_array_extend_copy_element(executable_target->libraries, executable_entry->libraries, (SbsArrayCopyElementFn) convert_library_node_to_library);
         executable_target->defines = sbs_cstring_array_extend(executable_target->defines, executable_entry->defines);
     }

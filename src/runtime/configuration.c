@@ -55,7 +55,7 @@ static void merge_compile_config(SbsResolveContext *context, SbsConfigCompile *e
     if (source->extension)
         extend->extension = sbs_string_set(extend->extension, source->extension);
     
-    extend->flags = sbs_string_array_extend_from_value_string(extend->flags, source->flags);
+    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
 }
 
 static void merge_archive_config(SbsResolveContext *context, SbsConfigArchive *extend, const SbsNodeConfigArchive *source)
@@ -63,7 +63,7 @@ static void merge_archive_config(SbsResolveContext *context, SbsConfigArchive *e
     if (source->extension)
         extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend_from_value_string(extend->flags, source->flags);
+    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
 }
 
 static void merge_shared_config(SbsResolveContext *context, SbsConfigShared *extend, const SbsNodeConfigShared *source)
@@ -71,7 +71,7 @@ static void merge_shared_config(SbsResolveContext *context, SbsConfigShared *ext
     if (source->extension)
         extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend_from_value_string(extend->flags, source->flags);
+    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
 }
 
 static void merge_executable_config(SbsResolveContext *context, SbsConfigExecutable *extend, const SbsNodeConfigExecutable *source)
@@ -79,7 +79,7 @@ static void merge_executable_config(SbsResolveContext *context, SbsConfigExecuta
     if (source->extension)
         extend->extension = sbs_string_set(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend_from_value_string(extend->flags, source->flags);
+    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
 }
 
 static bool try_resolve_config_with_hierarchy(SbsResolveContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)

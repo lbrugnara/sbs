@@ -45,7 +45,7 @@ SbsTargetArchive* sbs_target_archive_resolve(SbsResolveContext *context, const S
         sbs_target_base_resolve_members((SbsTarget*) archive_target, (const SbsAbstractNodeTarget*) archive_entry);
 
         archive_target->output_name = sbs_cstring_set(archive_target->output_name, archive_entry->output_name);
-        archive_target->objects = sbs_source_array_extend_from_value_source(archive_target->objects, archive_entry->objects);
+        archive_target->objects = sbs_source_array_extend(archive_target->objects, archive_entry->objects);
     }
 
     return archive_target;

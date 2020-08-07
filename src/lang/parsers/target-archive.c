@@ -17,7 +17,7 @@ void sbs_section_archive_body_parse(SbsParser *parser, SbsSectionArchive *target
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            target->objects = sbs_value_source_array_parse(parser);
+            target->objects = sbs_source_array_parse(parser);
         }
         else if (sbs_token_equals(token, "output_name"))
         {
