@@ -30,12 +30,18 @@ static void free_value_node(SbsValueExpr *value)
     fl_free(value);
 }
 
-static void free_variable_node(SbsVariableExpr *value_node)
+static void free_variable_node(SbsVariableExpr *var_node)
 {
-    if (value_node->info)
-        sbs_variable_free(value_node->info);
+    if (var_node->name)
+        fl_cstring_free(var_node->name);
 
-    fl_free(value_node);
+    if (var_node->namespace)
+        fl_cstring_free(var_node->namespace);
+
+    if (var_node->fqn)
+        fl_cstring_free(var_node->fqn);
+
+    fl_free(var_node);
 }
 
 static void free_array_node(SbsArrayExpr *value_node)
@@ -154,7 +160,9 @@ static SbsExpression* copy_variable_node(SbsVariableExpr* node)
     SbsVariableExpr *copy = fl_malloc(sizeof(SbsVariableExpr));
 
     copy->kind = SBS_EXPR_VARIABLE;
-    copy->info = sbs_variable_new(node->info->name, node->info->namespace);
+    copy->name = fl_cstring_dup(node->name);
+    copy->namespace = node->namespace != NULL ? fl_cstring_dup(node->namespace) : NULL;
+    copy->fqn = fl_cstring_dup(node->fqn);
 
     return (SbsExpression*) copy;
 }
@@ -294,7 +302,17 @@ SbsVariableExpr* sbs_expression_make_variable(const char *name, const char *name
     SbsVariableExpr *var_node = fl_malloc(sizeof(SbsVariableExpr));
 
     var_node->kind = SBS_EXPR_VARIABLE;
-    var_node->info = sbs_variable_new(name, namespace);
+    var_node->name = name;
+    var_node->namespace = namespace;
+
+    if (namespace != NULL)
+    {
+        var_node->fqn = fl_cstring_vdup("%s.%s", var_node->namespace, var_node->name);
+    }
+    else
+    {
+        var_node->fqn = fl_cstring_dup(var_node->name);
+    }
 
     return var_node;
 }

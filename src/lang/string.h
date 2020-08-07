@@ -9,7 +9,7 @@
 struct SbsEvalContext;
 
 typedef struct SbsStringPlaceholder {
-    SbsVariable *variable;
+    SbsVariableExpr *variable;
     size_t index;
 } SbsStringPlaceholder;
 

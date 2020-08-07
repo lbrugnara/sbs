@@ -42,7 +42,7 @@ void sbs_env_free(SbsEnv *env)
 }
 
 
-static SbsOs variable_to_os(SbsVariable *os_variable)
+static SbsOs variable_to_os(SbsVariableExpr *os_variable)
 {
     if (os_variable == NULL)
         return SBS_OS_UNK;

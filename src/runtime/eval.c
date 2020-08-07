@@ -39,18 +39,18 @@ static SbsValueExpr* eval_variable_node(SbsVariableExpr *var_node, SbsEvalContex
     result->kind = SBS_EXPR_VALUE;
     result->type = SBS_EXPR_VALUE_TYPE_UNK;
 
-    if (var_node->info->namespace && flm_cstring_equals(var_node->info->namespace, "env"))
+    if (var_node->namespace && flm_cstring_equals(var_node->namespace, "env"))
     {
         #ifdef _WIN32
         {
             size_t req_size = 0;
-            getenv_s( &req_size, NULL, 0, var_node->info->name);
+            getenv_s( &req_size, NULL, 0, var_node->name);
 
             if (req_size == 0)
                 return result;
 
             char *var_value = fl_cstring_new(req_size);
-            if (getenv_s(&req_size, var_value, req_size, var_node->info->name) != 0)
+            if (getenv_s(&req_size, var_value, req_size, var_node->name) != 0)
             {
                 fl_cstring_free(var_value);
                 return result;
@@ -63,7 +63,7 @@ static SbsValueExpr* eval_variable_node(SbsVariableExpr *var_node, SbsEvalContex
         }
         #else
         {
-            char *var_value = getenv(var_node->info->name);
+            char *var_value = getenv(var_node->name);
 
             if (var_value == NULL)
                 return result;
@@ -77,10 +77,10 @@ static SbsValueExpr* eval_variable_node(SbsVariableExpr *var_node, SbsEvalContex
     }
     else
     {
-        if (!fl_hashtable_has_key(context->variables, var_node->info->fqn))
+        if (!fl_hashtable_has_key(context->variables, var_node->fqn))
             return result;
 
-        char *var_value = fl_hashtable_get(context->variables, var_node->info->fqn);
+        char *var_value = fl_hashtable_get(context->variables, var_node->fqn);
 
         if (var_value == NULL)
             return result;
@@ -467,9 +467,7 @@ char* sbs_eval_string_interpolation(SbsEvalContext *context, SbsString *string)
         }
 
         // At this offset, we need to place our interpolated value
-        // TODO: If we support other type of expressions, we need to update this
-        SbsExpression *var_expr = (SbsExpression*) sbs_expression_make_variable(placeholder->variable->name, placeholder->variable->namespace);
-        SbsValueExpr *value = sbs_eval_expression(context, var_expr);
+        SbsValueExpr *value = sbs_eval_expression(context, (SbsExpression*) placeholder->variable);
 
         if (value == NULL)
         {
@@ -503,8 +501,6 @@ char* sbs_eval_string_interpolation(SbsEvalContext *context, SbsString *string)
             }
             sbs_expression_free((SbsExpression*) value);
         }
-
-        sbs_expression_free(var_expr);
     }
 
     if (format_index < format_length)

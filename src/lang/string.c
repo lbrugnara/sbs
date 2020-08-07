@@ -19,7 +19,7 @@ SbsString* sbs_string_new(char *format, bool is_constant)
 static void free_string_placeholder(SbsStringPlaceholder *placeholder)
 {
     if (placeholder->variable)
-        sbs_variable_free(placeholder->variable);
+        sbs_expression_free((SbsExpression*) placeholder->variable);
 
     fl_free(placeholder);
 }
@@ -49,7 +49,7 @@ SbsString* sbs_string_copy(const SbsString *string)
         {
             copy->args[i] = fl_malloc(sizeof(SbsStringPlaceholder));
             copy->args[i]->index = string->args[i]->index;
-            copy->args[i]->variable = sbs_variable_copy(string->args[i]->variable);
+            copy->args[i]->variable = (SbsVariableExpr*) sbs_expression_copy((SbsExpression*) string->args[i]->variable);
         }
     }
 

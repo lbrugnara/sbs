@@ -89,7 +89,7 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->os = sbs_parse_variable(parser);
+            env->os = sbs_expression_variable_parse(parser);
         }
         else if (sbs_token_equals(token, "arch"))
         {

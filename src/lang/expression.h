@@ -1,8 +1,7 @@
 #ifndef SBS_LANG_EXPRESSION_H
 #define SBS_LANG_EXPRESSION_H
 
-#include "variable.h"
-#include "string.h"
+#include "../utils.h"
 
 typedef enum SbsExprOperator {
     SBS_EXPR_OP_UNK,
@@ -48,11 +47,6 @@ typedef struct SbsValueExpr {
     } value;
 } SbsValueExpr;
 
-typedef struct SbsStringExpr {
-    SbsExpressionKind kind;
-    struct SbsString *value;
-} SbsStringExpr;
-
 typedef struct SbsIdentifierExpr {
     SbsExpressionKind kind;
     char *name;
@@ -60,8 +54,17 @@ typedef struct SbsIdentifierExpr {
 
 typedef struct SbsVariableExpr {
     SbsExpressionKind kind;
-    SbsVariable *info;
+    const char *namespace;
+    const char *name;
+    const char *fqn;
 } SbsVariableExpr;
+
+#include "string.h"
+typedef struct SbsStringExpr {
+    SbsExpressionKind kind;
+    struct SbsString *value;
+} SbsStringExpr;
+
 
 typedef struct SbsArrayExpr {
     SbsExpressionKind kind;

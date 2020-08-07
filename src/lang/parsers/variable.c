@@ -3,39 +3,14 @@
 #include <fllib/Array.h>
 #include "variable.h"
 #include "parser.h"
+#include "expression.h"
 #include "helpers.h"
 #include "cstring.h"
-
-SbsVariable* sbs_parse_variable(SbsParser *parser)
-{
-    const SbsToken *var_token = sbs_parser_consume(parser, SBS_TOKEN_VARIABLE);
-    
-    SbsVariable *variable = NULL;
-
-    for (size_t i = var_token->value.length - 1; true; )
-    {
-        if (((const char*) var_token->value.sequence)[i] == '.')
-        {
-            const struct FlSlice name = fl_slice_new(var_token->value.sequence, 1, i + 1, var_token->value.length - (i + 1));
-            const struct FlSlice namespace = fl_slice_new(var_token->value.sequence, 1, 0, i);
-            variable = sbs_variable_new_from_slice(&name, &namespace);
-            break;
-        }
-        else if (i == 0)
-        {
-            variable = sbs_variable_new_from_slice(&var_token->value, NULL);
-            break;
-        }
-        i--;
-    }
-
-    return variable;
-}
 
 SbsNodeVariableDefinition* sbs_parse_variable_definition(SbsParser *parser)
 {
     SbsNodeVariableDefinition *var_def = sbs_node_variable_definition_new();
-    var_def->name = sbs_parse_variable(parser);
+    var_def->name = sbs_expression_variable_parse(parser);
 
     sbs_parser_consume(parser, SBS_TOKEN_ASSIGN);
 
@@ -46,7 +21,7 @@ SbsNodeVariableDefinition* sbs_parse_variable_definition(SbsParser *parser)
     return var_def;
 }
 
-SbsVariable** sbs_parse_variable_array(SbsParser *parser)
+SbsVariableExpr** sbs_parse_variable_array(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
@@ -61,17 +36,17 @@ SbsVariable** sbs_parse_variable_array(SbsParser *parser)
         var_count++;
     }
 
-    SbsVariable **variables = NULL;
+    SbsVariableExpr **variables = NULL;
 
     if (var_count != 0)
     {
         // Parse the variables
-        variables = fl_array_new(sizeof(SbsVariable*), var_count);
+        variables = fl_array_new(sizeof(SbsVariableExpr*), var_count);
         size_t index = 0;
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
-            variables[index++] = sbs_parse_variable(parser);
+            variables[index++] = sbs_expression_variable_parse(parser);
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
         }

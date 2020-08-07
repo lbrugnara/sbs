@@ -10,7 +10,7 @@ void sbs_section_env_free(SbsSectionEnv *env)
         return;
 
     if (env->os)
-        sbs_variable_free(env->os);
+        sbs_expression_free((SbsExpression*) env->os);
 
     if (env->arch)
         sbs_expression_free(env->arch);

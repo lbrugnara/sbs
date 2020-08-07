@@ -113,15 +113,19 @@ SbsString* sbs_string_parse(SbsParser *parser)
             continue;
         }
 
-        struct FlSlice name = fl_slice_new(token->value.sequence, 1, name_index, name_length);
         if (ns_length > 0)
         {
-            struct FlSlice namespace = fl_slice_new(token->value.sequence, 1, ns_index, ns_length);
-            placeholder->variable = sbs_variable_new_from_slice(&name, &namespace);
+            placeholder->variable = sbs_expression_make_variable(
+                sbs_slice_to_cstring(&flm_slice_new(token->value.sequence, 1, name_index, name_length)),
+                sbs_slice_to_cstring(&flm_slice_new(token->value.sequence, 1, ns_index, ns_length))
+            );
         }
         else
         {
-            placeholder->variable = sbs_variable_new_from_slice(&name, NULL);
+            placeholder->variable = sbs_expression_make_variable(
+                sbs_slice_to_cstring(&flm_slice_new(token->value.sequence, 1, name_index, name_length)),
+                NULL
+            );
         }
 
         if (placeholders == NULL)

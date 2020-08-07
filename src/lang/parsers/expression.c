@@ -99,7 +99,7 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
         }
     }
 
-    SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(var_name, var_namespace);
+    SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(fl_cstring_dup(var_name), fl_cstring_dup(var_namespace));
     SbsArrayExpr *array_node = sbs_expression_make_array();
 
     while (sbs_parser_has_input(parser))
@@ -141,13 +141,28 @@ SbsIdentifierExpr* sbs_expression_identifier_parse(SbsParser *parser)
 
 SbsVariableExpr* sbs_expression_variable_parse(SbsParser *parser)
 {
-    SbsVariable *variable = sbs_parse_variable(parser);
+    const SbsToken *var_token = sbs_parser_consume(parser, SBS_TOKEN_VARIABLE);
+    
+    SbsVariableExpr *variable = NULL;
 
-    SbsVariableExpr *var_node = sbs_expression_make_variable(variable->name, variable->namespace);
+    for (size_t i = var_token->value.length - 1; true; )
+    {
+        if (((const char*) var_token->value.sequence)[i] == '.')
+        {
+            const struct FlSlice name = fl_slice_new(var_token->value.sequence, 1, i + 1, var_token->value.length - (i + 1));
+            const struct FlSlice namespace = fl_slice_new(var_token->value.sequence, 1, 0, i);
+            variable = sbs_expression_make_variable(sbs_slice_to_cstring(&name), sbs_slice_to_cstring(&namespace));
+            break;
+        }
+        else if (i == 0)
+        {
+            variable = sbs_expression_make_variable(sbs_slice_to_cstring(&var_token->value), NULL);
+            break;
+        }
+        i--;
+    }
 
-    sbs_variable_free(variable);
-
-    return var_node;
+    return variable;
 }
 
 SbsArrayExpr* sbs_expression_array_parse(SbsParser *parser)
