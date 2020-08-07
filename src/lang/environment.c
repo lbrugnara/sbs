@@ -10,7 +10,7 @@ void sbs_section_env_free(SbsSectionEnv *env)
         return;
 
     if (env->os)
-        sbs_varinfo_free(env->os);
+        sbs_variable_free(env->os);
 
     if (env->arch)
         sbs_expression_free(env->arch);
@@ -31,7 +31,7 @@ void sbs_section_env_free(SbsSectionEnv *env)
         fl_array_free_each_pointer(env->shell_args, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (env->condition)
-        sbs_stmt_conditional_free(env->condition);
+        sbs_expression_free(env->condition);
 
     sbs_property_actions_free(&env->actions);
 

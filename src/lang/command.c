@@ -2,23 +2,23 @@
 #include <fllib/Cstring.h>
 #include "command.h"
 
-void sbs_value_command_free(SbsValueCommand *str)
+void sbs_command_free(SbsCommand *command)
 {
-    if (str->value)
-        sbs_string_free(str->value);
+    if (command->value)
+        sbs_string_free(command->value);
 
-    fl_free(str);
+    fl_free(command);
 }
 
-SbsValueCommand* sbs_value_command_copy(const SbsValueCommand *src_obj)
+SbsCommand* sbs_command_copy(const SbsCommand *source)
 {
-    if (!src_obj)
+    if (!source)
         return NULL;
 
-    SbsValueCommand *copy = fl_malloc(sizeof(SbsValueCommand));
+    SbsCommand *copy = fl_malloc(sizeof(SbsCommand));
 
-    copy->type = src_obj->type;
-    copy->value = sbs_string_copy(src_obj->value);
+    copy->type = source->type;
+    copy->value = sbs_string_copy(source->value);
 
     return copy;
 }

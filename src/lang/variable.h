@@ -1,32 +1,32 @@
-#ifndef SBS_RUNTIME_VARIABLE_H
-#define SBS_RUNTIME_VARIABLE_H
+#ifndef SBS_LANG_VARIABLE_H
+#define SBS_LANG_VARIABLE_H
 
 #include <fllib/Slice.h>
 
-typedef struct SbsVariableInfo {
+typedef struct SbsVariable {
     const char *namespace;
     const char *name;
     const char *fqn;
-} SbsVariableInfo;
+} SbsVariable;
 
-typedef enum SbsVariableInfoType {
-    SBS_VALUE_VAR_UNK,
-    SBS_VALUE_VAR_STR,
-} SbsVariableInfoType;
+typedef enum SbsVariableType {
+    SBS_VARIABLE_TYPE_UNK,
+    SBS_VARIABLE_TYPE_STRING,
+} SbsVariableType;
 
 typedef struct SbsNodeVariableDefinition {
-    SbsVariableInfo *name;
-    SbsVariableInfoType kind;
+    SbsVariable *name;
+    SbsVariableType kind;
     union {
         char *s;
     } value;
 } SbsNodeVariableDefinition;
 
-SbsVariableInfo* sbs_varinfo_new(const char *name, const char *namespace);
-SbsVariableInfo* sbs_varinfo_new_from_slice(const struct FlSlice *name, const struct FlSlice *namespace);
-void sbs_varinfo_free(SbsVariableInfo *varinfo);
-SbsVariableInfo* sbs_varinfo_copy(const SbsVariableInfo *varinfo);
+SbsVariable* sbs_variable_new(const char *name, const char *namespace);
+SbsVariable* sbs_variable_new_from_slice(const struct FlSlice *name, const struct FlSlice *namespace);
+void sbs_variable_free(SbsVariable *varinfo);
+SbsVariable* sbs_variable_copy(const SbsVariable *varinfo);
 SbsNodeVariableDefinition* sbs_node_variable_definition_new(void);
 void sbs_node_variable_definition_free(SbsNodeVariableDefinition *var_def);
 
-#endif /* SBS_RUNTIME_VARIABLE_H */
+#endif /* SBS_LANG_VARIABLE_H */

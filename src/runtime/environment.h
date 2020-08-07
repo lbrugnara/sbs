@@ -3,7 +3,7 @@
 
 #include "host.h"
 #include "resolve.h"
-#include "command.h"
+#include "../lang/command.h"
 
 typedef enum SbsShellType {
     SBS_SHELL_UNK,

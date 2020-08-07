@@ -2,7 +2,6 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "configuration.h"
-#include "conditional.h"
 #include "../utils.h"
 
 static void sbs_config_entry_free(struct SbsNodeConfig *config)
@@ -35,7 +34,7 @@ static void sbs_config_entry_free(struct SbsNodeConfig *config)
         sbs_string_free(config->executable.extension);
 
     if (config->condition)
-        sbs_stmt_conditional_free(config->condition);
+        sbs_expression_free(config->condition);
 
     fl_free(config);
 }
@@ -52,7 +51,7 @@ void sbs_section_config_free(SbsSectionConfig *configuration)
         fl_array_free_each_pointer(configuration->entries, (FlArrayFreeElementFunc) sbs_config_entry_free);
 
     if (configuration->condition)
-        sbs_stmt_conditional_free(configuration->condition);
+        sbs_expression_free(configuration->condition);
 
     fl_free(configuration);
 }

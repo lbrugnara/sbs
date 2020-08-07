@@ -1,5 +1,5 @@
-#ifndef SBS_RUNTIME_STRING_H
-#define SBS_RUNTIME_STRING_H
+#ifndef SBS_LANG_STRING_H
+#define SBS_LANG_STRING_H
 
 #include <stddef.h>
 #include <fllib/Array.h>
@@ -10,7 +10,7 @@
 struct SbsEvalContext;
 
 typedef struct SbsStringPlaceholder {
-    SbsVariableInfo *variable;
+    SbsVariable *variable;
     size_t index;
 } SbsStringPlaceholder;
 
@@ -71,4 +71,4 @@ static inline SbsString** sbs_string_array_extend_from_value_string(SbsString **
     return dest;
 }
 
-#endif /* SBS_RUNTIME_STRING_H */
+#endif /* SBS_LANG_STRING_H */

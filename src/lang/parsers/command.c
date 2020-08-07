@@ -1,11 +1,11 @@
 #include <fllib.h>
 #include "parser.h"
-#include "command.h"
+#include "../command.h"
 #include "string.h"
 #include "helpers.h"
 
 /*
- * Function: sbs_value_command_string_parse
+ * Function: sbs_command_string_parse
  *  Returns an array of strings (that represents executable commands)
  *
  * Parameters:
@@ -15,13 +15,13 @@
  *  char** - Parsed array of strings (that represents executable commands)
  *
  */
-SbsString* sbs_value_command_string_parse(SbsParser *parser)
+SbsString* sbs_command_string_parse(SbsParser *parser)
 {
     return sbs_string_parse(parser);
 }
 
 /*
- * Function: sbs_value_command_array_parse
+ * Function: sbs_command_array_parse
  *  Returns an array of strings (that represents executable commands) or ids
  *
  * Parameters:
@@ -31,7 +31,7 @@ SbsString* sbs_value_command_string_parse(SbsParser *parser)
  *  char** - Parsed array of strings (that represents executable commands) or ids
  *
  */
-SbsValueCommand** sbs_value_command_array_parse(SbsParser *parser)
+SbsCommand** sbs_command_array_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
 
@@ -46,31 +46,31 @@ SbsValueCommand** sbs_value_command_array_parse(SbsParser *parser)
         nelements++;
     }
 
-    SbsValueCommand **elements = NULL;
+    SbsCommand **elements = NULL;
 
     if (nelements > 0)
     {
         
         // Parse the elements
-        elements = fl_array_new(sizeof(SbsValueCommand*), nelements);
+        elements = fl_array_new(sizeof(SbsCommand*), nelements);
         size_t index = 0;
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
             const SbsToken *element = sbs_parser_peek(parser);
 
-            SbsValueCommand *command = NULL;
+            SbsCommand *command = NULL;
 
             if (element->type == SBS_TOKEN_COMMAND_STRING)
             {
-                command = fl_malloc(sizeof(SbsValueCommand));
-                command->type = SBS_VALUE_COMMAND_STRING;
-                command->value = sbs_value_command_string_parse(parser);
+                command = fl_malloc(sizeof(SbsCommand));
+                command->type = SBS_COMMAND_STRING;
+                command->value = sbs_command_string_parse(parser);
             }
             else if (element->type == SBS_TOKEN_IDENTIFIER)
             {
-                command = fl_malloc(sizeof(SbsValueCommand));
-                command->type = SBS_VALUE_COMMAND_NAME;
+                command = fl_malloc(sizeof(SbsCommand));
+                command->type = SBS_COMMAND_NAME;
                 command->value = sbs_string_new(sbs_parse_identifier(parser), true);
             }
             else

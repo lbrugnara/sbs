@@ -1,7 +1,7 @@
 #ifndef SBS_LANG_ACTION_H
 #define SBS_LANG_ACTION_H
 
-#include "conditional.h"
+#include "../runtime/eval.h"
 #include "command.h"
 
 /*
@@ -18,8 +18,8 @@
  * 
  */
 typedef struct SbsNodeAction {
-    SbsValueCommand **commands;
-    SbsStmtConditional *condition;
+    SbsCommand **commands;
+    SbsExpression *condition;
 } SbsNodeAction;
 
 /*
@@ -49,14 +49,14 @@ typedef struct SbsSectionAction {
  * ===== C =====
  * typedef struct
  * {
- * 		SbsValueCommand *before;
- * 		SbsValueCommand *after;
+ * 		SbsCommand *before;
+ * 		SbsCommand *after;
  * } SbsPropertyActions;
  * 
  */
 typedef struct SbsPropertyActions {
-    SbsValueCommand **before;
-    SbsValueCommand **after;
+    SbsCommand **before;
+    SbsCommand **after;
 } SbsPropertyActions;
 
 SbsSectionAction* sbs_section_action_new(const struct FlSlice *name);

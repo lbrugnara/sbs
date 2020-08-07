@@ -3,7 +3,7 @@
 #include "source.h"
 #include "helpers.h"
 #include "parser.h"
-#include "conditional.h"
+#include "expression.h"
 #include "target-compile.h"
 #include "../target-compile.h"
 #include "target-archive.h"
@@ -14,12 +14,12 @@
 #include "../target-executable.h"
 #include "../../utils.h"
 
-void sbs_section_target_for_condition_parse(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionTargetType target_type)
+void sbs_section_target_if_stmt_parse(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionTargetType target_type)
 {
     const SbsToken *token = sbs_parser_peek(parser);
 
     // Parse the for declaration
-    SbsStmtConditional *condition = sbs_stmt_conditional_parse(parser);
+    SbsExpression *condition = sbs_statement_if_parse(parser);
     
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 

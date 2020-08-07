@@ -4,22 +4,42 @@
 #include "string.h"
 #include "../utils.h"
 
-typedef enum SbsValueCommandType {
-    SBS_VALUE_COMMAND_STRING,
-    SBS_VALUE_COMMAND_NAME
-} SbsValueCommandType;
+typedef enum SbsCommandType {
+    SBS_COMMAND_STRING,
+    SBS_COMMAND_NAME
+} SbsCommandType;
 
-typedef struct SbsValueCommand {
-    SbsValueCommandType type;
+typedef struct SbsCommand {
+    SbsCommandType type;
     SbsString *value;
-} SbsValueCommand;
+} SbsCommand;
 
-void sbs_value_command_free(SbsValueCommand *str);
-SbsValueCommand* sbs_value_command_copy(const SbsValueCommand *src_obj);
+void sbs_command_free(SbsCommand *str);
+SbsCommand* sbs_command_copy(const SbsCommand *source);
 
-static inline SbsValueCommand** sbs_value_command_array_extend(SbsValueCommand **dest, SbsValueCommand **src)
-{
-    return sbs_array_extend_copy_pointer(dest, src, (SbsArrayCopyPointerFn) sbs_value_command_copy);
+static inline SbsCommand** sbs_command_array_extend(SbsCommand **dest, SbsCommand **source)
+{    
+    if (!source)
+        return dest;
+
+    if (!dest)
+        dest = fl_array_new(fl_array_element_size(source), 0);
+
+    size_t dest_length = fl_array_length(dest);
+    size_t elem_size = fl_array_element_size(source);
+    size_t source_length = fl_array_length(source);
+
+    dest = fl_array_resize(dest, dest_length + source_length);
+
+    if (!dest)
+        return NULL;
+
+    for (size_t i=dest_length, j=0; i < dest_length + source_length; i++, j++)
+    {
+        dest[i] = sbs_command_copy(source[j]);
+    }
+
+    return dest;
 }
 
 #endif /* SBS_LANG_COMMAND_H */

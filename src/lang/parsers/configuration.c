@@ -5,7 +5,7 @@
 #include "helpers.h"
 #include "string.h"
 #include "parser.h"
-#include "conditional.h"
+#include "expression.h"
 #include "../../utils.h"
 
 static void parse_compile_block(SbsParser *parser, SbsNodeConfigCompile *compile)
@@ -153,7 +153,7 @@ static void parse_config_body(SbsParser *parser, SbsSectionConfig *config_sectio
         else if (token->type == SBS_TOKEN_IF)
         {
             struct SbsNodeConfig *nested_config_node = sbs_section_config_add_node(config_section);
-            nested_config_node->condition = sbs_stmt_conditional_parse(parser);
+            nested_config_node->condition = sbs_statement_if_parse(parser);
 
             // NOTE: This allows nested ifs but without too much effort, because of that we need
             // to "merge" the condition of the nested if with the one in its parent node
@@ -161,9 +161,9 @@ static void parse_config_body(SbsParser *parser, SbsSectionConfig *config_sectio
             if (config_node->condition != NULL)
             {
                 SbsBinaryExpr *merged_expressions = sbs_expression_make_binary(SBS_EVAL_OP_AND, 
-                                                                                sbs_expression_copy(config_node->condition->expr), 
-                                                                                nested_config_node->condition->expr);
-                nested_config_node->condition->expr = (SbsExpression*) merged_expressions;
+                                                                                sbs_expression_copy(config_node->condition), 
+                                                                                nested_config_node->condition);
+                nested_config_node->condition = (SbsExpression*) merged_expressions;
             }
 
             // Parse the configuration info
@@ -236,11 +236,11 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
         configuration->extends = sbs_parse_extends_declaration(parser);
 
         if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
-            configuration->condition = sbs_stmt_conditional_parse(parser);
+            configuration->condition = sbs_statement_for_parse(parser);
     }
     else if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
     {
-        configuration->condition = sbs_stmt_conditional_parse(parser);
+        configuration->condition = sbs_statement_for_parse(parser);
 
         if (sbs_parser_peek(parser)->type == SBS_TOKEN_EXTENDS)
             configuration->extends = sbs_parse_extends_declaration(parser);
@@ -257,7 +257,7 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
         if (token->type == SBS_TOKEN_IF)
         {
             // Parse the if declaration
-            config_node->condition = sbs_stmt_conditional_parse(parser);
+            config_node->condition = sbs_statement_if_parse(parser);
 
             // Parse the configuration info
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);

@@ -2,7 +2,7 @@
 #define SBS_RUNTIME_PRESET_H
 
 #include "resolve.h"
-#include "command.h"
+#include "../lang/command.h"
 
 typedef struct SbsPreset {
     char *name;

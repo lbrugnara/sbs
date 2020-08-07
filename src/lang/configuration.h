@@ -2,7 +2,7 @@
 #define SBS_LANG_CONFIGURATION_H
 
 #include <fllib.h>
-#include "conditional.h"
+#include "../runtime/eval.h"
 #include "string.h"
 
 typedef struct SbsNodeConfigCompile {
@@ -30,13 +30,13 @@ typedef struct SbsNodeConfig {
     SbsNodeConfigArchive archive;
     SbsNodeConfigShared shared;
     SbsNodeConfigExecutable executable;
-    SbsStmtConditional *condition;
+    SbsExpression *condition;
 } SbsNodeConfig;
 
 typedef struct SbsSectionConfig {
     const char *name;
     char **extends;
-    SbsStmtConditional *condition;
+    SbsExpression *condition;
     SbsNodeConfig **entries;
 } SbsSectionConfig;
 

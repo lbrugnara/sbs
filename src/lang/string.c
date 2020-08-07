@@ -91,7 +91,7 @@ char* sbs_string_interpolate(SbsEvalContext *context, SbsString *string)
 static void free_string_placeholder(SbsStringPlaceholder *placeholder)
 {
     if (placeholder->variable)
-        sbs_varinfo_free(placeholder->variable);
+        sbs_variable_free(placeholder->variable);
 
     fl_free(placeholder);
 }
@@ -121,7 +121,7 @@ SbsString* sbs_string_copy(const SbsString *string)
         {
             copy->args[i] = fl_malloc(sizeof(SbsStringPlaceholder));
             copy->args[i]->index = string->args[i]->index;
-            copy->args[i]->variable = sbs_varinfo_copy(string->args[i]->variable);
+            copy->args[i]->variable = sbs_variable_copy(string->args[i]->variable);
         }
     }
 

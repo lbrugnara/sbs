@@ -76,20 +76,20 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
     {
         SbsNodeAction *action_node = action_section->nodes[i];
 
-        if (action_node->condition && !sbs_expression_eval_bool(context->evalctx, action_node->condition->expr))
+        if (action_node->condition && !sbs_expression_eval_bool(context->evalctx, action_node->condition))
             continue;
 
         for (size_t i=0; i < fl_array_length(action_node->commands); i++)
         {
-            SbsValueCommand *command = action_node->commands[i];
+            SbsCommand *command = action_node->commands[i];
 
-            if (command->type == SBS_VALUE_COMMAND_STRING)
+            if (command->type == SBS_COMMAND_STRING)
             {
                 sbs_action_add_command(action_object, sbs_string_copy(command->value));
             }
             else
             {
-                // NOTE: command->value is an identifier (SBS_VALUE_COMMAND_NAME) we shouldn't interpolate it here
+                // NOTE: command->value is an identifier (SBS_COMMAND_NAME) we shouldn't interpolate it here
                 SbsAction *ref_action = sbs_action_resolve(context, command->value->format);
                 
                 if (!ref_action)
@@ -108,7 +108,7 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
     return action_object;
 }
 
-SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsValueCommand **actions)
+SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsCommand **actions)
 {
     if (!actions)
         return NULL;
@@ -119,11 +119,11 @@ SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsValueCommand *
 
     for (size_t i=0; i < actions_count; i++)
     {
-        SbsValueCommand *action = actions[i];
+        SbsCommand *action = actions[i];
 
-        if (action->type == SBS_VALUE_COMMAND_NAME)
+        if (action->type == SBS_COMMAND_NAME)
         {
-            // NOTE: action->value is an identifier (SBS_VALUE_COMMAND_NAME) we shouldn't interpolate it here
+            // NOTE: action->value is an identifier (SBS_COMMAND_NAME) we shouldn't interpolate it here
             resolved_actions[i] = sbs_action_resolve(context, action->value->format);
         }
         else

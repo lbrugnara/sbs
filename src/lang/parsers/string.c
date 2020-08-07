@@ -1,7 +1,7 @@
 #include <fllib.h>
 #include "string.h"
 #include "parser.h"
-#include "conditional.h"
+#include "expression.h"
 #include "variable.h"
 
 SbsString* sbs_string_parse(SbsParser *parser)
@@ -117,11 +117,11 @@ SbsString* sbs_string_parse(SbsParser *parser)
         if (ns_length > 0)
         {
             struct FlSlice namespace = fl_slice_new(token->value.sequence, 1, ns_index, ns_length);
-            placeholder->variable = sbs_varinfo_new_from_slice(&name, &namespace);
+            placeholder->variable = sbs_variable_new_from_slice(&name, &namespace);
         }
         else
         {
-            placeholder->variable = sbs_varinfo_new_from_slice(&name, NULL);
+            placeholder->variable = sbs_variable_new_from_slice(&name, NULL);
         }
 
         if (placeholders == NULL)

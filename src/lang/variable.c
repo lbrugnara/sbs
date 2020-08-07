@@ -3,9 +3,9 @@
 #include "variable.h"
 #include "../utils.h"
 
-SbsVariableInfo* sbs_varinfo_new_from_slice(const struct FlSlice *name, const struct FlSlice *namespace)
+SbsVariable* sbs_variable_new_from_slice(const struct FlSlice *name, const struct FlSlice *namespace)
 {
-    SbsVariableInfo *variable = fl_malloc(sizeof(SbsVariableInfo));
+    SbsVariable *variable = fl_malloc(sizeof(SbsVariable));
 
     variable->name = sbs_slice_to_cstring(name);
 
@@ -22,14 +22,14 @@ SbsVariableInfo* sbs_varinfo_new_from_slice(const struct FlSlice *name, const st
     return variable;
 }
 
-SbsVariableInfo* sbs_varinfo_new(const char *name, const char *namespace)
+SbsVariable* sbs_variable_new(const char *name, const char *namespace)
 {
-    return sbs_varinfo_new_from_slice(
+    return sbs_variable_new_from_slice(
             &flm_slice_new((const FlByte * const) name, 1, 0, strlen(name)), 
             (namespace != NULL ? &flm_slice_new((const FlByte * const) namespace, 1, 0, strlen(namespace)) : NULL));
 }
 
-void sbs_varinfo_free(SbsVariableInfo *varinfo)
+void sbs_variable_free(SbsVariable *varinfo)
 {
     if (!varinfo)
         return;
@@ -46,9 +46,9 @@ void sbs_varinfo_free(SbsVariableInfo *varinfo)
     fl_free(varinfo);
 }
 
-SbsVariableInfo* sbs_varinfo_copy(const SbsVariableInfo *varinfo)
+SbsVariable* sbs_variable_copy(const SbsVariable *varinfo)
 {
-    SbsVariableInfo *copy = fl_malloc(sizeof(SbsVariableInfo));
+    SbsVariable *copy = fl_malloc(sizeof(SbsVariable));
 
     copy->name = fl_cstring_dup(varinfo->name);
     copy->namespace = varinfo->namespace != NULL ? fl_cstring_dup(varinfo->namespace) : NULL;
@@ -67,11 +67,11 @@ SbsNodeVariableDefinition* sbs_node_variable_definition_new(void)
 void sbs_node_variable_definition_free(SbsNodeVariableDefinition *var_def)
 {
     if (var_def->name)
-        sbs_varinfo_free(var_def->name);
+        sbs_variable_free(var_def->name);
 
     switch (var_def->kind)
     {
-        case SBS_VALUE_VAR_STR:
+        case SBS_VARIABLE_TYPE_STRING:
             fl_cstring_free(var_def->value.s);
             break;
 

@@ -3,16 +3,17 @@
 
 #include "action.h"
 #include "variable.h"
+#include "../runtime/eval.h"
 
 
 typedef struct SbsSectionEnv {
-    SbsStmtConditional *condition;
+    SbsExpression *condition;
     const char *name;
     const char *shell_type;
     const char *shell_command;
     char **shell_args;
     char **variables;
-    SbsVariableInfo *os;
+    SbsVariable *os;
     SbsExpression *arch;
     SbsPropertyActions actions;
 } SbsSectionEnv;

@@ -17,6 +17,6 @@ void sbs_action_add_command(SbsAction *action, SbsString *cmd);
 void sbs_action_copy(SbsAction **dest, const SbsAction **src);
 
 SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_name);
-SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsValueCommand **actions);
+SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsCommand **actions);
 
 #endif /* SBS_RUNTIME_ACTION_H */

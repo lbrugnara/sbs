@@ -2,7 +2,7 @@
 #include "action.h"
 #include "helpers.h"
 #include "parser.h"
-#include "conditional.h"
+#include "expression.h"
 #include "command.h"
 
 static void parse_action_body(SbsParser *parser, SbsNodeAction *current_node)
@@ -10,17 +10,17 @@ static void parse_action_body(SbsParser *parser, SbsNodeAction *current_node)
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_IF)
     { 
-        SbsValueCommand *command = NULL;
+        SbsCommand *command = NULL;
         if (token->type == SBS_TOKEN_COMMAND_STRING)
         {
-            command = fl_malloc(sizeof(SbsValueCommand));
-            command->type = SBS_VALUE_COMMAND_STRING;
-            command->value = sbs_value_command_string_parse(parser);
+            command = fl_malloc(sizeof(SbsCommand));
+            command->type = SBS_COMMAND_STRING;
+            command->value = sbs_command_string_parse(parser);
         }
         else if (token->type == SBS_TOKEN_IDENTIFIER)
         {
-            command = fl_malloc(sizeof(SbsValueCommand));
-            command->type = SBS_VALUE_COMMAND_NAME;
+            command = fl_malloc(sizeof(SbsCommand));
+            command->type = SBS_COMMAND_NAME;
             command->value = sbs_string_new(sbs_parse_identifier(parser), true);
         }
         else
@@ -66,7 +66,7 @@ SbsSectionAction* sbs_section_action_parse(SbsParser *parser)
         
         if (token->type == SBS_TOKEN_IF)
         {
-            action_node->condition = sbs_stmt_conditional_parse(parser);
+            action_node->condition = sbs_statement_if_parse(parser);
 
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
             parse_action_body(parser, action_node);
@@ -112,13 +112,13 @@ SbsPropertyActions sbs_property_actions_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            actions.before = sbs_value_command_array_parse(parser);
+            actions.before = sbs_command_array_parse(parser);
         }
         else if (fl_slice_equals_sequence(&token->value, (FlByte*)"after", 5))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            actions.after = sbs_value_command_array_parse(parser);
+            actions.after = sbs_command_array_parse(parser);
         }
         else
         {

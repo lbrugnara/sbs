@@ -8,10 +8,10 @@
 static void action_node_free(SbsNodeAction *action_node)
 {
     if (action_node->commands)
-        fl_array_free_each_pointer(action_node->commands, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(action_node->commands, (FlArrayFreeElementFunc) sbs_command_free);
 
     if (action_node->condition)
-        sbs_stmt_conditional_free(action_node->condition);
+        sbs_expression_free(action_node->condition);
 
     fl_free(action_node);
 }
@@ -29,10 +29,10 @@ void sbs_section_action_free(SbsSectionAction *action_section)
 void sbs_property_actions_free(SbsPropertyActions *actions)
 {
     if (actions->before)
-        fl_array_free_each_pointer(actions->before, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(actions->before, (FlArrayFreeElementFunc) sbs_command_free);
 
     if (actions->after)
-        fl_array_free_each_pointer(actions->after, (FlArrayFreeElementFunc) sbs_value_command_free);
+        fl_array_free_each_pointer(actions->after, (FlArrayFreeElementFunc) sbs_command_free);
 }
 
 SbsSectionAction* sbs_section_action_new(const struct FlSlice *name)
@@ -48,7 +48,7 @@ SbsSectionAction* sbs_section_action_new(const struct FlSlice *name)
 SbsNodeAction* sbs_section_action_add_node(SbsSectionAction *action_section)
 {
     SbsNodeAction *action_node = fl_malloc(sizeof(SbsNodeAction));
-    action_node->commands = fl_array_new(sizeof(SbsValueCommand*), 0);
+    action_node->commands = fl_array_new(sizeof(SbsCommand*), 0);
 
     action_section->nodes = fl_array_append(action_section->nodes, &action_node);
 

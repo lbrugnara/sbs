@@ -443,7 +443,7 @@ static void free_value_node(SbsValueExpr *value)
 static void free_variable_node(SbsVariableExpr *value_node)
 {
     if (value_node->info)
-        sbs_varinfo_free(value_node->info);
+        sbs_variable_free(value_node->info);
 
     fl_free(value_node);
 }
@@ -554,7 +554,7 @@ static SbsExpression* copy_variable_node(SbsVariableExpr* node)
     SbsVariableExpr *copy = fl_malloc(sizeof(SbsVariableExpr));
 
     copy->kind = SBS_EXPR_VARIABLE;
-    copy->info = sbs_varinfo_new(node->info->name, node->info->namespace);
+    copy->info = sbs_variable_new(node->info->name, node->info->namespace);
 
     return (SbsExpression*) copy;
 }
@@ -681,7 +681,7 @@ SbsVariableExpr* sbs_expression_make_variable(const char *name, const char *name
     SbsVariableExpr *var_node = fl_malloc(sizeof(SbsVariableExpr));
 
     var_node->kind = SBS_EXPR_VARIABLE;
-    var_node->info = sbs_varinfo_new(name, namespace);
+    var_node->info = sbs_variable_new(name, namespace);
 
     return var_node;
 }

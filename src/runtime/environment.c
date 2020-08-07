@@ -42,7 +42,7 @@ void sbs_env_free(SbsEnv *env)
 }
 
 
-static SbsOs variable_to_os(SbsVariableInfo *os_variable)
+static SbsOs variable_to_os(SbsVariable *os_variable)
 {
     if (os_variable == NULL)
         return SBS_OS_UNK;
@@ -114,7 +114,7 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name, const 
     if (!env_section)
         return NULL;
 
-    if (!context->script_mode && env_section->condition && !sbs_expression_eval_bool(context->evalctx, env_section->condition->expr))
+    if (!context->script_mode && env_section->condition && !sbs_expression_eval_bool(context->evalctx, env_section->condition))
         return NULL;
 
     SbsEnv *env_object = sbs_env_new(env_section->name);
@@ -129,8 +129,8 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name, const 
                                     : env_section->arch != NULL ? eval_arch_expression(context->evalctx, env_section->arch) 
                                                                 : context->host->arch;
 
-    env_object->actions.before = sbs_command_array_extend_from_value_command(env_object->actions.before, env_section->actions.before);
-    env_object->actions.after = sbs_command_array_extend_from_value_command(env_object->actions.after, env_section->actions.after);
+    env_object->actions.before = sbs_command_array_extend(env_object->actions.before, env_section->actions.before);
+    env_object->actions.after = sbs_command_array_extend(env_object->actions.after, env_section->actions.after);
 
     env_object->host = sbs_host_new(env_object->os, env_object->arch);
 

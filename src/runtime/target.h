@@ -4,7 +4,7 @@
 #include <fllib.h>
 
 #include "resolve.h"
-#include "command.h"
+#include "../lang/command.h"
 #include "../lang/target.h"
 
 typedef enum SbsTargetType {

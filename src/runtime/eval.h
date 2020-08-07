@@ -55,7 +55,7 @@ typedef struct SbsStringExpr {
 
 typedef struct SbsVariableExpr {
     SbsExprKind kind;
-    SbsVariableInfo *info;
+    SbsVariable *info;
 } SbsVariableExpr;
 
 typedef struct SbsArrayExpr {

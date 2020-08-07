@@ -15,7 +15,7 @@
 static inline bool init_variables(SbsContext *context, SbsResult *result)
 {
     // Init the user-defined variables
-    SbsVariableInfo **var_names = fl_hashtable_keys(context->file->variables);
+    SbsVariable **var_names = fl_hashtable_keys(context->file->variables);
 
     for (size_t i = 0; i < fl_array_length(var_names); i++)
     {

@@ -149,11 +149,11 @@ static SbsExpression* parse_identifier_expression(SbsParser *parser)
 
 static SbsExpression* parse_variable_expression(SbsParser *parser)
 {
-    SbsVariableInfo *variable = sbs_parse_variable(parser);
+    SbsVariable *variable = sbs_parse_variable(parser);
 
     SbsExpression *var_node = (SbsExpression*) sbs_expression_make_variable(variable->name, variable->namespace);
 
-    sbs_varinfo_free(variable);
+    sbs_variable_free(variable);
 
     return var_node;
 }
@@ -372,4 +372,16 @@ static SbsExpression* parse_conditional_expression(SbsParser *parser)
 SbsExpression* sbs_expression_parse(SbsParser *parser)
 {
     return parse_conditional_expression(parser);
+}
+
+SbsExpression* sbs_statement_for_parse(SbsParser *parser)
+{
+    sbs_parser_consume(parser, SBS_TOKEN_FOR);
+    return sbs_expression_parse(parser);
+}
+
+SbsExpression* sbs_statement_if_parse(SbsParser *parser)
+{
+    sbs_parser_consume(parser, SBS_TOKEN_IF);
+    return sbs_expression_parse(parser);
 }

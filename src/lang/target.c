@@ -13,7 +13,7 @@ void sbs_node_target_free_members(SbsAbstractNodeTarget *node)
     sbs_property_actions_free(&node->actions);
 
     if (node->condition)
-        sbs_stmt_conditional_free(node->condition);
+        sbs_expression_free(node->condition);
 
     if (node->output_dir)
         fl_cstring_free(node->output_dir);

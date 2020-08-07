@@ -52,8 +52,8 @@ SbsPreset* sbs_preset_resolve(SbsResolveContext *context, const char *preset_nam
     preset_object->configs = sbs_cstring_array_extend(preset_object->configs, preset_section->configs);
     preset_object->targets = sbs_cstring_array_extend(preset_object->targets, preset_section->targets);
     
-    preset_object->actions.before = sbs_command_array_extend_from_value_command(preset_object->actions.before, preset_section->actions.before);
-    preset_object->actions.after = sbs_command_array_extend_from_value_command(preset_object->actions.after, preset_section->actions.after);
+    preset_object->actions.before = sbs_command_array_extend(preset_object->actions.before, preset_section->actions.before);
+    preset_object->actions.after = sbs_command_array_extend(preset_object->actions.after, preset_section->actions.after);
 
     fl_hashtable_add(context->evalctx->variables, "sbs.preset", preset_object->name);
 

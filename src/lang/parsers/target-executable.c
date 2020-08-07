@@ -95,7 +95,7 @@ void sbs_section_executable_body_parse(SbsParser *parser, SbsSectionExecutable *
         }
         else if (token->type == SBS_TOKEN_IF)
         {
-            sbs_section_target_for_condition_parse(parser, (SbsAbstractSectionTarget*) target_section, SBS_SECTION_TARGET_EXECUTABLE);
+            sbs_section_target_if_stmt_parse(parser, (SbsAbstractSectionTarget*) target_section, SBS_SECTION_TARGET_EXECUTABLE);
         }
         else
         {
