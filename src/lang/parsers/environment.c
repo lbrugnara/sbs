@@ -6,7 +6,6 @@
 #include "helpers.h"
 #include "parser.h"
 #include "action.h"
-#include "variable.h"
 #include "cstring.h"
 
 /*

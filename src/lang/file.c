@@ -30,7 +30,7 @@ static void map_init_variables(FlHashtable **variables)
     struct FlHashtableArgs new_args = {
         .hash_function = hash_variable_name, 
         .key_comparer = variable_equals,
-        .value_cleaner = (FlContainerCleanupFn) sbs_node_variable_definition_free
+        .value_cleaner = (FlContainerCleanupFn) sbs_expression_free
     };
     
     *variables = fl_hashtable_new_args(new_args);

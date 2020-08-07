@@ -355,6 +355,21 @@ static SbsValueExpr* eval_identifier_node(SbsIdentifierExpr *identifier_node, Sb
     return id_value;
 }
 
+static SbsValueExpr* eval_var_definition_node(SbsVarDefinitionExpr *var_def, SbsEvalContext *context)
+{
+    // TODO: By now, the variables hashtable contains plain C strings instead of 
+    // SbsValueExpr* objects
+    char *str = sbs_eval_string_expression(context, var_def->value);
+
+    if (str != NULL)
+        fl_hashtable_add(context->variables, var_def->name->fqn, str);
+
+    // NOTE: The hashtable copies the string. If we want to support multiple assignments, 
+    // we need to return a SbsValueExpr object containing the C string instead of freeing it
+    fl_cstring_free(str);
+    return NULL;
+}
+
 static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node)
 {
     SbsValueExpr *result = NULL;
@@ -393,6 +408,10 @@ static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node)
             result = eval_identifier_node((SbsIdentifierExpr*) node, context);
             break;
 
+        case SBS_EXPR_VAR_DEFINITION:
+            result = eval_var_definition_node((SbsVarDefinitionExpr*) node, context);
+            break;
+
         default: break;
     }
 
@@ -418,13 +437,48 @@ bool sbs_eval_bool_expression(SbsEvalContext *context, SbsExpression *node)
 
     bool b = false;
     
-    if (result != NULL && result->type == SBS_EXPR_VALUE_TYPE_BOOL)
-        b = result->value.b;
+    if (result != NULL)
+    {
+        if (result->type == SBS_EXPR_VALUE_TYPE_BOOL)
+            b = result->value.b;
 
-    sbs_expression_free((SbsExpression*) result);
+        sbs_expression_free((SbsExpression*) result);
+    }
+
     sbs_expression_free(node_copy);
 
     return b;
+}
+
+static char* value_expression_to_cstring(struct SbsEvalContext *context, SbsValueExpr *value_expr)
+{
+    if (value_expr == NULL || value_expr->type == SBS_EXPR_VALUE_TYPE_UNK)
+        return NULL;
+
+    char *str = NULL;
+
+    if (value_expr->type == SBS_EXPR_VALUE_TYPE_STRING)
+    {
+        str = value_expr->value.s != NULL ? fl_cstring_dup(value_expr->value.s) : NULL;
+    }
+    else if (value_expr->type == SBS_EXPR_VALUE_TYPE_BOOL)
+    {
+        str = value_expr->value.b ? fl_cstring_dup("true") : fl_cstring_dup("false");
+    }
+    else if (value_expr->type == SBS_EXPR_VALUE_TYPE_ARRAY)
+    {
+        str = fl_cstring_dup("[");
+        size_t length = fl_array_length(value_expr->value.a);
+        for (size_t i=0; i < length; i++)
+        {
+            char *itemstr = sbs_eval_string_expression(context, value_expr->value.a[i]);
+            fl_cstring_vappend(&str, "%s%s", itemstr, (i == length-1 ? "" : ","));
+            fl_cstring_free(itemstr);
+        }
+        fl_cstring_append(&str, "]");
+    }
+
+    return str;
 }
 
 char* sbs_eval_string_expression(struct SbsEvalContext *context, SbsExpression *node)
@@ -435,10 +489,12 @@ char* sbs_eval_string_expression(struct SbsEvalContext *context, SbsExpression *
 
     char *str = NULL;
     
-    if (result != NULL && result->type == SBS_EXPR_VALUE_TYPE_STRING)
-        str = result->value.s != NULL ? fl_cstring_dup(result->value.s) : NULL;
+    if (result != NULL)
+    {
+        str = value_expression_to_cstring(context, result);
+        sbs_expression_free((SbsExpression*) result);
+    }
 
-    sbs_expression_free((SbsExpression*) result);
     sbs_expression_free(node_copy);
 
     return str;

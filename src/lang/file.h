@@ -17,7 +17,7 @@ typedef struct SbsFile {
     FlHashtable *actions;
     // FlHashtable<char*, SbsSectionPreset*>
     FlHashtable *presets;
-    // FlHashtable<char*, SbsNodeVariableDefinition*>
+    // FlHashtable<char*, SbsVarDefinitionExpr*>
     FlHashtable *variables;
 } SbsFile;
 

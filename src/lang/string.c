@@ -1,7 +1,6 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "string.h"
-#include "variable.h"
 
 SbsString* sbs_string_new(char *format, bool is_constant)
 {

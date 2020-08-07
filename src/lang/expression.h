@@ -23,6 +23,7 @@ typedef enum SbsExpressionKind {
     SBS_EXPR_VALUE,
     SBS_EXPR_STRING,
     SBS_EXPR_IDENTIFIER,
+    SBS_EXPR_VAR_DEFINITION,
     SBS_EXPR_IF,
 } SbsExpressionKind;
 
@@ -59,6 +60,13 @@ typedef struct SbsVariableExpr {
     const char *fqn;
 } SbsVariableExpr;
 
+typedef struct SbsVarDefinitionExpr {
+    SbsExpressionKind kind;
+    SbsVariableExpr *name;
+    SbsExpression *value;
+} SbsVarDefinitionExpr;
+
+// NOTE: SbsString will disappear
 #include "string.h"
 typedef struct SbsStringExpr {
     SbsExpressionKind kind;
@@ -95,6 +103,7 @@ SbsValueExpr* sbs_expression_make_value(SbsValueExprType type);
 SbsArrayExpr* sbs_expression_make_array(void);
 void sbs_expression_array_add_item(SbsArrayExpr *array, SbsExpression *item);
 SbsVariableExpr* sbs_expression_make_variable(const char *name, const char *namespace);
+SbsVarDefinitionExpr* sbs_expression_make_var_definition(void);
 SbsUnaryExpr* sbs_expression_make_unary(SbsExprOperator op, SbsExpression *left);
 SbsBinaryExpr* sbs_expression_make_binary(SbsExprOperator op, SbsExpression *left, SbsExpression *right);
 SbsIfExpr* sbs_expression_make_if(SbsExpression *condition, SbsExpression *then_branch, SbsExpression *else_branch);

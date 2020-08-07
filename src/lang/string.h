@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <fllib/Array.h>
-#include "variable.h"
+#include "expression.h"
 #include "../utils.h"
 
 struct SbsEvalContext;

@@ -85,6 +85,17 @@ static void free_identifier_node(SbsIdentifierExpr *identifier)
     fl_free(identifier);
 }
 
+static void free_var_definition_node(SbsVarDefinitionExpr *var_def)
+{
+    if (var_def->name)
+        sbs_expression_free((SbsExpression*) var_def->name);
+
+    if (var_def->value)
+        sbs_expression_free(var_def->value);
+
+    fl_free(var_def);
+}
+
 void sbs_expression_free(SbsExpression *node)
 {
     switch (node->kind)
@@ -119,6 +130,10 @@ void sbs_expression_free(SbsExpression *node)
 
         case SBS_EXPR_IDENTIFIER:
             free_identifier_node((SbsIdentifierExpr*) node);
+            break;
+
+        case SBS_EXPR_VAR_DEFINITION:
+            free_var_definition_node((SbsVarDefinitionExpr*) node);
             break;
 
         default:
@@ -237,6 +252,17 @@ SbsExpression* copy_identifier_node(SbsIdentifierExpr *identifier)
     return (SbsExpression*) copy;
 }
 
+SbsExpression* copy_var_definition_node(SbsVarDefinitionExpr *var_def)
+{
+    SbsVarDefinitionExpr *copy = fl_malloc(sizeof(SbsVarDefinitionExpr));
+
+    copy->kind = SBS_EXPR_VAR_DEFINITION;
+    copy->name = (SbsVariableExpr*) copy_variable_node(var_def->name);
+    copy->value = sbs_expression_copy(var_def->value);
+
+    return (SbsExpression*) copy;
+}
+
 SbsExpression* sbs_expression_copy(SbsExpression *node)
 {
     switch (node->kind)
@@ -264,6 +290,9 @@ SbsExpression* sbs_expression_copy(SbsExpression *node)
 
         case SBS_EXPR_IDENTIFIER:
             return copy_identifier_node((SbsIdentifierExpr*) node);
+
+        case SBS_EXPR_VAR_DEFINITION:
+            return copy_var_definition_node((SbsVarDefinitionExpr*) node);
 
         default:
             break;
@@ -376,4 +405,12 @@ SbsIdentifierExpr* sbs_expression_make_identifier(char *id)
     id_expr->name = id;
 
     return id_expr;
+}
+
+SbsVarDefinitionExpr* sbs_expression_make_var_definition(void)
+{
+    SbsVarDefinitionExpr *var_def = fl_malloc(sizeof(SbsVarDefinitionExpr));
+    var_def->kind = SBS_EXPR_VAR_DEFINITION;
+
+    return var_def;
 }

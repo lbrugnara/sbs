@@ -15,7 +15,7 @@
 #include "toolchain.h"
 #include "lexer.h"
 #include "parser.h"
-#include "variable.h"
+#include "expression.h"
 
 #include "../../io.h"
 #include "../../utils.h"
@@ -192,11 +192,11 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_VARIABLE)
         {
-            SbsNodeVariableDefinition *var_def = sbs_parse_variable_definition(parser);
+            SbsVarDefinitionExpr *var_def = sbs_expression_var_definition_parse(parser);
             if (fl_hashtable_has_key(file->variables, var_def->name))
             {
                 printf("Variable %s cannot be redefined\n", var_def->name->fqn);
-                sbs_node_variable_definition_free((SbsNodeVariableDefinition*) var_def);
+                sbs_expression_free((SbsExpression*) var_def);
                 success = false;
                 break;
             }

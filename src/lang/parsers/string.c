@@ -2,7 +2,6 @@
 #include "string.h"
 #include "parser.h"
 #include "expression.h"
-#include "variable.h"
 
 SbsString* sbs_string_parse(SbsParser *parser)
 {

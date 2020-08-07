@@ -9,6 +9,7 @@ SbsExpression* sbs_statement_for_parse(SbsParser *parser);
 SbsExpression* sbs_statement_if_parse(SbsParser *parser);
 SbsIdentifierExpr* sbs_expression_identifier_parse(SbsParser *parser);
 SbsVariableExpr* sbs_expression_variable_parse(SbsParser *parser);
+SbsVarDefinitionExpr* sbs_expression_var_definition_parse(SbsParser *parser);
 SbsArrayExpr* sbs_expression_array_parse(SbsParser *parser);
 SbsStringExpr* sbs_expression_string_parse(SbsParser *parser);
 SbsExpression* sbs_expression_primary_parse(SbsParser *parser);

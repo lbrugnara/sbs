@@ -2,7 +2,6 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "environment.h"
-#include "variable.h"
 
 void sbs_section_env_free(SbsSectionEnv *env)
 {

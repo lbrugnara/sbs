@@ -7,7 +7,8 @@
 #include "executable.h"
 #include "shared.h"
 #include "action.h"
-#include "../lang/variable.h"
+#include "../lang/expression.h"
+#include "../runtime/eval.h"
 #include "../runtime/context.h"
 #include "../runtime/triplet.h"
 #include "../runtime/target.h"
@@ -19,14 +20,8 @@ static inline bool init_variables(SbsContext *context, SbsResult *result)
 
     for (size_t i = 0; i < fl_array_length(var_names); i++)
     {
-       SbsNodeVariableDefinition *var_def = fl_hashtable_get(context->file->variables, var_names[i]);
-       
-       // TODO: Check for other variable types
-       // TODO: Implement proper string interpolation
-       char *str = sbs_context_interpolate_string(context, var_def->value.s);
-       fl_hashtable_add(context->evalctx->variables, var_def->name->fqn, str);
-       // NOTE: The variables hashtable creates a copy of the interpolated string
-       fl_cstring_free(str);
+        SbsVarDefinitionExpr *var_def = fl_hashtable_get(context->file->variables, var_names[i]);
+        sbs_eval_expression(context->evalctx, (SbsExpression*) var_def);
     }
 
     fl_array_free(var_names);

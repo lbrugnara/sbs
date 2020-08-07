@@ -2,7 +2,6 @@
 #include "expression.h"
 #include "parser.h"
 #include "string.h"
-#include "variable.h"
 
 static char** parse_identifiers(SbsParser *parser)
 {
@@ -163,6 +162,17 @@ SbsVariableExpr* sbs_expression_variable_parse(SbsParser *parser)
     }
 
     return variable;
+}
+
+SbsVarDefinitionExpr* sbs_expression_var_definition_parse(SbsParser *parser)
+{
+    SbsVarDefinitionExpr *var_def = sbs_expression_make_var_definition();
+
+    var_def->name = sbs_expression_variable_parse(parser);
+    sbs_parser_consume(parser, SBS_TOKEN_ASSIGN);
+    var_def->value = sbs_expression_parse(parser);
+
+    return var_def;
 }
 
 SbsArrayExpr* sbs_expression_array_parse(SbsParser *parser)

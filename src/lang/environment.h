@@ -2,9 +2,7 @@
 #define SBS_LANG_ENVIRONMENT_H
 
 #include "action.h"
-#include "variable.h"
 #include "expression.h"
-
 
 typedef struct SbsSectionEnv {
     SbsExpression *condition;
