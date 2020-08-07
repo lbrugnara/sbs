@@ -1,36 +1,34 @@
 #include <fllib.h>
 #include "parser.h"
 #include "../command.h"
-#include "string.h"
+#include "expression.h"
 #include "helpers.h"
 
-/*
- * Function: sbs_command_string_parse
- *  Returns an array of strings (that represents executable commands)
- *
- * Parameters:
- *  parser - Parser object
- *
- * Returns:
- *  char** - Parsed array of strings (that represents executable commands)
- *
- */
-SbsString* sbs_command_string_parse(SbsParser *parser)
+SbsCommand* sbs_command_parse(SbsParser *parser)
 {
-    return sbs_string_parse(parser);
+    const SbsToken *token = sbs_parser_peek(parser);
+
+    SbsCommand *command = NULL;
+    if (token->type == SBS_TOKEN_COMMAND_STRING)
+    {
+        command = fl_malloc(sizeof(SbsCommand));
+        command->type = SBS_COMMAND_STRING;
+        command->value.str = sbs_expression_string_parse(parser);
+    }
+    else if (token->type == SBS_TOKEN_IDENTIFIER)
+    {
+        command = fl_malloc(sizeof(SbsCommand));
+        command->type = SBS_COMMAND_NAME;
+        command->value.id = sbs_expression_identifier_parse(parser);
+    }
+    else
+    {
+        sbs_parser_error(parser, token, "while parsing an action body");
+    }
+
+    return command;
 }
 
-/*
- * Function: sbs_command_array_parse
- *  Returns an array of strings (that represents executable commands) or ids
- *
- * Parameters:
- *  parser - Parser object
- *
- * Returns:
- *  char** - Parsed array of strings (that represents executable commands) or ids
- *
- */
 SbsCommand** sbs_command_array_parse(SbsParser *parser)
 {
     sbs_parser_consume(parser, SBS_TOKEN_LBRACKET);
@@ -57,28 +55,7 @@ SbsCommand** sbs_command_array_parse(SbsParser *parser)
 
         while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET)
         {
-            const SbsToken *element = sbs_parser_peek(parser);
-
-            SbsCommand *command = NULL;
-
-            if (element->type == SBS_TOKEN_COMMAND_STRING)
-            {
-                command = fl_malloc(sizeof(SbsCommand));
-                command->type = SBS_COMMAND_STRING;
-                command->value = sbs_command_string_parse(parser);
-            }
-            else if (element->type == SBS_TOKEN_IDENTIFIER)
-            {
-                command = fl_malloc(sizeof(SbsCommand));
-                command->type = SBS_COMMAND_NAME;
-                command->value = sbs_string_new(sbs_parse_identifier(parser), true);
-            }
-            else
-            {
-                sbs_parser_error(parser, element, "while parsing an array of commands or IDs");
-            }
-
-            elements[index++] = command;
+            elements[index++] = sbs_command_parse(parser);
 
             sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);
         }

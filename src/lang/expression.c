@@ -73,6 +73,12 @@ static void free_string_node(SbsStringExpr *str_expr)
     fl_free(str_expr);
 }
 
+static void free_identifier_node(SbsIdentifierExpr *identifier)
+{
+    fl_cstring_free(identifier->name);
+    fl_free(identifier);
+}
+
 void sbs_expression_free(SbsExpression *node)
 {
     switch (node->kind)
@@ -103,6 +109,10 @@ void sbs_expression_free(SbsExpression *node)
 
         case SBS_EXPR_STRING:
             free_string_node((SbsStringExpr*) node);
+            break;
+
+        case SBS_EXPR_IDENTIFIER:
+            free_identifier_node((SbsIdentifierExpr*) node);
             break;
 
         default:
@@ -209,6 +219,16 @@ SbsExpression* copy_string_node(SbsStringExpr *string)
     return (SbsExpression*) copy;
 }
 
+SbsExpression* copy_identifier_node(SbsIdentifierExpr *identifier)
+{
+    SbsIdentifierExpr *copy = fl_malloc(sizeof(SbsIdentifierExpr));
+
+    copy->kind = SBS_EXPR_IDENTIFIER;
+    copy->name = fl_cstring_dup(identifier->name);
+
+    return (SbsExpression*) copy;
+}
+
 SbsExpression* sbs_expression_copy(SbsExpression *node)
 {
     switch (node->kind)
@@ -233,6 +253,9 @@ SbsExpression* sbs_expression_copy(SbsExpression *node)
 
         case SBS_EXPR_STRING:
             return copy_string_node((SbsStringExpr*) node);
+
+        case SBS_EXPR_IDENTIFIER:
+            return copy_identifier_node((SbsIdentifierExpr*) node);
 
         default:
             break;
@@ -325,4 +348,14 @@ SbsStringExpr* sbs_expression_make_string(SbsString *string)
     str_expr->value = string;
 
     return str_expr;
+}
+
+SbsIdentifierExpr* sbs_expression_make_identifier(char *id)
+{
+    SbsIdentifierExpr *id_expr = fl_malloc(sizeof(SbsIdentifierExpr));
+
+    id_expr->kind = SBS_EXPR_IDENTIFIER;
+    id_expr->name = id;
+
+    return id_expr;
 }

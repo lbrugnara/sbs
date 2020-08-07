@@ -25,7 +25,7 @@ static bool run_actions(SbsBuild *build, SbsCommand **actions)
 
         if (action->type == SBS_COMMAND_STRING)
         {
-            char *commandstr = sbs_expression_eval_string(build->context->evalctx, action->value);
+            char *commandstr = sbs_eval_string_expression(build->context->evalctx, (SbsExpression*) action->value.str);
             bool result = run_command(build, commandstr);
             fl_cstring_free(commandstr);
 
@@ -34,8 +34,14 @@ static bool run_actions(SbsBuild *build, SbsCommand **actions)
         }
         else
         {
-            // NOTE: action->value is an identifier (SBS_COMMAND_NAME) we shouldn't interpolate it here
-            SbsAction *action_obj = sbs_action_resolve(build->context->resolvectx, action->value->format);
+            char *ref_action_name = sbs_eval_string_expression(build->context->evalctx, (SbsExpression*) action->value.id);
+
+            if (ref_action_name == NULL)
+                continue;
+
+            SbsAction *action_obj = sbs_action_resolve(build->context->resolvectx, ref_action_name);
+
+            fl_cstring_free(ref_action_name);
 
             if (!action_obj)
                 continue;
@@ -43,7 +49,7 @@ static bool run_actions(SbsBuild *build, SbsCommand **actions)
             bool result = true;
             for (size_t i=0; i < fl_array_length(action_obj->commands); i++)
             {
-                char *commandstr = sbs_expression_eval_string(build->context->evalctx, action_obj->commands[i]); 
+                char *commandstr = sbs_eval_string_expression(build->context->evalctx, (SbsExpression*) action_obj->commands[i]); 
                 result = run_command(build, commandstr);
                 fl_cstring_free(commandstr);
 

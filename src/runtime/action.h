@@ -7,13 +7,13 @@
 
 typedef struct SbsAction {
     char *name;
-    SbsString **commands;
+    SbsStringExpr **commands;
 } SbsAction;
 
 SbsAction* sbs_action_new(const char *name);
 void sbs_action_free(SbsAction *action);
 void sbs_action_free_all(SbsAction **actions);
-void sbs_action_add_command(SbsAction *action, SbsString *cmd);
+void sbs_action_add_command(SbsAction *action, SbsStringExpr *cmd);
 void sbs_action_copy(SbsAction **dest, const SbsAction **src);
 
 SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_name);

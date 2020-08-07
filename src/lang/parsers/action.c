@@ -10,23 +10,10 @@ static void parse_action_body(SbsParser *parser, SbsNodeAction *current_node)
     const SbsToken *token = NULL;
     while ((token = sbs_parser_peek(parser)) && token->type != SBS_TOKEN_RBRACE && token->type != SBS_TOKEN_IF)
     { 
-        SbsCommand *command = NULL;
-        if (token->type == SBS_TOKEN_COMMAND_STRING)
-        {
-            command = fl_malloc(sizeof(SbsCommand));
-            command->type = SBS_COMMAND_STRING;
-            command->value = sbs_command_string_parse(parser);
-        }
-        else if (token->type == SBS_TOKEN_IDENTIFIER)
-        {
-            command = fl_malloc(sizeof(SbsCommand));
-            command->type = SBS_COMMAND_NAME;
-            command->value = sbs_string_new(sbs_parse_identifier(parser), true);
-        }
-        else
-        {
-            sbs_parser_error(parser, token, "while parsing an action body");
-        }
+        SbsCommand *command = sbs_command_parse(parser);
+
+        if (command == NULL)
+            continue;
 
         current_node->commands = fl_array_append(current_node->commands, &command);
 

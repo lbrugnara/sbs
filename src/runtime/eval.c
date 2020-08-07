@@ -339,9 +339,20 @@ static SbsValueExpr* eval_string_node(SbsStringExpr *str_node, SbsEvalContext *c
 {
     SbsValueExpr *str_value = sbs_expression_make_value(SBS_EXPR_VALUE_TYPE_STRING);
 
-    str_value->value.s = sbs_expression_eval_string(context, str_node->value);
+    str_value->value.s = sbs_eval_string_interpolation(context, str_node->value);
 
     return str_value;
+}
+
+static SbsValueExpr* eval_identifier_node(SbsIdentifierExpr *identifier_node, SbsEvalContext *context)
+{
+    // TODO: Is it correct to set STRING?
+    // NOTE: STRING for compatibility with the current implementation
+    SbsValueExpr *id_value = sbs_expression_make_value(SBS_EXPR_VALUE_TYPE_STRING);
+
+    id_value->value.s = fl_cstring_dup(identifier_node->name);
+
+    return id_value;
 }
 
 static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node)
@@ -378,13 +389,17 @@ static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node)
             result = eval_string_node((SbsStringExpr*) node, context);
             break;
 
+        case SBS_EXPR_IDENTIFIER:
+            result = eval_identifier_node((SbsIdentifierExpr*) node, context);
+            break;
+
         default: break;
     }
 
     return result;
 }
 
-SbsValueExpr* sbs_expression_eval(SbsEvalContext *context, SbsExpression *node)
+SbsValueExpr* sbs_eval_expression(SbsEvalContext *context, SbsExpression *node)
 {
     SbsExpression *node_copy = sbs_expression_copy(node);
 
@@ -395,7 +410,7 @@ SbsValueExpr* sbs_expression_eval(SbsEvalContext *context, SbsExpression *node)
     return result;
 }
 
-bool sbs_expression_eval_bool(SbsEvalContext *context, SbsExpression *node)
+bool sbs_eval_bool_expression(SbsEvalContext *context, SbsExpression *node)
 {
     SbsExpression *node_copy = sbs_expression_copy(node);
 
@@ -412,7 +427,24 @@ bool sbs_expression_eval_bool(SbsEvalContext *context, SbsExpression *node)
     return b;
 }
 
-char* sbs_expression_eval_string(SbsEvalContext *context, SbsString *string)
+char* sbs_eval_string_expression(struct SbsEvalContext *context, SbsExpression *node)
+{
+    SbsExpression *node_copy = sbs_expression_copy(node);
+
+    SbsValueExpr *result = internal_eval(context, node_copy);
+
+    char *str = NULL;
+    
+    if (result != NULL && result->type == SBS_EXPR_VALUE_TYPE_STRING)
+        str = result->value.s != NULL ? fl_cstring_dup(result->value.s) : NULL;
+
+    sbs_expression_free((SbsExpression*) result);
+    sbs_expression_free(node_copy);
+
+    return str;
+}
+
+char* sbs_eval_string_interpolation(SbsEvalContext *context, SbsString *string)
 {
     if (string->is_constant)
         return fl_cstring_dup(string->format);        
@@ -437,7 +469,7 @@ char* sbs_expression_eval_string(SbsEvalContext *context, SbsString *string)
         // At this offset, we need to place our interpolated value
         // TODO: If we support other type of expressions, we need to update this
         SbsExpression *var_expr = (SbsExpression*) sbs_expression_make_variable(placeholder->variable->name, placeholder->variable->namespace);
-        SbsValueExpr *value = sbs_expression_eval(context, var_expr);
+        SbsValueExpr *value = sbs_eval_expression(context, var_expr);
 
         if (value == NULL)
         {

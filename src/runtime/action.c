@@ -10,12 +10,12 @@ SbsAction* sbs_action_new(const char *name)
     SbsAction *action = fl_malloc(sizeof(SbsAction));
 
     action->name = fl_cstring_dup(name);
-    action->commands = fl_array_new(sizeof(SbsString*), 0);
+    action->commands = fl_array_new(sizeof(SbsStringExpr*), 0);
 
     return action;
 }
 
-void sbs_action_add_command(SbsAction *action, SbsString *cmd)
+void sbs_action_add_command(SbsAction *action, SbsStringExpr *cmd)
 {
     action->commands = fl_array_append(action->commands, &cmd);
 }
@@ -26,7 +26,7 @@ void sbs_action_free(SbsAction *action)
         fl_cstring_free(action->name);
 
     if (action->commands)
-        fl_array_free_each_pointer(action->commands, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(action->commands, (FlArrayFreeElementFunc) sbs_expression_free);
 
     fl_free(action);
 }
@@ -57,7 +57,7 @@ void sbs_action_copy(SbsAction **dest, const SbsAction **src_action)
     SbsAction *dst_action = fl_malloc(sizeof(SbsAction));
 
     dst_action->name = fl_cstring_dup((*src_action)->name);
-    dst_action->commands = sbs_string_array_extend(dst_action->commands, (*src_action)->commands);
+    dst_action->commands = sbs_expression_string_array_extend(dst_action->commands, (*src_action)->commands);
 
     memcpy(dest, &dst_action, sizeof(SbsAction));
 }
@@ -76,7 +76,7 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
     {
         SbsNodeAction *action_node = action_section->nodes[i];
 
-        if (action_node->condition && !sbs_expression_eval_bool(context->evalctx, action_node->condition))
+        if (action_node->condition && !sbs_eval_bool_expression(context->evalctx, action_node->condition))
             continue;
 
         for (size_t i=0; i < fl_array_length(action_node->commands); i++)
@@ -85,22 +85,28 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
 
             if (command->type == SBS_COMMAND_STRING)
             {
-                sbs_action_add_command(action_object, sbs_string_copy(command->value));
+                sbs_action_add_command(action_object, (SbsStringExpr*) sbs_expression_copy((SbsExpression*) command->value.str));
             }
             else
             {
-                // NOTE: command->value is an identifier (SBS_COMMAND_NAME) we shouldn't interpolate it here
-                SbsAction *ref_action = sbs_action_resolve(context, command->value->format);
+                char *ref_action_name = sbs_eval_string_expression(context->evalctx, (SbsExpression*) command->value.id);
+
+                if (ref_action_name == NULL)
+                    continue;
+
+                SbsAction *ref_action = sbs_action_resolve(context, ref_action_name);
                 
                 if (!ref_action)
                 {
-                    fprintf(stderr, "Action '%s' does not exist (referenced in action '%s'", command->value->format, action_name);
-                    continue;
+                    fprintf(stderr, "Action '%s' does not exist (referenced in action '%s'", ref_action_name, action_name);
+                }
+                else
+                {
+                    action_object->commands = sbs_expression_string_array_extend(action_object->commands, ref_action->commands);
+                    sbs_action_free(ref_action);
                 }
 
-                action_object->commands = sbs_string_array_extend(action_object->commands, ref_action->commands);
-
-                sbs_action_free(ref_action);
+                fl_cstring_free(ref_action_name);
             }
         }
     }
@@ -123,13 +129,18 @@ SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsCommand **acti
 
         if (action->type == SBS_COMMAND_NAME)
         {
-            // NOTE: action->value is an identifier (SBS_COMMAND_NAME) we shouldn't interpolate it here
-            resolved_actions[i] = sbs_action_resolve(context, action->value->format);
+            char *ref_action_name = sbs_eval_string_expression(context->evalctx, (SbsExpression*) action->value.id);
+
+            if (ref_action_name == NULL)
+                continue;
+
+            resolved_actions[i] = sbs_action_resolve(context, ref_action_name);
+            fl_cstring_free(ref_action_name);
         }
         else
         {
             SbsAction *action_object = sbs_action_new(NULL);
-            sbs_action_add_command(action_object, sbs_string_copy(action->value));
+            sbs_action_add_command(action_object, (SbsStringExpr*) sbs_expression_copy((SbsExpression*) action->value.str));
             resolved_actions[i] = action_object;
         }
     }

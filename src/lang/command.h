@@ -1,7 +1,7 @@
 #ifndef SBS_LANG_COMMAND_H
 #define SBS_LANG_COMMAND_H
 
-#include "string.h"
+#include "expression.h"
 #include "../utils.h"
 
 typedef enum SbsCommandType {
@@ -11,7 +11,10 @@ typedef enum SbsCommandType {
 
 typedef struct SbsCommand {
     SbsCommandType type;
-    SbsString *value;
+    union {
+        SbsStringExpr *str;
+        SbsIdentifierExpr *id;
+    } value;
 } SbsCommand;
 
 void sbs_command_free(SbsCommand *str);

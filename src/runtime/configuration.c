@@ -84,7 +84,7 @@ static void merge_executable_config(SbsResolveContext *context, SbsConfigExecuta
 
 static bool try_resolve_config_with_hierarchy(SbsResolveContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)
 {
-    if (config_section->condition && !sbs_expression_eval_bool(context->evalctx, config_section->condition))
+    if (config_section->condition && !sbs_eval_bool_expression(context->evalctx, config_section->condition))
         return false;
 
     if (config_section->extends)
@@ -101,7 +101,7 @@ static bool try_resolve_config_with_hierarchy(SbsResolveContext *context, SbsCon
     {
         struct SbsNodeConfig *config_node = config_section->entries[i];
 
-        if (config_node->condition && !sbs_expression_eval_bool(context->evalctx, config_node->condition))
+        if (config_node->condition && !sbs_eval_bool_expression(context->evalctx, config_node->condition))
             continue;
         
 

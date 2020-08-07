@@ -23,6 +23,7 @@ typedef enum SbsExpressionKind {
     SBS_EXPR_VARIABLE,
     SBS_EXPR_VALUE,
     SBS_EXPR_STRING,
+    SBS_EXPR_IDENTIFIER,
     SBS_EXPR_IF,
 } SbsExpressionKind;
 
@@ -51,6 +52,11 @@ typedef struct SbsStringExpr {
     SbsExpressionKind kind;
     struct SbsString *value;
 } SbsStringExpr;
+
+typedef struct SbsIdentifierExpr {
+    SbsExpressionKind kind;
+    char *name;
+} SbsIdentifierExpr;
 
 typedef struct SbsVariableExpr {
     SbsExpressionKind kind;
@@ -90,7 +96,13 @@ SbsUnaryExpr* sbs_expression_make_unary(SbsExprOperator op, SbsExpression *left)
 SbsBinaryExpr* sbs_expression_make_binary(SbsExprOperator op, SbsExpression *left, SbsExpression *right);
 SbsIfExpr* sbs_expression_make_if(SbsExpression *condition, SbsExpression *then_branch, SbsExpression *else_branch);
 SbsStringExpr* sbs_expression_make_string(struct SbsString *string);
+SbsIdentifierExpr* sbs_expression_make_identifier(char *id);
 void sbs_expression_free(SbsExpression *node);
 SbsExpression* sbs_expression_copy(SbsExpression *node);
+
+static inline SbsStringExpr** sbs_expression_string_array_extend(SbsStringExpr **dest, SbsStringExpr **source)
+{    
+    return sbs_array_extend_copy_pointer(dest, source, (SbsArrayCopyPointerFn) sbs_expression_copy);
+}
 
 #endif /* SBS_LANG_EXPRESSION_H */

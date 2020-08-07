@@ -39,7 +39,7 @@ SbsTargetShared* sbs_target_shared_resolve(SbsResolveContext *context, const Sbs
     {
         const SbsNodeShared *shared_entry = shared_section->entries[i];
 
-        if (shared_entry->base.condition && !sbs_expression_eval_bool(context->evalctx, shared_entry->base.condition))
+        if (shared_entry->base.condition && !sbs_eval_bool_expression(context->evalctx, shared_entry->base.condition))
             continue;
 
         sbs_target_base_resolve_members((SbsTarget*) shared_target, (const SbsAbstractNodeTarget*) shared_entry);

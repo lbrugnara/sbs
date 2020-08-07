@@ -217,7 +217,7 @@ static char* build_object_filename(const SbsBuild *build, const SbsConfigCompile
                                     ? ".o"
                                     : (config_compile->extension->is_constant 
                                         ? config_compile->extension->format 
-                                        : sbs_expression_eval_string(build->context->evalctx, config_compile->extension));
+                                        : sbs_eval_string_interpolation(build->context->evalctx, config_compile->extension));
 
         filename = fl_cstring_replace_realloc(filename, ".cpp", extension);
         filename = fl_cstring_replace_realloc(filename, ".c", extension);
@@ -384,7 +384,7 @@ char** sbs_build_compile(SbsBuild *build)
                     if (config_compile->flags[i]->is_constant)
                         continue;
 
-                    char *flag = sbs_expression_eval_string(build->context->evalctx, config_compile->flags[i]);
+                    char *flag = sbs_eval_string_interpolation(build->context->evalctx, config_compile->flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);
