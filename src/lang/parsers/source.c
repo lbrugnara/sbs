@@ -2,6 +2,7 @@
 #include "parser.h"
 #include "source.h"
 #include "helpers.h"
+#include "cstring.h"
 
 /*
  * Function: sbs_source_array_parse
@@ -48,7 +49,7 @@ SbsSource** sbs_source_array_parse(SbsParser *parser)
             {
                 source = fl_malloc(sizeof(SbsSource));
                 source->type = SBS_SOURCE_STRING;
-                source->value = sbs_parse_string(parser);
+                source->value = sbs_cstring_parse(parser);
             }
             else if (element->type == SBS_TOKEN_IDENTIFIER)
             {

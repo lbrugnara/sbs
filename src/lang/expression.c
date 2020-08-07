@@ -3,17 +3,17 @@
 #include <fllib/Cstring.h>
 #include "expression.h"
 
-static SbsEvalOperatorKind UnaryOperators[] = {
-    SBS_EVAL_OP_ID,
-    SBS_EVAL_OP_NOT,
+static SbsExprOperator UnaryOperators[] = {
+    SBS_EXPR_OP_ID,
+    SBS_EXPR_OP_NOT,
 };
 
-static SbsEvalOperatorKind BinaryOperators[] = {
-    SBS_EVAL_OP_OR,
-    SBS_EVAL_OP_AND,
-    SBS_EVAL_OP_EQ,
-    SBS_EVAL_OP_NEQ,
-    SBS_EVAL_OP_IN,
+static SbsExprOperator BinaryOperators[] = {
+    SBS_EXPR_OP_OR,
+    SBS_EXPR_OP_AND,
+    SBS_EXPR_OP_EQ,
+    SBS_EXPR_OP_NEQ,
+    SBS_EXPR_OP_IN,
 };
 
 static void free_value_node(SbsValueExpr *value)
@@ -276,9 +276,9 @@ SbsVariableExpr* sbs_expression_make_variable(const char *name, const char *name
     return var_node;
 }
 
-SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *left)
+SbsUnaryExpr* sbs_expression_make_unary(SbsExprOperator op, SbsExpression *left)
 {
-    if (!fl_array_contains_n(UnaryOperators, flm_array_length(UnaryOperators), &op, sizeof(SbsEvalOperatorKind)))
+    if (!fl_array_contains_n(UnaryOperators, flm_array_length(UnaryOperators), &op, sizeof(SbsExprOperator)))
         return NULL;
 
     SbsUnaryExpr *unary_node = fl_malloc(sizeof(SbsUnaryExpr));
@@ -290,9 +290,9 @@ SbsUnaryExpr* sbs_expression_make_unary(SbsEvalOperatorKind op, SbsExpression *l
     return unary_node;
 }
 
-SbsBinaryExpr* sbs_expression_make_binary(SbsEvalOperatorKind op, SbsExpression *left, SbsExpression *right)
+SbsBinaryExpr* sbs_expression_make_binary(SbsExprOperator op, SbsExpression *left, SbsExpression *right)
 {
-    if (!fl_array_contains_n(BinaryOperators, flm_array_length(BinaryOperators), &op, sizeof(SbsEvalOperatorKind)))
+    if (!fl_array_contains_n(BinaryOperators, flm_array_length(BinaryOperators), &op, sizeof(SbsExprOperator)))
         return NULL;
 
     SbsBinaryExpr *binode = fl_malloc(sizeof(SbsBinaryExpr));

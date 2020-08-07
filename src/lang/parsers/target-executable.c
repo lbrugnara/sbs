@@ -5,6 +5,7 @@
 #include "action.h"
 #include "source.h"
 #include "helpers.h"
+#include "cstring.h"
 #include "parser.h"
 #include "../../utils.h"
 
@@ -27,13 +28,13 @@ static SbsPropertyLibrary* parse_library_array(SbsParser *parser)
             {
                 sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                 sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                library.path = sbs_parse_string(parser);
+                library.path = sbs_cstring_parse(parser);
             }
             else if (sbs_token_equals(token, "name"))
             {
                 sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                 sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                library.name = sbs_parse_string(parser);
+                library.name = sbs_cstring_parse(parser);
             }
             else
             {
@@ -69,13 +70,13 @@ void sbs_section_executable_body_parse(SbsParser *parser, SbsSectionExecutable *
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            target->output_name = sbs_parse_string(parser);
+            target->output_name = sbs_cstring_parse(parser);
         }
         else if (sbs_token_equals(token, "output_dir"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            target->base.output_dir = sbs_parse_string(parser);
+            target->base.output_dir = sbs_cstring_parse(parser);
         }
         else if (sbs_token_equals(token, "actions"))
         {
@@ -91,7 +92,7 @@ void sbs_section_executable_body_parse(SbsParser *parser, SbsSectionExecutable *
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            target->defines = sbs_parse_string_array(parser);
+            target->defines = sbs_cstring_array_parse(parser);
         }
         else if (token->type == SBS_TOKEN_IF)
         {

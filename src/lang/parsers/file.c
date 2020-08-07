@@ -4,6 +4,8 @@
 #include <fllib/Cstring.h>
 #include <fllib/containers/Hashtable.h>
 
+#include "file.h"
+#include "cstring.h"
 #include "action.h"
 #include "helpers.h"
 #include "configuration.h"
@@ -14,7 +16,6 @@
 #include "lexer.h"
 #include "parser.h"
 #include "variable.h"
-#include "file.h"
 
 #include "../../io.h"
 #include "../../utils.h"
@@ -102,7 +103,7 @@ static void merge_into_file(SbsFile *dest_file, SbsFile *src_file)
 static bool parse_include_statement(SbsParser *parser, SbsFile *file)
 {
     sbs_parser_consume(parser, SBS_TOKEN_INCLUDE);
-    char **includes = sbs_parse_string_array(parser);
+    char **includes = sbs_cstring_array_parse(parser);
 
     // Empty array, leave. TODO: We should warning on verbosity output
     if (!includes)

@@ -4,6 +4,7 @@
 #include "variable.h"
 #include "parser.h"
 #include "helpers.h"
+#include "cstring.h"
 
 SbsVariable* sbs_parse_variable(SbsParser *parser)
 {
@@ -40,7 +41,7 @@ SbsNodeVariableDefinition* sbs_parse_variable_definition(SbsParser *parser)
 
     // TODO: Update this to support more types
     var_def->kind = SBS_VARIABLE_TYPE_STRING;
-    var_def->value.s = sbs_parse_string(parser);
+    var_def->value.s = sbs_cstring_parse(parser);
 
     return var_def;
 }

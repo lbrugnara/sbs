@@ -2,7 +2,6 @@
 #include "expression.h"
 #include "parser.h"
 #include "string.h"
-#include "../string.h"
 #include "variable.h"
 
 static char** parse_identifiers(SbsParser *parser);
@@ -133,7 +132,7 @@ static SbsExpression* parse_inlist_expression(SbsParser *parser)
     if (!is_compat_env)
         sbs_parser_consume(parser, SBS_TOKEN_RPAREN);
 
-    return (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_IN, var_node, (SbsExpression*) array_node);
+    return (SbsExpression*) sbs_expression_make_binary(SBS_EXPR_OP_IN, var_node, (SbsExpression*) array_node);
 }
 
 static SbsExpression* parse_identifier_expression(SbsParser *parser)
@@ -223,12 +222,12 @@ static SbsExpression* parse_primary_expression(SbsParser *parser)
 static SbsExpression* parse_unary_expression(SbsParser *parser)
 {
     SbsExpression *unary_node = NULL;
-    SbsEvalOperatorKind op = SBS_EVAL_OP_ID;
+    SbsExprOperator op = SBS_EXPR_OP_ID;
     
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_OP_NOT)
     {
         sbs_parser_consume(parser, SBS_TOKEN_OP_NOT);
-        op = SBS_EVAL_OP_NOT;
+        op = SBS_EXPR_OP_NOT;
     }
 
     SbsExpression *node = NULL;
@@ -259,7 +258,7 @@ static SbsExpression* parse_comparison_expression(SbsParser *parser)
     while (sbs_parser_has_input(parser))
     {
         bool is_not = false;
-        SbsEvalOperatorKind operator = SBS_EVAL_OP_UNK;
+        SbsExprOperator operator = SBS_EXPR_OP_UNK;
 
         if (sbs_parser_next_is(parser, SBS_TOKEN_OP_NOT))
         {
@@ -270,7 +269,7 @@ static SbsExpression* parse_comparison_expression(SbsParser *parser)
         if (sbs_parser_next_is(parser, SBS_TOKEN_OP_IN))
         {
             sbs_parser_consume(parser, SBS_TOKEN_OP_IN);
-            operator = SBS_EVAL_OP_IN;
+            operator = SBS_EXPR_OP_IN;
         }
         else
         {
@@ -282,7 +281,7 @@ static SbsExpression* parse_comparison_expression(SbsParser *parser)
         node = (SbsExpression*) sbs_expression_make_binary(operator, node, right);
 
         if (is_not)
-            node = (SbsExpression*) sbs_expression_make_unary(SBS_EVAL_OP_NOT, node);
+            node = (SbsExpression*) sbs_expression_make_unary(SBS_EXPR_OP_NOT, node);
     }
 
     return node;
@@ -294,18 +293,18 @@ static SbsExpression* parse_equality_expression(SbsParser *parser)
 
     while (sbs_parser_has_input(parser))
     {
-        SbsEvalOperatorKind operator = SBS_EVAL_OP_UNK;
+        SbsExprOperator operator = SBS_EXPR_OP_UNK;
         const SbsToken *operator_token = sbs_parser_peek(parser);
 
         if (operator_token->type == SBS_TOKEN_OP_EQ)
         {
             sbs_parser_consume(parser, SBS_TOKEN_OP_EQ);
-            operator = SBS_EVAL_OP_EQ;
+            operator = SBS_EXPR_OP_EQ;
         }
         else if (operator_token->type == SBS_TOKEN_OP_NEQ)
         {
             sbs_parser_consume(parser, SBS_TOKEN_OP_NEQ);
-            operator = SBS_EVAL_OP_NEQ;
+            operator = SBS_EXPR_OP_NEQ;
         }
         else
         {
@@ -330,7 +329,7 @@ static SbsExpression* parse_and_expression(SbsParser *parser)
 
         SbsExpression *right = parse_equality_expression(parser);
 
-        node = (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_AND, node, right);
+        node = (SbsExpression*) sbs_expression_make_binary(SBS_EXPR_OP_AND, node, right);
     }
 
     return node;
@@ -346,7 +345,7 @@ static SbsExpression* parse_or_expression(SbsParser *parser)
 
         SbsExpression *right = parse_and_expression(parser);
 
-        node = (SbsExpression*) sbs_expression_make_binary(SBS_EVAL_OP_OR, node, right);
+        node = (SbsExpression*) sbs_expression_make_binary(SBS_EXPR_OP_OR, node, right);
     }
 
     return node;

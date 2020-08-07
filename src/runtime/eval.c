@@ -117,7 +117,7 @@ static SbsValueExpr* eval_unary_node(SbsUnaryExpr *unary_node, SbsEvalContext *c
     if (result->type != SBS_EXPR_VALUE_TYPE_BOOL)
         return result;
 
-    if (unary_node->op == SBS_EVAL_OP_NOT)
+    if (unary_node->op == SBS_EXPR_OP_NOT)
         result->value.b = !result->value.b;
 
     return result;
@@ -133,7 +133,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
 
     switch (binary_node->op)
     {
-        case SBS_EVAL_OP_EQ:
+        case SBS_EXPR_OP_EQ:
         {
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
             bin_result->value.b = false;
@@ -164,7 +164,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             sbs_expression_free((SbsExpression*) right_result);
             return bin_result;
         }
-        case SBS_EVAL_OP_NEQ:
+        case SBS_EXPR_OP_NEQ:
         {
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
             bin_result->value.b = false;
@@ -196,7 +196,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             sbs_expression_free((SbsExpression*) right_result);
             return bin_result;
         }
-        case SBS_EVAL_OP_AND:
+        case SBS_EXPR_OP_AND:
         {
             // At this point we know it needs to be bool
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
@@ -226,7 +226,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             sbs_expression_free((SbsExpression*) right_result);
             return bin_result;            
         }
-        case SBS_EVAL_OP_OR:
+        case SBS_EXPR_OP_OR:
         {
             // At this point we know it needs to be bool
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;
@@ -263,7 +263,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             sbs_expression_free((SbsExpression*) right_result);
             return bin_result;            
         }
-        case SBS_EVAL_OP_IN:
+        case SBS_EXPR_OP_IN:
         {
             // At this point we know it needs to be bool
             bin_result->type = SBS_EXPR_VALUE_TYPE_BOOL;

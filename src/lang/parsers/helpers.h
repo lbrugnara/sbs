@@ -3,9 +3,6 @@
 
 #include "parser.h"
 
-char* sbs_parse_string(SbsParser *parser);
-char** sbs_parse_string_array(SbsParser *parser);
-
 char* sbs_parse_identifier(SbsParser *parser);
 char** sbs_parse_identifier_array(SbsParser *parser);
 

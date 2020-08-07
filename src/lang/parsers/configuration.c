@@ -160,7 +160,7 @@ static void parse_config_body(SbsParser *parser, SbsSectionConfig *config_sectio
             // TODO: If we implement proper nested ifs, we need to update this
             if (config_node->condition != NULL)
             {
-                SbsBinaryExpr *merged_expressions = sbs_expression_make_binary(SBS_EVAL_OP_AND, 
+                SbsBinaryExpr *merged_expressions = sbs_expression_make_binary(SBS_EXPR_OP_AND, 
                                                                                 sbs_expression_copy(config_node->condition), 
                                                                                 nested_config_node->condition);
                 nested_config_node->condition = (SbsExpression*) merged_expressions;

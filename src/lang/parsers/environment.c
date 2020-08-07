@@ -7,6 +7,7 @@
 #include "parser.h"
 #include "action.h"
 #include "variable.h"
+#include "cstring.h"
 
 /*
  * Function: sbs_section_env_parse
@@ -45,7 +46,7 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->shell_args = sbs_parse_string_array(parser);
+            env->shell_args = sbs_cstring_array_parse(parser);
             if (env->shell_args)
             {
                 // argv[argc] must be NULL, so we make room for it
@@ -72,13 +73,13 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->shell_command = sbs_parse_string(parser);
+            env->shell_command = sbs_cstring_parse(parser);
         }
         else if (sbs_token_equals(token, "variables"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->variables = sbs_parse_string_array(parser);
+            env->variables = sbs_cstring_array_parse(parser);
         }
         else if (sbs_token_equals(token, "actions"))
         {

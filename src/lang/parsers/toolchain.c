@@ -2,6 +2,7 @@
 #include <fllib/Cstring.h>
 #include "toolchain.h"
 #include "helpers.h"
+#include "cstring.h"
 #include "parser.h"
 #include "expression.h"
 #include "../../utils.h"
@@ -23,19 +24,19 @@ static void parse_toolchain_entry(SbsParser *parser, SbsNodeToolchain *toolchain
                 {
                     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                    toolchain->compiler.bin = sbs_parse_string(parser);
+                    toolchain->compiler.bin = sbs_cstring_parse(parser);
                 }
                 else if (sbs_token_equals(token, "include_dir_flag"))
                 {
                     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                    toolchain->compiler.include_dir_flag = sbs_parse_string(parser);
+                    toolchain->compiler.include_dir_flag = sbs_cstring_parse(parser);
                 }
                 else if (sbs_token_equals(token, "define_flag"))
                 {
                     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                    toolchain->compiler.define_flag = sbs_parse_string(parser);
+                    toolchain->compiler.define_flag = sbs_cstring_parse(parser);
                 }
                 else
                 {
@@ -53,7 +54,7 @@ static void parse_toolchain_entry(SbsParser *parser, SbsNodeToolchain *toolchain
                 {
                     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                    toolchain->archiver.bin = sbs_parse_string(parser);
+                    toolchain->archiver.bin = sbs_cstring_parse(parser);
                 }
                 else
                 {
@@ -71,19 +72,19 @@ static void parse_toolchain_entry(SbsParser *parser, SbsNodeToolchain *toolchain
                 {
                     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                    toolchain->linker.bin = sbs_parse_string(parser);
+                    toolchain->linker.bin = sbs_cstring_parse(parser);
                 }
                 else if (sbs_token_equals(token, "lib_dir_flag"))
                 {
                     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                    toolchain->linker.lib_dir_flag = sbs_parse_string(parser);
+                    toolchain->linker.lib_dir_flag = sbs_cstring_parse(parser);
                 }
                 else if (sbs_token_equals(token, "lib_flag"))
                 {
                     sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                     sbs_parser_consume(parser, SBS_TOKEN_COLON);
-                    toolchain->linker.lib_flag = sbs_parse_string(parser);
+                    toolchain->linker.lib_flag = sbs_cstring_parse(parser);
                 }
                 else
                 {

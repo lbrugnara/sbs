@@ -4,6 +4,7 @@
 #include "action.h"
 #include "source.h"
 #include "helpers.h"
+#include "cstring.h"
 #include "parser.h"
 #include "../../utils.h"
 
@@ -23,13 +24,13 @@ void sbs_section_shared_body_parse(SbsParser *parser, SbsSectionShared *target_s
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            target->output_name = sbs_parse_string(parser);
+            target->output_name = sbs_cstring_parse(parser);
         }
         else if (sbs_token_equals(token, "output_dir"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            target->base.output_dir = sbs_parse_string(parser);
+            target->base.output_dir = sbs_cstring_parse(parser);
         }
         else if (sbs_token_equals(token, "actions"))
         {

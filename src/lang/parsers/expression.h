@@ -2,7 +2,7 @@
 #define SBS_PARSER_EXPRESSION_H
 
 #include "parser.h"
-#include "expression.h"
+#include "../expression.h"
 
 SbsExpression* sbs_expression_parse(SbsParser *parser);
 SbsExpression* sbs_statement_for_parse(SbsParser *parser);
