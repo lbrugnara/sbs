@@ -26,7 +26,7 @@ void sbs_action_free(SbsAction *action)
         fl_cstring_free(action->name);
 
     if (action->commands)
-        fl_array_free_each_pointer(action->commands, (FlArrayFreeElementFunc) sbs_expression_free);
+        fl_array_free_each_pointer(action->commands, (FlArrayFreeElementFunc) sbs_expr_free);
 
     fl_free(action);
 }
@@ -57,7 +57,7 @@ void sbs_action_copy(SbsAction **dest, const SbsAction **src_action)
     SbsAction *dst_action = fl_malloc(sizeof(SbsAction));
 
     dst_action->name = fl_cstring_dup((*src_action)->name);
-    dst_action->commands = sbs_expression_string_array_extend(dst_action->commands, (*src_action)->commands);
+    dst_action->commands = sbs_expr_extend_string_array(dst_action->commands, (*src_action)->commands);
 
     memcpy(dest, &dst_action, sizeof(SbsAction));
 }
@@ -85,7 +85,7 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
 
             if (command->type == SBS_COMMAND_STRING)
             {
-                sbs_action_add_command(action_object, (SbsStringExpr*) sbs_expression_copy((SbsExpression*) command->value.str));
+                sbs_action_add_command(action_object, (SbsStringExpr*) sbs_expr_copy((SbsExpression*) command->value.str));
             }
             else
             {
@@ -102,7 +102,7 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
                 }
                 else
                 {
-                    action_object->commands = sbs_expression_string_array_extend(action_object->commands, ref_action->commands);
+                    action_object->commands = sbs_expr_extend_string_array(action_object->commands, ref_action->commands);
                     sbs_action_free(ref_action);
                 }
 
@@ -140,7 +140,7 @@ SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsCommand **acti
         else
         {
             SbsAction *action_object = sbs_action_new(NULL);
-            sbs_action_add_command(action_object, (SbsStringExpr*) sbs_expression_copy((SbsExpression*) action->value.str));
+            sbs_action_add_command(action_object, (SbsStringExpr*) sbs_expr_copy((SbsExpression*) action->value.str));
             resolved_actions[i] = action_object;
         }
     }

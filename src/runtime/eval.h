@@ -2,7 +2,9 @@
 #define SBS_RUNTIME_EVAL_H
 
 #include <fllib/containers/Hashtable.h>
-#include "../lang/expression.h"
+#include "../lang/expr.h"
+#include "../lang/expr-value.h"
+#include "../lang/string.h"
 
 typedef struct SbsEvalContext {
     FlHashtable *variables;

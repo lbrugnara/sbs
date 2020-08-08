@@ -3,7 +3,7 @@
 
 #include "parser.h"
 #include "action.h"
-#include "expression.h"
+#include "expr.h"
 
 typedef struct SbsSectionEnv {
     SbsExpression *condition;

@@ -5,8 +5,8 @@
 #include "helpers.h"
 #include "cstring.h"
 #include "parser.h"
-#include "expression.h"
-#include "parsers/expression.h"
+#include "expr.h"
+#include "expr-if.h"
 #include "../utils.h"
 
 SbsSectionToolchain* sbs_section_toolchain_new(const struct FlSlice *name)
@@ -52,7 +52,7 @@ static void sbs_node_toolchain_free(SbsNodeToolchain *toolchain_entry)
         fl_cstring_free(toolchain_entry->linker.lib_flag);
 
     if (toolchain_entry->condition)
-        sbs_expression_free(toolchain_entry->condition);
+        sbs_expr_free(toolchain_entry->condition);
     
     fl_free(toolchain_entry);
 }
@@ -65,7 +65,7 @@ void sbs_section_toolchain_free(SbsSectionToolchain *toolchain)
         fl_array_free_each_pointer(toolchain->entries, (FlArrayFreeElementFunc) sbs_node_toolchain_free);
 
     if (toolchain->condition)
-        sbs_expression_free(toolchain->condition);
+        sbs_expr_free(toolchain->condition);
 
     fl_free(toolchain);
 }
@@ -189,7 +189,7 @@ SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser)
     SbsSectionToolchain *toolchain = sbs_section_toolchain_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
-        toolchain->condition = sbs_statement_for_parse(parser);
+        toolchain->condition = sbs_expr_parse_for(parser);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
@@ -202,7 +202,7 @@ SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser)
             const SbsToken *token = sbs_parser_peek(parser);
 
             // Parse the for declaration
-            toolchain_entry->condition = sbs_statement_if_parse(parser);
+            toolchain_entry->condition = sbs_expr_parse_if(parser);
             // Parse the toolchain info
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
             parse_toolchain_entry(parser, toolchain_entry);

@@ -3,6 +3,15 @@
 #include <fllib/Cstring.h>
 #include <fllib/containers/Hashtable.h>
 #include "eval.h"
+#include "../lang/expr-array.h"
+#include "../lang/expr-binary.h"
+#include "../lang/expr-identifier.h"
+#include "../lang/expr-if.h"
+#include "../lang/expr-string.h"
+#include "../lang/expr-unary.h"
+#include "../lang/expr-value.h"
+#include "../lang/expr-vardef.h"
+#include "../lang/expr-variable.h"
 
 static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node);
 
@@ -30,7 +39,7 @@ void sbs_eval_context_free(SbsEvalContext *context)
 
 static SbsValueExpr* eval_value_node(SbsValueExpr *node, SbsEvalContext *context)
 {
-    return (SbsValueExpr*) sbs_expression_copy((SbsExpression*) node);
+    return (SbsValueExpr*) sbs_expr_copy((SbsExpression*) node);
 }
 
 static SbsValueExpr* eval_variable_node(SbsVariableExpr *var_node, SbsEvalContext *context)
@@ -142,8 +151,8 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
 
             if (left_result->type != right_result->type)
             {
-                sbs_expression_free((SbsExpression*) left_result);
-                sbs_expression_free((SbsExpression*) right_result);
+                sbs_expr_free((SbsExpression*) left_result);
+                sbs_expr_free((SbsExpression*) right_result);
                 return bin_result;
             }
 
@@ -160,8 +169,8 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
                 default: break;
             }
 
-            sbs_expression_free((SbsExpression*) left_result);
-            sbs_expression_free((SbsExpression*) right_result);
+            sbs_expr_free((SbsExpression*) left_result);
+            sbs_expr_free((SbsExpression*) right_result);
             return bin_result;
         }
         case SBS_EXPR_OP_NEQ:
@@ -174,8 +183,8 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             if (left_result->type != right_result->type)
             {
                 bin_result->value.b = true;
-                sbs_expression_free((SbsExpression*) left_result);
-                sbs_expression_free((SbsExpression*) right_result);
+                sbs_expr_free((SbsExpression*) left_result);
+                sbs_expr_free((SbsExpression*) right_result);
                 return bin_result;
             }
 
@@ -192,8 +201,8 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
                 default: break;
             }
 
-            sbs_expression_free((SbsExpression*) left_result);
-            sbs_expression_free((SbsExpression*) right_result);
+            sbs_expr_free((SbsExpression*) left_result);
+            sbs_expr_free((SbsExpression*) right_result);
             return bin_result;
         }
         case SBS_EXPR_OP_AND:
@@ -206,7 +215,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             // TODO: Error handling for non-boolean values or type conversion...
             if (left_result->type != SBS_EXPR_VALUE_TYPE_BOOL || !left_result->value.b)
             {
-                sbs_expression_free((SbsExpression*) left_result);
+                sbs_expr_free((SbsExpression*) left_result);
                 return bin_result;
             }
 
@@ -215,15 +224,15 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             // TODO: Error handling for non-boolean values or type conversion...
             if (right_result->type != SBS_EXPR_VALUE_TYPE_BOOL)
             {
-                sbs_expression_free((SbsExpression*) left_result);
-                sbs_expression_free((SbsExpression*) right_result);
+                sbs_expr_free((SbsExpression*) left_result);
+                sbs_expr_free((SbsExpression*) right_result);
                 return bin_result;
             }
 
             // The result depends on the RHS
             bin_result->value.b = right_result->value.b;
-            sbs_expression_free((SbsExpression*) left_result);
-            sbs_expression_free((SbsExpression*) right_result);
+            sbs_expr_free((SbsExpression*) left_result);
+            sbs_expr_free((SbsExpression*) right_result);
             return bin_result;            
         }
         case SBS_EXPR_OP_OR:
@@ -235,7 +244,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             // TODO: Error handling for non-boolean values or type conversion...
             if (left_result->type != SBS_EXPR_VALUE_TYPE_BOOL)
             {
-                sbs_expression_free((SbsExpression*) left_result);
+                sbs_expr_free((SbsExpression*) left_result);
                 return bin_result;
             }
 
@@ -243,7 +252,7 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             if (left_result->value.b)
             {
                 bin_result->value.b = true;
-                sbs_expression_free((SbsExpression*) left_result);
+                sbs_expr_free((SbsExpression*) left_result);
                 return bin_result;
             }
 
@@ -252,15 +261,15 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
             // TODO: Error handling for non-boolean values or type conversion...
             if (right_result->type != SBS_EXPR_VALUE_TYPE_BOOL)
             {
-                sbs_expression_free((SbsExpression*) left_result);
-                sbs_expression_free((SbsExpression*) right_result);
+                sbs_expr_free((SbsExpression*) left_result);
+                sbs_expr_free((SbsExpression*) right_result);
                 return bin_result;
             }
 
             // The result depends on the RHS
             bin_result->value.b = right_result->value.b;
-            sbs_expression_free((SbsExpression*) left_result);
-            sbs_expression_free((SbsExpression*) right_result);
+            sbs_expr_free((SbsExpression*) left_result);
+            sbs_expr_free((SbsExpression*) right_result);
             return bin_result;            
         }
         case SBS_EXPR_OP_IN:
@@ -273,8 +282,8 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
 
             if (right_result->type != SBS_EXPR_VALUE_TYPE_ARRAY)
             {
-                sbs_expression_free((SbsExpression*) left_result);
-                sbs_expression_free((SbsExpression*) right_result);
+                sbs_expr_free((SbsExpression*) left_result);
+                sbs_expr_free((SbsExpression*) right_result);
                 return bin_result;
             }
 
@@ -306,8 +315,8 @@ static SbsValueExpr* eval_binary_node(SbsBinaryExpr *binary_node, SbsEvalContext
                 }
             }
 
-            sbs_expression_free((SbsExpression*) left_result);
-            sbs_expression_free((SbsExpression*) right_result);
+            sbs_expr_free((SbsExpression*) left_result);
+            sbs_expr_free((SbsExpression*) right_result);
 
             bin_result->value.b = in_array;
 
@@ -330,14 +339,14 @@ static SbsValueExpr* eval_if_node(SbsIfExpr *if_node, SbsEvalContext *context)
     else
         result = internal_eval(context, if_node->else_branch);
 
-    sbs_expression_free((SbsExpression*) cond_result);
+    sbs_expr_free((SbsExpression*) cond_result);
 
     return result;
 }
 
 static SbsValueExpr* eval_string_node(SbsStringExpr *str_node, SbsEvalContext *context)
 {
-    SbsValueExpr *str_value = sbs_expression_make_value(SBS_EXPR_VALUE_TYPE_STRING);
+    SbsValueExpr *str_value = sbs_expr_make_value(SBS_EXPR_VALUE_TYPE_STRING);
 
     str_value->value.s = sbs_eval_string_interpolation(context, str_node->value);
 
@@ -348,7 +357,7 @@ static SbsValueExpr* eval_identifier_node(SbsIdentifierExpr *identifier_node, Sb
 {
     // TODO: Is it correct to set STRING?
     // NOTE: STRING for compatibility with the current implementation
-    SbsValueExpr *id_value = sbs_expression_make_value(SBS_EXPR_VALUE_TYPE_STRING);
+    SbsValueExpr *id_value = sbs_expr_make_value(SBS_EXPR_VALUE_TYPE_STRING);
 
     id_value->value.s = fl_cstring_dup(identifier_node->name);
 
@@ -420,18 +429,18 @@ static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node)
 
 SbsValueExpr* sbs_eval_expression(SbsEvalContext *context, SbsExpression *node)
 {
-    SbsExpression *node_copy = sbs_expression_copy(node);
+    SbsExpression *node_copy = sbs_expr_copy(node);
 
     SbsValueExpr *result = internal_eval(context, node_copy);
 
-    sbs_expression_free(node_copy);
+    sbs_expr_free(node_copy);
 
     return result;
 }
 
 bool sbs_eval_bool_expression(SbsEvalContext *context, SbsExpression *node)
 {
-    SbsExpression *node_copy = sbs_expression_copy(node);
+    SbsExpression *node_copy = sbs_expr_copy(node);
 
     SbsValueExpr *result = internal_eval(context, node_copy);
 
@@ -442,10 +451,10 @@ bool sbs_eval_bool_expression(SbsEvalContext *context, SbsExpression *node)
         if (result->type == SBS_EXPR_VALUE_TYPE_BOOL)
             b = result->value.b;
 
-        sbs_expression_free((SbsExpression*) result);
+        sbs_expr_free((SbsExpression*) result);
     }
 
-    sbs_expression_free(node_copy);
+    sbs_expr_free(node_copy);
 
     return b;
 }
@@ -483,7 +492,7 @@ static char* value_expression_to_cstring(struct SbsEvalContext *context, SbsValu
 
 char* sbs_eval_string_expression(struct SbsEvalContext *context, SbsExpression *node)
 {
-    SbsExpression *node_copy = sbs_expression_copy(node);
+    SbsExpression *node_copy = sbs_expr_copy(node);
 
     SbsValueExpr *result = internal_eval(context, node_copy);
 
@@ -492,10 +501,10 @@ char* sbs_eval_string_expression(struct SbsEvalContext *context, SbsExpression *
     if (result != NULL)
     {
         str = value_expression_to_cstring(context, result);
-        sbs_expression_free((SbsExpression*) result);
+        sbs_expr_free((SbsExpression*) result);
     }
 
-    sbs_expression_free(node_copy);
+    sbs_expr_free(node_copy);
 
     return str;
 }
@@ -555,7 +564,7 @@ char* sbs_eval_string_interpolation(SbsEvalContext *context, SbsString *string)
                     fl_cstring_append(&interpolated_string, "(unk)");
                     break;
             }
-            sbs_expression_free((SbsExpression*) value);
+            sbs_expr_free((SbsExpression*) value);
         }
     }
 

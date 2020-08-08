@@ -2,7 +2,7 @@
 #define SBS_LANG_CONFIGURATION_H
 
 #include <fllib.h>
-#include "expression.h"
+#include "expr.h"
 #include "string.h"
 #include "parser.h"
 

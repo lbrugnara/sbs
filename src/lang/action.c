@@ -5,8 +5,8 @@
 #include "command.h"
 #include "../utils.h"
 #include "parser.h"
-#include "expression.h"
-#include "parsers/expression.h"
+#include "expr.h"
+#include "expr-if.h"
 #include "command.h"
 
 static void action_node_free(SbsNodeAction *action_node)
@@ -15,7 +15,7 @@ static void action_node_free(SbsNodeAction *action_node)
         fl_array_free_each_pointer(action_node->commands, (FlArrayFreeElementFunc) sbs_command_free);
 
     if (action_node->condition)
-        sbs_expression_free(action_node->condition);
+        sbs_expr_free(action_node->condition);
 
     fl_free(action_node);
 }
@@ -108,7 +108,7 @@ SbsSectionAction* sbs_section_action_parse(SbsParser *parser)
         
         if (token->type == SBS_TOKEN_IF)
         {
-            action_node->condition = sbs_statement_if_parse(parser);
+            action_node->condition = sbs_expr_parse_if(parser);
 
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
             parse_action_body(parser, action_node);

@@ -1,19 +1,18 @@
 #include <stdlib.h>
 #include <fllib/Cstring.h>
 #include "command.h"
-#include "expression.h"
-#include "parsers/expression.h"
+#include "expr.h"
 #include "helpers.h"
 
 void sbs_command_free(SbsCommand *command)
 {
     if (command->type == SBS_COMMAND_STRING && command->value.str != NULL)
     {
-        sbs_expression_free((SbsExpression*) command->value.str);
+        sbs_expr_free((SbsExpression*) command->value.str);
     }
     else if (command->type == SBS_COMMAND_NAME && command->value.id != NULL)
     {
-        sbs_expression_free((SbsExpression*) command->value.id);
+        sbs_expr_free((SbsExpression*) command->value.id);
     }
 
     fl_free(command);
@@ -30,11 +29,11 @@ SbsCommand* sbs_command_copy(const SbsCommand *source)
 
     if (source->type == SBS_COMMAND_STRING)
     {
-        copy->value.str = source->value.str != NULL ? (SbsStringExpr*) sbs_expression_copy((SbsExpression*) source->value.str) : NULL;
+        copy->value.str = source->value.str != NULL ? (SbsStringExpr*) sbs_expr_copy((SbsExpression*) source->value.str) : NULL;
     }
     else if (source->type == SBS_COMMAND_NAME)
     {
-        copy->value.id = source->value.id != NULL ? (SbsIdentifierExpr*) sbs_expression_copy((SbsExpression*) source->value.id) : NULL;
+        copy->value.id = source->value.id != NULL ? (SbsIdentifierExpr*) sbs_expr_copy((SbsExpression*) source->value.id) : NULL;
     }
 
     return copy;
@@ -49,13 +48,13 @@ SbsCommand* sbs_command_parse(SbsParser *parser)
     {
         command = fl_malloc(sizeof(SbsCommand));
         command->type = SBS_COMMAND_STRING;
-        command->value.str = sbs_expression_string_parse(parser);
+        command->value.str = sbs_expr_parse_string(parser);
     }
     else if (token->type == SBS_TOKEN_IDENTIFIER)
     {
         command = fl_malloc(sizeof(SbsCommand));
         command->type = SBS_COMMAND_NAME;
-        command->value.id = sbs_expression_identifier_parse(parser);
+        command->value.id = sbs_expr_parse_identifier(parser);
     }
     else
     {

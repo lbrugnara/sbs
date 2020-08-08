@@ -2,8 +2,7 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "environment.h"
-#include "expression.h"
-#include "parsers/expression.h"
+#include "expr.h"
 #include "helpers.h"
 #include "parser.h"
 #include "action.h"
@@ -15,10 +14,10 @@ void sbs_section_env_free(SbsSectionEnv *env)
         return;
 
     if (env->os)
-        sbs_expression_free((SbsExpression*) env->os);
+        sbs_expr_free((SbsExpression*) env->os);
 
     if (env->arch)
-        sbs_expression_free(env->arch);
+        sbs_expr_free(env->arch);
 
     if (env->name)
         fl_cstring_free(env->name);
@@ -36,7 +35,7 @@ void sbs_section_env_free(SbsSectionEnv *env)
         fl_array_free_each_pointer(env->shell_args, (FlArrayFreeElementFunc) fl_cstring_free);
 
     if (env->condition)
-        sbs_expression_free(env->condition);
+        sbs_expr_free(env->condition);
 
     sbs_property_actions_free(&env->actions);
 
@@ -78,7 +77,7 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
     SbsSectionEnv *env = sbs_section_env_new(&sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER)->value);
 
     if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
-        env->condition = sbs_statement_for_parse(parser);
+        env->condition = sbs_expr_parse_for(parser);
 
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
@@ -133,13 +132,13 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->os = sbs_expression_variable_parse(parser);
+            env->os = sbs_expr_parse_variable(parser);
         }
         else if (sbs_token_equals(token, "arch"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->arch = sbs_expression_parse(parser);
+            env->arch = sbs_expr_parse(parser);
         }
 
         sbs_parser_consume_if(parser, SBS_TOKEN_COMMA);

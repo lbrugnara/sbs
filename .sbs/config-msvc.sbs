@@ -4,15 +4,15 @@ config msvc-config for toolchain(msvc) {
         extension: ".o",
         flags: [ 
             "/W1", 
-            "/c ${sbs.input_file}", 
-            "/Fo.\\${sbs.output_file}", 
             "/DSBS_BUILD_ARCH=\\\"${sbs.arch}\\\"", 
             "/DSBS_BUILD_OS=\\\"${sbs.os}\\\"",
             "/DSBS_BUILD_HOST_ARCH=\\\"${sbs.host.arch}\\\"", 
-            "/DSBS_BUILD_HOST_OS=\\\"${sbs.host.os}\\\"" 
-            "/DSBS_BUILD_COMPILER=\\\"${sbs.compiler}\\\"" 
-            "/DSBS_BUILD_LINKER=\\\"${sbs.linker}\\\"" 
-            "/DSBS_BUILD_CONFIGURATION=\\\"${sbs.config}\\\"" 
+            "/DSBS_BUILD_HOST_OS=\\\"${sbs.host.os}\\\"",
+            "/DSBS_BUILD_COMPILER=\\\"${sbs.compiler}\\\"",
+            "/DSBS_BUILD_LINKER=\\\"${sbs.linker}\\\"",
+            "/DSBS_BUILD_CONFIGURATION=\\\"${sbs.config}\\\"",
+            "/c ${sbs.input_file}", 
+            "/Fo.\\${sbs.output_file}", 
         ]
     },    
     archive: {

@@ -85,7 +85,7 @@ static SbsArch eval_arch_expression(SbsEvalContext *evalctx, SbsExpression *arch
         arch = SBS_ARCH_ARM64;
     }
 
-    sbs_expression_free((SbsExpression*) arch_value);
+    sbs_expr_free((SbsExpression*) arch_value);
 
     return arch;
 }

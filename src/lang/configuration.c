@@ -3,8 +3,9 @@
 #include <fllib/Cstring.h>
 #include "configuration.h"
 #include "parser.h"
-#include "expression.h"
-#include "parsers/expression.h"
+#include "expr.h"
+#include "expr-if.h"
+#include "expr-binary.h"
 #include "helpers.h"
 #include "../utils.h"
 
@@ -38,7 +39,7 @@ static void sbs_config_entry_free(struct SbsNodeConfig *config)
         sbs_string_free(config->executable.extension);
 
     if (config->condition)
-        sbs_expression_free(config->condition);
+        sbs_expr_free(config->condition);
 
     fl_free(config);
 }
@@ -55,7 +56,7 @@ void sbs_section_config_free(SbsSectionConfig *configuration)
         fl_array_free_each_pointer(configuration->entries, (FlArrayFreeElementFunc) sbs_config_entry_free);
 
     if (configuration->condition)
-        sbs_expression_free(configuration->condition);
+        sbs_expr_free(configuration->condition);
 
     fl_free(configuration);
 }
@@ -225,15 +226,15 @@ static void parse_config_body(SbsParser *parser, SbsSectionConfig *config_sectio
         else if (token->type == SBS_TOKEN_IF)
         {
             struct SbsNodeConfig *nested_config_node = sbs_section_config_add_node(config_section);
-            nested_config_node->condition = sbs_statement_if_parse(parser);
+            nested_config_node->condition = sbs_expr_parse_if(parser);
 
             // NOTE: This allows nested ifs but without too much effort, because of that we need
             // to "merge" the condition of the nested if with the one in its parent node
             // TODO: If we implement proper nested ifs, we need to update this
             if (config_node->condition != NULL)
             {
-                SbsBinaryExpr *merged_expressions = sbs_expression_make_binary(SBS_EXPR_OP_AND, 
-                                                                                sbs_expression_copy(config_node->condition), 
+                SbsBinaryExpr *merged_expressions = sbs_expr_make_binary(SBS_EXPR_OP_AND, 
+                                                                                sbs_expr_copy(config_node->condition), 
                                                                                 nested_config_node->condition);
                 nested_config_node->condition = (SbsExpression*) merged_expressions;
             }
@@ -308,11 +309,11 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
         configuration->extends = sbs_parse_extends_declaration(parser);
 
         if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
-            configuration->condition = sbs_statement_for_parse(parser);
+            configuration->condition = sbs_expr_parse_for(parser);
     }
     else if (sbs_parser_peek(parser)->type == SBS_TOKEN_FOR)
     {
-        configuration->condition = sbs_statement_for_parse(parser);
+        configuration->condition = sbs_expr_parse_for(parser);
 
         if (sbs_parser_peek(parser)->type == SBS_TOKEN_EXTENDS)
             configuration->extends = sbs_parse_extends_declaration(parser);
@@ -329,7 +330,7 @@ SbsSectionConfig* sbs_section_config_parse(SbsParser *parser)
         if (token->type == SBS_TOKEN_IF)
         {
             // Parse the if declaration
-            config_node->condition = sbs_statement_if_parse(parser);
+            config_node->condition = sbs_expr_parse_if(parser);
 
             // Parse the configuration info
             sbs_parser_consume(parser, SBS_TOKEN_LBRACE);

@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <fllib/Array.h>
 #include "parser.h"
-#include "expression.h"
+#include "expr-variable.h"
 #include "../utils.h"
 
 struct SbsEvalContext;

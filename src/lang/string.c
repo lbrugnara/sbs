@@ -2,8 +2,7 @@
 #include <fllib/Cstring.h>
 #include "string.h"
 #include "parser.h"
-#include "expression.h"
-#include "parsers/expression.h"
+#include "expr.h"
 
 SbsString* sbs_string_new(char *format, bool is_constant)
 {
@@ -21,7 +20,7 @@ SbsString* sbs_string_new(char *format, bool is_constant)
 static void free_string_placeholder(SbsStringPlaceholder *placeholder)
 {
     if (placeholder->variable)
-        sbs_expression_free((SbsExpression*) placeholder->variable);
+        sbs_expr_free((SbsExpression*) placeholder->variable);
 
     fl_free(placeholder);
 }
@@ -51,7 +50,7 @@ SbsString* sbs_string_copy(const SbsString *string)
         {
             copy->args[i] = fl_malloc(sizeof(SbsStringPlaceholder));
             copy->args[i]->index = string->args[i]->index;
-            copy->args[i]->variable = (SbsVariableExpr*) sbs_expression_copy((SbsExpression*) string->args[i]->variable);
+            copy->args[i]->variable = (SbsVariableExpr*) sbs_expr_copy((SbsExpression*) string->args[i]->variable);
         }
     }
 
@@ -169,14 +168,14 @@ SbsString* sbs_string_parse(SbsParser *parser)
 
         if (ns_length > 0)
         {
-            placeholder->variable = sbs_expression_make_variable(
+            placeholder->variable = sbs_expr_make_variable(
                 sbs_slice_to_cstring(&flm_slice_new(token->value.sequence, 1, name_index, name_length)),
                 sbs_slice_to_cstring(&flm_slice_new(token->value.sequence, 1, ns_index, ns_length))
             );
         }
         else
         {
-            placeholder->variable = sbs_expression_make_variable(
+            placeholder->variable = sbs_expr_make_variable(
                 sbs_slice_to_cstring(&flm_slice_new(token->value.sequence, 1, name_index, name_length)),
                 NULL
             );

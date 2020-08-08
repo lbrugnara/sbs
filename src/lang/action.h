@@ -2,7 +2,7 @@
 #define SBS_LANG_ACTION_H
 
 #include "parser.h"
-#include "expression.h"
+#include "expr.h"
 #include "command.h"
 
 /*

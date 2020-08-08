@@ -7,8 +7,8 @@
 #include "cstring.h"
 #include "helpers.h"
 #include "parser.h"
-#include "expression.h"
-#include "parsers/expression.h"
+#include "expr.h"
+#include "expr-vardef.h"
 #include "action.h"
 #include "configuration.h"
 #include "environment.h"
@@ -37,7 +37,7 @@ static void map_init_variables(FlHashtable **variables)
     struct FlHashtableArgs new_args = {
         .hash_function = hash_variable_name, 
         .key_comparer = variable_equals,
-        .value_cleaner = (FlContainerCleanupFn) sbs_expression_free
+        .value_cleaner = (FlContainerCleanupFn) sbs_expr_free
     };
     
     *variables = fl_hashtable_new_args(new_args);
@@ -349,11 +349,11 @@ static bool parse_file(SbsParser *parser, SbsFile *file)
         }
         else if (token->type == SBS_TOKEN_VARIABLE)
         {
-            SbsVarDefinitionExpr *var_def = sbs_expression_var_definition_parse(parser);
+            SbsVarDefinitionExpr *var_def = sbs_expr_parse_vardef(parser);
             if (fl_hashtable_has_key(file->variables, var_def->name))
             {
                 printf("Variable %s cannot be redefined\n", var_def->name->fqn);
-                sbs_expression_free((SbsExpression*) var_def);
+                sbs_expr_free((SbsExpression*) var_def);
                 success = false;
                 break;
             }

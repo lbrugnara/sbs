@@ -9,8 +9,8 @@
 #include "source.h"
 #include "helpers.h"
 #include "parser.h"
-#include "expression.h"
-#include "parsers/expression.h"
+#include "expr.h"
+#include "expr-if.h"
 #include "../utils.h"
 
 void sbs_node_target_free_members(SbsAbstractNodeTarget *node)
@@ -18,7 +18,7 @@ void sbs_node_target_free_members(SbsAbstractNodeTarget *node)
     sbs_property_actions_free(&node->actions);
 
     if (node->condition)
-        sbs_expression_free(node->condition);
+        sbs_expr_free(node->condition);
 
     if (node->output_dir)
         fl_cstring_free(node->output_dir);
@@ -54,7 +54,7 @@ void sbs_section_target_if_stmt_parse(SbsParser *parser, SbsAbstractSectionTarge
     const SbsToken *token = sbs_parser_peek(parser);
 
     // Parse the for declaration
-    SbsExpression *condition = sbs_statement_if_parse(parser);
+    SbsExpression *condition = sbs_expr_parse_if(parser);
     
     sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 

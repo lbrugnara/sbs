@@ -2,7 +2,8 @@
 #define SBS_LANG_COMMAND_H
 
 #include "parser.h"
-#include "expression.h"
+#include "expr-string.h"
+#include "expr-identifier.h"
 #include "../utils.h"
 
 typedef enum SbsCommandType {
