@@ -1,7 +1,7 @@
-#ifndef SBS_PARSER_H
-#define SBS_PARSER_H
+#ifndef SBS_LANG_PARSER_H
+#define SBS_LANG_PARSER_H
 
-#include "../file.h"
+#include "file.h"
 #include "lexer.h"
 
 typedef struct SbsParser {
@@ -25,4 +25,4 @@ void sbs_parser_consume_if(SbsParser *parser, SbsTokenType type);
 bool sbs_parser_has_input(SbsParser *parser);
 bool sbs_parser_parse(SbsLexer *lexer, SbsFile *file);
 
-#endif /* SBS_PARSER_H */
+#endif /* SBS_LANG_PARSER_H */

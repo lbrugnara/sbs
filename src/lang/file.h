@@ -21,6 +21,7 @@ typedef struct SbsFile {
     FlHashtable *variables;
 } SbsFile;
 
+SbsFile* sbs_file_parse(const char *filename);
 SbsFile* sbs_file_new(const char *filename);
 void sbs_file_free(SbsFile *file);
 

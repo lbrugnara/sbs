@@ -1,6 +1,7 @@
 #ifndef SBS_LANG_SOURCE_H
 #define SBS_LANG_SOURCE_H
 
+#include "parser.h"
 #include "../utils.h"
 
 typedef enum SbsSourceType {
@@ -13,6 +14,7 @@ typedef struct SbsSource {
     const char *value;
 } SbsSource;
 
+SbsSource** sbs_source_array_parse(SbsParser *parser);
 void sbs_source_free(SbsSource *str);
 SbsSource* sbs_source_copy(const SbsSource *source);
 

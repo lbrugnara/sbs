@@ -3,7 +3,7 @@
 
 #include "../Test.h"
 #include "tests.h"
-#include "../../src/lang/parsers/file.h"
+#include "../../src/lang/file.h"
 
 void sbs_test_integration_basic(void)
 {

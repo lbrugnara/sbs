@@ -1,6 +1,7 @@
 #ifndef SBS_LANG_ENVIRONMENT_H
 #define SBS_LANG_ENVIRONMENT_H
 
+#include "parser.h"
 #include "action.h"
 #include "expression.h"
 
@@ -16,6 +17,7 @@ typedef struct SbsSectionEnv {
     SbsPropertyActions actions;
 } SbsSectionEnv;
 
+SbsSectionEnv* sbs_section_env_parse(SbsParser *parser);
 SbsSectionEnv* sbs_section_env_new(const struct FlSlice *name);
 void sbs_section_env_free(SbsSectionEnv *env);
 

@@ -4,6 +4,7 @@
 #include <fllib.h>
 #include "environment.h"
 #include "expression.h"
+#include "parser.h"
 
 typedef struct SbsNodeToolchainCompiler {
     const char *bin;
@@ -34,6 +35,7 @@ typedef struct SbsSectionToolchain {
     SbsNodeToolchain **entries;
 } SbsSectionToolchain;
 
+SbsSectionToolchain* sbs_section_toolchain_parse(SbsParser *parser);
 SbsSectionToolchain* sbs_section_toolchain_new(const struct FlSlice *name);
 SbsNodeToolchain* sbs_section_toolchain_add_node(SbsSectionToolchain *toolchain_section);
 void sbs_section_toolchain_free(SbsSectionToolchain *toolchain);

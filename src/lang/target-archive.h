@@ -14,6 +14,8 @@ typedef struct SbsSectionArchive {
     SbsNodeArchive **entries;
 } SbsSectionArchive;
 
+void sbs_section_archive_body_parse(SbsParser *parser, SbsSectionArchive *target_section, SbsNodeArchive *target);
+SbsAbstractSectionTarget* sbs_section_archive_parse(SbsParser *parser);
 SbsSectionArchive* sbs_section_archive_new(const struct FlSlice *name);
 SbsNodeArchive* sbs_section_archive_add_node(SbsSectionArchive *section);
 void sbs_node_archive_free(SbsNodeArchive *node);

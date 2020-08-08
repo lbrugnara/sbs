@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <fllib.h>
-#include "file.h"
-#include "lexer.h"
 #include "parser.h"
+#include "lexer.h"
 
 extern const char *token_type_string[];
 

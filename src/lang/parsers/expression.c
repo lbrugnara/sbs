@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include "expression.h"
-#include "parser.h"
-#include "string.h"
+#include "../parser.h"
+#include "../string.h"
 
 static char** parse_identifiers(SbsParser *parser)
 {

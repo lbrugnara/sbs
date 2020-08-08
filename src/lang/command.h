@@ -1,6 +1,7 @@
 #ifndef SBS_LANG_COMMAND_H
 #define SBS_LANG_COMMAND_H
 
+#include "parser.h"
 #include "expression.h"
 #include "../utils.h"
 
@@ -17,6 +18,8 @@ typedef struct SbsCommand {
     } value;
 } SbsCommand;
 
+SbsCommand* sbs_command_parse(SbsParser *parser);
+SbsCommand** sbs_command_array_parse(SbsParser *parser);
 void sbs_command_free(SbsCommand *str);
 SbsCommand* sbs_command_copy(const SbsCommand *source);
 

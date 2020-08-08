@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <fllib/Array.h>
+#include "parser.h"
 #include "expression.h"
 #include "../utils.h"
 
@@ -19,6 +20,8 @@ typedef struct SbsString {
     bool is_constant;
 } SbsString;
 
+SbsString* sbs_string_parse(SbsParser *parser);
+SbsString** sbs_string_array_parse(SbsParser *parser);
 SbsString* sbs_string_new(char *format, bool is_constant);
 void sbs_string_free(SbsString *string);
 SbsString* sbs_string_copy(const SbsString *string);

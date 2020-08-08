@@ -1,6 +1,7 @@
 #ifndef SBS_LANG_ACTION_H
 #define SBS_LANG_ACTION_H
 
+#include "parser.h"
 #include "expression.h"
 #include "command.h"
 
@@ -59,6 +60,8 @@ typedef struct SbsPropertyActions {
     SbsCommand **after;
 } SbsPropertyActions;
 
+SbsSectionAction* sbs_section_action_parse(SbsParser *parser);
+SbsPropertyActions sbs_property_actions_parse(SbsParser *parser);
 SbsSectionAction* sbs_section_action_new(const struct FlSlice *name);
 SbsNodeAction* sbs_section_action_add_node(SbsSectionAction *action_section);
 void sbs_section_action_free(SbsSectionAction *action_section);

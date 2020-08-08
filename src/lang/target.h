@@ -24,8 +24,10 @@ typedef struct SbsAbstractSectionTarget {
     SbsSectionTargetType type;
 } SbsAbstractSectionTarget;
 
-void sbs_node_target_free_members(SbsAbstractNodeTarget *node);
+SbsAbstractSectionTarget* sbs_section_target_parse(SbsParser *parser);
+void sbs_section_target_if_stmt_parse(SbsParser *parser, SbsAbstractSectionTarget *target_section, SbsSectionTargetType target_type);
 void sbs_section_target_free_members(SbsAbstractSectionTarget *section);
 void sbs_section_target_free(SbsAbstractSectionTarget *section);
+void sbs_node_target_free_members(SbsAbstractNodeTarget *node);
 
 #endif /* SBS_LANG_TARGET_H */

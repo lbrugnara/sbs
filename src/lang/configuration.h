@@ -4,6 +4,7 @@
 #include <fllib.h>
 #include "expression.h"
 #include "string.h"
+#include "parser.h"
 
 typedef struct SbsNodeConfigCompile {
     SbsString *extension;
@@ -40,6 +41,7 @@ typedef struct SbsSectionConfig {
     SbsNodeConfig **entries;
 } SbsSectionConfig;
 
+SbsSectionConfig* sbs_section_config_parse(SbsParser *parser);
 SbsSectionConfig* sbs_section_config_new(const struct FlSlice *name);
 SbsNodeConfig* sbs_section_config_add_node(SbsSectionConfig *config_section);
 void sbs_section_config_free(SbsSectionConfig *configuration);

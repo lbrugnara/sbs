@@ -8,7 +8,7 @@
 #include "cli.h"
 #include "../io.h"
 #include "../result.h"
-#include "../lang/parsers/file.h"
+#include "../lang/file.h"
 
 struct SbsListArguments {
     char *file;
