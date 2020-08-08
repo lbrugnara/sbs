@@ -348,7 +348,73 @@ static SbsValueExpr* eval_string_node(SbsStringExpr *str_node, SbsEvalContext *c
 {
     SbsValueExpr *str_value = sbs_expr_make_value(SBS_EXPR_VALUE_TYPE_STRING);
 
-    str_value->value.s = sbs_eval_string_interpolation(context, str_node->value);
+    if (str_node->is_constant)
+    {
+        str_value->value.s = fl_cstring_dup(str_node->format);
+        return str_value;
+    }
+
+    size_t format_length = strlen(str_node->format);
+    size_t format_index = 0;
+
+    char *interpolated_string = fl_cstring_new(0);
+
+    for (size_t i = 0; i < fl_array_length(str_node->args); i++)
+    {
+        // TODO: Change the type if in the future we allow other type of placeholders
+        SbsStringPlaceholder *placeholder = str_node->args[i];
+        
+        // Copy all the characters that are part of the format string up to reach
+        // the placeholder's index
+        for (; format_index < placeholder->index; format_index++)
+        {
+            fl_cstring_append_char(&interpolated_string, str_node->format[format_index]);
+        }
+
+        // At this offset, we need to place our interpolated value
+        SbsValueExpr *value = sbs_eval_expr(context, (SbsExpression*) placeholder->variable);
+
+        if (value == NULL)
+        {
+            fl_cstring_append(&interpolated_string, "(null)");
+        }
+        else
+        {
+            switch (value->type)
+            {
+                case SBS_EXPR_VALUE_TYPE_BOOL:
+                    fl_cstring_vappend(&interpolated_string, "%s", (value->value.b ? "true" : "false"));
+                    break;
+
+                case SBS_EXPR_VALUE_TYPE_STRING:
+                    fl_cstring_vappend(&interpolated_string, "%s", value->value.s);
+                    break;
+
+                case SBS_EXPR_VALUE_TYPE_ARRAY:
+                    // TODO: Implement arrays?
+                    // for (size_t k = 0; k < fl_array_length(value->value.a); k++)
+                    // {
+                    //     SbsExpression *item = value->value.a[i];
+                    //     
+                    // }
+                    fl_cstring_append(&interpolated_string, "(array)");
+                    break;
+
+                default:
+                    fl_cstring_append(&interpolated_string, "(unk)");
+                    break;
+            }
+            sbs_expr_free((SbsExpression*) value);
+        }
+    }
+
+    if (format_index < format_length)
+    {
+        for (size_t i=format_index; i < format_length; i++)
+            fl_cstring_append_char(&interpolated_string, str_node->format[i]);
+    }
+
+    str_value->value.s = interpolated_string;
 
     return str_value;
 }
@@ -368,7 +434,7 @@ static SbsValueExpr* eval_var_definition_node(SbsVarDefinitionExpr *var_def, Sbs
 {
     // TODO: By now, the variables hashtable contains plain C strings instead of 
     // SbsValueExpr* objects
-    char *str = sbs_eval_string_expression(context, var_def->value);
+    char *str = sbs_eval_expr_to_cstring(context, var_def->value);
 
     if (str != NULL)
         fl_hashtable_add(context->variables, var_def->name->fqn, str);
@@ -427,7 +493,7 @@ static SbsValueExpr* internal_eval(SbsEvalContext *context, SbsExpression *node)
     return result;
 }
 
-SbsValueExpr* sbs_eval_expression(SbsEvalContext *context, SbsExpression *node)
+SbsValueExpr* sbs_eval_expr(SbsEvalContext *context, SbsExpression *node)
 {
     SbsExpression *node_copy = sbs_expr_copy(node);
 
@@ -438,7 +504,7 @@ SbsValueExpr* sbs_eval_expression(SbsEvalContext *context, SbsExpression *node)
     return result;
 }
 
-bool sbs_eval_bool_expression(SbsEvalContext *context, SbsExpression *node)
+bool sbs_eval_expr_to_bool(SbsEvalContext *context, SbsExpression *node)
 {
     SbsExpression *node_copy = sbs_expr_copy(node);
 
@@ -480,7 +546,7 @@ static char* value_expression_to_cstring(struct SbsEvalContext *context, SbsValu
         size_t length = fl_array_length(value_expr->value.a);
         for (size_t i=0; i < length; i++)
         {
-            char *itemstr = sbs_eval_string_expression(context, value_expr->value.a[i]);
+            char *itemstr = sbs_eval_expr_to_cstring(context, value_expr->value.a[i]);
             fl_cstring_vappend(&str, "%s%s", itemstr, (i == length-1 ? "" : ","));
             fl_cstring_free(itemstr);
         }
@@ -490,7 +556,7 @@ static char* value_expression_to_cstring(struct SbsEvalContext *context, SbsValu
     return str;
 }
 
-char* sbs_eval_string_expression(struct SbsEvalContext *context, SbsExpression *node)
+char* sbs_eval_expr_to_cstring(struct SbsEvalContext *context, SbsExpression *node)
 {
     SbsExpression *node_copy = sbs_expr_copy(node);
 
@@ -509,70 +575,7 @@ char* sbs_eval_string_expression(struct SbsEvalContext *context, SbsExpression *
     return str;
 }
 
-char* sbs_eval_string_interpolation(SbsEvalContext *context, SbsString *string)
+char* sbs_eval_expr_string_to_cstring(SbsEvalContext *context, SbsStringExpr *string)
 {
-    if (string->is_constant)
-        return fl_cstring_dup(string->format);        
-
-    size_t format_length = strlen(string->format);
-    size_t format_index = 0;
-
-    char *interpolated_string = fl_cstring_new(0);
-
-    for (size_t i = 0; i < fl_array_length(string->args); i++)
-    {
-        // TODO: Change the type if in the future we allow other type of placeholders
-        SbsStringPlaceholder *placeholder = string->args[i];
-        
-        // Copy all the characters that are part of the format string up to reach
-        // the placeholder's index
-        for (; format_index < placeholder->index; format_index++)
-        {
-            fl_cstring_append_char(&interpolated_string, string->format[format_index]);
-        }
-
-        // At this offset, we need to place our interpolated value
-        SbsValueExpr *value = sbs_eval_expression(context, (SbsExpression*) placeholder->variable);
-
-        if (value == NULL)
-        {
-            fl_cstring_append(&interpolated_string, "(null)");
-        }
-        else
-        {
-            switch (value->type)
-            {
-                case SBS_EXPR_VALUE_TYPE_BOOL:
-                    fl_cstring_vappend(&interpolated_string, "%s", (value->value.b ? "true" : "false"));
-                    break;
-
-                case SBS_EXPR_VALUE_TYPE_STRING:
-                    fl_cstring_vappend(&interpolated_string, "%s", value->value.s);
-                    break;
-
-                case SBS_EXPR_VALUE_TYPE_ARRAY:
-                    // TODO: Implement arrays?
-                    // for (size_t k = 0; k < fl_array_length(value->value.a); k++)
-                    // {
-                    //     SbsExpression *item = value->value.a[i];
-                    //     
-                    // }
-                    fl_cstring_append(&interpolated_string, "(array)");
-                    break;
-
-                default:
-                    fl_cstring_append(&interpolated_string, "(unk)");
-                    break;
-            }
-            sbs_expr_free((SbsExpression*) value);
-        }
-    }
-
-    if (format_index < format_length)
-    {
-        for (size_t i=format_index; i < format_length; i++)
-            fl_cstring_append_char(&interpolated_string, string->format[i]);
-    }
-
-    return interpolated_string;
+    return sbs_eval_expr_to_cstring(context, (SbsExpression*) string);
 }

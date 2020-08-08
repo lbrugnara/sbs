@@ -6,37 +6,38 @@
 #include "expr.h"
 #include "expr-if.h"
 #include "expr-binary.h"
+#include "expr-string.h"
 #include "helpers.h"
 #include "../utils.h"
 
 static void sbs_config_entry_free(struct SbsNodeConfig *config)
 {
     if (config->compile.flags)
-        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
 
     if (config->compile.extension)
-        sbs_string_free(config->compile.extension);
+        sbs_expr_free_string(config->compile.extension);
 
 
     if (config->archive.flags)
-        fl_array_free_each_pointer(config->archive.flags, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(config->archive.flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
 
     if (config->archive.extension)
-        sbs_string_free(config->archive.extension);
+        sbs_expr_free_string(config->archive.extension);
 
 
     if (config->shared.flags)
-        fl_array_free_each_pointer(config->shared.flags, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(config->shared.flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
     
     if (config->shared.extension)
-        sbs_string_free(config->shared.extension);
+        sbs_expr_free_string(config->shared.extension);
 
 
     if (config->executable.flags)
-        fl_array_free_each_pointer(config->executable.flags, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(config->executable.flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
 
     if (config->executable.extension)
-        sbs_string_free(config->executable.extension);
+        sbs_expr_free_string(config->executable.extension);
 
     if (config->condition)
         sbs_expr_free(config->condition);
@@ -90,13 +91,13 @@ static void parse_compile_block(SbsParser *parser, SbsNodeConfigCompile *compile
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->flags = sbs_string_array_parse(parser);
+            compile->flags = sbs_expr_parse_string_array(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            compile->extension = sbs_string_parse(parser);
+            compile->extension = sbs_expr_parse_string(parser);
         }
         else
         {
@@ -116,13 +117,13 @@ static void parse_archive_block(SbsParser *parser, SbsNodeConfigArchive *archive
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            archive->flags = sbs_string_array_parse(parser);
+            archive->flags = sbs_expr_parse_string_array(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            archive->extension = sbs_string_parse(parser);
+            archive->extension = sbs_expr_parse_string(parser);
         }
         else
         {
@@ -142,13 +143,13 @@ static void parse_shared_block(SbsParser *parser, SbsNodeConfigShared *shared)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            shared->flags = sbs_string_array_parse(parser);
+            shared->flags = sbs_expr_parse_string_array(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            shared->extension = sbs_string_parse(parser);
+            shared->extension = sbs_expr_parse_string(parser);
         }
         else
         {
@@ -168,13 +169,13 @@ static void parse_executable_block(SbsParser *parser, SbsNodeConfigExecutable *e
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->flags = sbs_string_array_parse(parser);
+            executable->flags = sbs_expr_parse_string_array(parser);
         }
         else if (sbs_token_equals(token, "extension"))
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            executable->extension = sbs_string_parse(parser);
+            executable->extension = sbs_expr_parse_string(parser);
         }
         else
         {

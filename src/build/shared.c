@@ -13,9 +13,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigShared *share
     // File
     const char *extension = !shared->extension 
                                 ? ".so"
-                                : shared->extension->is_constant
-                                    ? shared->extension->format
-                                    : sbs_eval_string_interpolation(build->context->evalctx, shared->extension);
+                                : sbs_eval_expr_string_to_cstring(build->context->evalctx, shared->extension);
 
     // Path
     char *output_filename = sbs_io_to_host_path(build->context->env->host->os, output_dir);
@@ -35,7 +33,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigShared *share
     // Create the fullname
     fl_cstring_append(fl_cstring_append(&output_filename, output_name), extension);
 
-    if (shared->extension && !shared->extension->is_constant && extension != NULL)
+    if (shared->extension != NULL && extension != NULL)
         fl_cstring_free(extension);
 
     return output_filename;
@@ -157,7 +155,7 @@ char** sbs_build_target_shared(SbsBuild *build)
                     if (config_shared->flags[i]->is_constant)
                         continue;
 
-                    char *flag = sbs_eval_string_interpolation(build->context->evalctx, config_shared->flags[i]);
+                    char *flag = sbs_eval_expr_string_to_cstring(build->context->evalctx, config_shared->flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);

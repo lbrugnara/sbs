@@ -50,7 +50,7 @@ SbsToolchain* sbs_toolchain_resolve(SbsResolveContext *context, const char *tool
     if (!toolchain_section)
         return NULL;
 
-    if (toolchain_section->condition && !sbs_eval_bool_expression(context->evalctx, toolchain_section->condition))
+    if (toolchain_section->condition && !sbs_eval_expr_to_bool(context->evalctx, toolchain_section->condition))
         return NULL;
 
     SbsToolchain *toolchain_object = sbs_toolchain_new(toolchain_section->name);
@@ -59,7 +59,7 @@ SbsToolchain* sbs_toolchain_resolve(SbsResolveContext *context, const char *tool
     {
         SbsNodeToolchain *toolchain_node = toolchain_section->entries[i];
 
-        if (toolchain_node->condition && !sbs_eval_bool_expression(context->evalctx, toolchain_node->condition))
+        if (toolchain_node->condition && !sbs_eval_expr_to_bool(context->evalctx, toolchain_node->condition))
             continue;
         
         toolchain_object->compiler.bin = sbs_cstring_set(toolchain_object->compiler.bin, toolchain_node->compiler.bin);

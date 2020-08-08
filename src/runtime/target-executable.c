@@ -78,7 +78,7 @@ SbsTargetExecutable* sbs_target_executable_resolve(SbsResolveContext *context, c
     {
         const SbsNodeExecutable *executable_entry = executable_section->entries[i];
 
-        if (executable_entry->base.condition && !sbs_eval_bool_expression(context->evalctx, executable_entry->base.condition))
+        if (executable_entry->base.condition && !sbs_eval_expr_to_bool(context->evalctx, executable_entry->base.condition))
             continue;
 
         sbs_target_base_resolve_members((SbsTarget*) executable_target, (const SbsAbstractNodeTarget*) executable_entry);

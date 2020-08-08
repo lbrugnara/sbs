@@ -39,7 +39,7 @@ SbsTargetArchive* sbs_target_archive_resolve(SbsResolveContext *context, const S
     {
         const SbsNodeArchive *archive_entry = archive_section->entries[i];
 
-        if (archive_entry->base.condition && !sbs_eval_bool_expression(context->evalctx, archive_entry->base.condition))
+        if (archive_entry->base.condition && !sbs_eval_expr_to_bool(context->evalctx, archive_entry->base.condition))
             continue;
 
         sbs_target_base_resolve_members((SbsTarget*) archive_target, (const SbsAbstractNodeTarget*) archive_entry);

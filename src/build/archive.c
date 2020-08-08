@@ -13,9 +13,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *arch
     // File
     const char *extension = !archive->extension 
                                 ? ".a"
-                                : archive->extension->is_constant
-                                    ? archive->extension->format
-                                    : sbs_eval_string_interpolation(build->context->evalctx, archive->extension);
+                                : sbs_eval_expr_string_to_cstring(build->context->evalctx, archive->extension);
 
     // Path
     char *output_filename = sbs_io_to_host_path(build->context->env->host->os, output_dir);
@@ -34,7 +32,7 @@ static char* build_output_filename(SbsBuild *build, const SbsConfigArchive *arch
     // Create the fullname
     fl_cstring_append(fl_cstring_append(&output_filename, output_name), extension);
 
-    if (archive->extension && !archive->extension->is_constant && extension != NULL)
+    if (archive->extension != NULL && extension != NULL)
         fl_cstring_free(extension);
 
     return output_filename;
@@ -156,7 +154,7 @@ char** sbs_build_target_archive(SbsBuild *build)
                     if (config_archive->flags[i]->is_constant)
                         continue;
 
-                    char *flag = sbs_eval_string_interpolation(build->context->evalctx, config_archive->flags[i]);
+                    char *flag = sbs_eval_expr_string_to_cstring(build->context->evalctx, config_archive->flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);

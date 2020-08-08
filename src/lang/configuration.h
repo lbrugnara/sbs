@@ -3,27 +3,27 @@
 
 #include <fllib.h>
 #include "expr.h"
-#include "string.h"
+#include "expr-string.h"
 #include "parser.h"
 
 typedef struct SbsNodeConfigCompile {
-    SbsString *extension;
-    SbsString **flags;
+    SbsStringExpr *extension;
+    SbsStringExpr **flags;
 } SbsNodeConfigCompile;
 
 typedef struct SbsNodeConfigArchive {
-    SbsString *extension;
-    SbsString **flags;
+    SbsStringExpr *extension;
+    SbsStringExpr **flags;
 } SbsNodeConfigArchive;
 
 typedef struct SbsNodeConfigShared {
-    SbsString *extension;
-    SbsString **flags;
+    SbsStringExpr *extension;
+    SbsStringExpr **flags;
 } SbsNodeConfigShared;
 
 typedef struct SbsNodeConfigExecutable {
-    SbsString *extension;
-    SbsString **flags;
+    SbsStringExpr *extension;
+    SbsStringExpr **flags;
 } SbsNodeConfigExecutable;
 
 typedef struct SbsNodeConfig {

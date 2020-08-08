@@ -2,10 +2,9 @@
 #include <fllib/Array.h>
 #include <fllib/Cstring.h>
 #include "configuration.h"
-#include "../lang/string.h"
 #include "../utils.h"
+#include "../lang/expr-string.h"
 #include "../lang/configuration.h"
-#include "../lang/string.h"
 
 SbsConfiguration* sbs_config_new(const char *name)
 {
@@ -21,31 +20,31 @@ void sbs_config_free(SbsConfiguration *config)
     fl_cstring_free(config->name);
 
     if (config->compile.flags)
-        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(config->compile.flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
 
     if (config->compile.extension)
-        sbs_string_free(config->compile.extension);
+        sbs_expr_free_string(config->compile.extension);
 
 
     if (config->archive.flags)
-        fl_array_free_each_pointer(config->archive.flags, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(config->archive.flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
 
     if (config->archive.extension)
-        sbs_string_free(config->archive.extension);
+        sbs_expr_free_string(config->archive.extension);
 
 
     if (config->shared.flags)
-        fl_array_free_each_pointer(config->shared.flags, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(config->shared.flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
     
     if (config->shared.extension)
-        sbs_string_free(config->shared.extension);
+        sbs_expr_free_string(config->shared.extension);
 
 
     if (config->executable.flags)
-        fl_array_free_each_pointer(config->executable.flags, (FlArrayFreeElementFunc) sbs_string_free);
+        fl_array_free_each_pointer(config->executable.flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
 
     if (config->executable.extension)
-        sbs_string_free(config->executable.extension);
+        sbs_expr_free_string(config->executable.extension);
 
     fl_free(config);
 }
@@ -53,38 +52,38 @@ void sbs_config_free(SbsConfiguration *config)
 static void merge_compile_config(SbsResolveContext *context, SbsConfigCompile *extend, const SbsNodeConfigCompile *source)
 {
     if (source->extension)
-        extend->extension = sbs_string_set(extend->extension, source->extension);
+        extend->extension = sbs_expr_set_string(extend->extension, source->extension);
     
-    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_expr_extend_string_array(extend->flags, source->flags);
 }
 
 static void merge_archive_config(SbsResolveContext *context, SbsConfigArchive *extend, const SbsNodeConfigArchive *source)
 {
     if (source->extension)
-        extend->extension = sbs_string_set(extend->extension, source->extension);
+        extend->extension = sbs_expr_set_string(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_expr_extend_string_array(extend->flags, source->flags);
 }
 
 static void merge_shared_config(SbsResolveContext *context, SbsConfigShared *extend, const SbsNodeConfigShared *source)
 {
     if (source->extension)
-        extend->extension = sbs_string_set(extend->extension, source->extension);
+        extend->extension = sbs_expr_set_string(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_expr_extend_string_array(extend->flags, source->flags);
 }
 
 static void merge_executable_config(SbsResolveContext *context, SbsConfigExecutable *extend, const SbsNodeConfigExecutable *source)
 {
     if (source->extension)
-        extend->extension = sbs_string_set(extend->extension, source->extension);
+        extend->extension = sbs_expr_set_string(extend->extension, source->extension);
 
-    extend->flags = sbs_string_array_extend(extend->flags, source->flags);
+    extend->flags = sbs_expr_extend_string_array(extend->flags, source->flags);
 }
 
 static bool try_resolve_config_with_hierarchy(SbsResolveContext *context, SbsConfiguration *configuration, const SbsSectionConfig *config_section)
 {
-    if (config_section->condition && !sbs_eval_bool_expression(context->evalctx, config_section->condition))
+    if (config_section->condition && !sbs_eval_expr_to_bool(context->evalctx, config_section->condition))
         return false;
 
     if (config_section->extends)
@@ -101,7 +100,7 @@ static bool try_resolve_config_with_hierarchy(SbsResolveContext *context, SbsCon
     {
         struct SbsNodeConfig *config_node = config_section->entries[i];
 
-        if (config_node->condition && !sbs_eval_bool_expression(context->evalctx, config_node->condition))
+        if (config_node->condition && !sbs_eval_expr_to_bool(context->evalctx, config_node->condition))
             continue;
         
 

@@ -76,7 +76,7 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
     {
         SbsNodeAction *action_node = action_section->nodes[i];
 
-        if (action_node->condition && !sbs_eval_bool_expression(context->evalctx, action_node->condition))
+        if (action_node->condition && !sbs_eval_expr_to_bool(context->evalctx, action_node->condition))
             continue;
 
         for (size_t i=0; i < fl_array_length(action_node->commands); i++)
@@ -89,7 +89,7 @@ SbsAction* sbs_action_resolve(SbsResolveContext *context, const char *action_nam
             }
             else
             {
-                char *ref_action_name = sbs_eval_string_expression(context->evalctx, (SbsExpression*) command->value.id);
+                char *ref_action_name = sbs_eval_expr_to_cstring(context->evalctx, (SbsExpression*) command->value.id);
 
                 if (ref_action_name == NULL)
                     continue;
@@ -129,7 +129,7 @@ SbsAction** sbs_action_resolve_all(SbsResolveContext *context, SbsCommand **acti
 
         if (action->type == SBS_COMMAND_NAME)
         {
-            char *ref_action_name = sbs_eval_string_expression(context->evalctx, (SbsExpression*) action->value.id);
+            char *ref_action_name = sbs_eval_expr_to_cstring(context->evalctx, (SbsExpression*) action->value.id);
 
             if (ref_action_name == NULL)
                 continue;

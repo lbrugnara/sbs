@@ -23,7 +23,7 @@ static inline bool init_variables(SbsContext *context, SbsResult *result)
     for (size_t i = 0; i < fl_array_length(var_names); i++)
     {
         SbsVarDefinitionExpr *var_def = fl_hashtable_get(context->file->variables, var_names[i]);
-        sbs_eval_expression(context->evalctx, (SbsExpression*) var_def);
+        sbs_eval_expr(context->evalctx, (SbsExpression*) var_def);
     }
 
     fl_array_free(var_names);

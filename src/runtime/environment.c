@@ -61,7 +61,7 @@ static SbsArch eval_arch_expression(SbsEvalContext *evalctx, SbsExpression *arch
     if (arch_expression == NULL)
         return SBS_ARCH_UNK;
 
-    SbsValueExpr *arch_value = sbs_eval_expression(evalctx, arch_expression);
+    SbsValueExpr *arch_value = sbs_eval_expr(evalctx, arch_expression);
 
     if (arch_value == NULL)
         return SBS_ARCH_UNK;
@@ -114,7 +114,7 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name, const 
     if (!env_section)
         return NULL;
 
-    if (!context->script_mode && env_section->condition && !sbs_eval_bool_expression(context->evalctx, env_section->condition))
+    if (!context->script_mode && env_section->condition && !sbs_eval_expr_to_bool(context->evalctx, env_section->condition))
         return NULL;
 
     SbsEnv *env_object = sbs_env_new(env_section->name);

@@ -1,27 +1,27 @@
 #ifndef SBS_RUNTIME_CONFIGURATION_H
 #define SBS_RUNTIME_CONFIGURATION_H
 
-#include "../lang/string.h"
+#include "../lang/expr-string.h"
 #include "resolve.h"
 
 typedef struct SbsConfigCompile {
-    SbsString *extension;
-    SbsString **flags;
+    SbsStringExpr *extension;
+    SbsStringExpr **flags;
 } SbsConfigCompile;
 
 typedef struct SbsConfigArchive {
-    SbsString *extension;
-    SbsString **flags;
+    SbsStringExpr *extension;
+    SbsStringExpr **flags;
 } SbsConfigArchive;
 
 typedef struct SbsConfigShared {
-    SbsString *extension;
-    SbsString **flags;
+    SbsStringExpr *extension;
+    SbsStringExpr **flags;
 } SbsConfigShared;
 
 typedef struct SbsConfigExecutable {
-    SbsString *extension;
-    SbsString **flags;
+    SbsStringExpr *extension;
+    SbsStringExpr **flags;
 } SbsConfigExecutable;
 
 typedef struct SbsConfiguration {
