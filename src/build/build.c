@@ -125,11 +125,10 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
         {
             SbsContext *tripletctx = triplets[i]->context;
 
-            if (tripletctx->host->os != tripletctx->env->host->os)
-                continue;
-
-            triplet = triplets[i];
-            break;
+            if (tripletctx->host->os == tripletctx->env->host->os) {
+                triplet = triplets[i];
+                break;
+            }
         }
     }
 

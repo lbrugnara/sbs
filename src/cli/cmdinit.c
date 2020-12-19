@@ -7,13 +7,10 @@ SbsResult sbs_command_init(int argc, char **argv, char **env, size_t argv_offset
 {
     sbs_cli_print_header();
 
-    if (!fl_io_file_exists(".sbs"))
+    if (!fl_io_file_exists(".sbs") && !fl_io_dir_create(".sbs"))
     {
-        if (!fl_io_dir_create(".sbs"))
-        {
-            sbs_cli_print_error("Could not create the .sbs folder. Check your permissions");
-            return SBS_RES_ERROR;
-        }
+        sbs_cli_print_error("Could not create the .sbs folder. Check your permissions");
+        return SBS_RES_ERROR;
     }
 
     // Default filename

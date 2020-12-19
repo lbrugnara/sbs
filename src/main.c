@@ -27,18 +27,17 @@ int main(int argc, char **argv, char **env)
     char *subcommand = NULL;
     char *flag_cwd = NULL;
     bool flag_version = false;
-    {
-        sbs_args_parse(argv+1, {
-            sbs_args_retval(&parsed_args);
-            sbs_args_error_fn(sbs_cli_print_error);
-            sbs_args_help("--help", "-h");
-            sbs_args_list(
-                sbs_args_subcmd(subcommand, "init", "list", "build")
-                sbs_args_string("--working-dir", "-cwd", &flag_cwd)
-                sbs_args_flag("--version", "-v", &flag_version)
-            );
-        });
-    }
+
+    sbs_args_parse(argv+1, {
+        sbs_args_retval(&parsed_args);
+        sbs_args_error_fn(sbs_cli_print_error);
+        sbs_args_help("--help", "-h");
+        sbs_args_list(
+            sbs_args_subcmd(subcommand, "init", "list", "build")
+            sbs_args_string("--working-dir", "-cwd", &flag_cwd)
+            sbs_args_flag("--version", "-v", &flag_version)
+        );
+    });
 
     // Increment the offset for each parsed argument
     if (subcommand != NULL) argv_offset++;

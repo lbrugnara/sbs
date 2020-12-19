@@ -3,8 +3,18 @@ executable sbs-sanitize {
     output_dir: "build/${triplet}/",
     objects: [ sbs-objects ],
 
-    if ($sbs.os == win) {
+    if ($sbs.os == win)
+    {
         objects: [ "${lib_dir}/fllib/${triplet}/libfl.lib" ]
+    } 
+    
+    if $sbs.os == linux
+    {
+        objects: [ "${lib_dir}/fllib/${triplet}/libfl.a" ]
+        libraries: [
+            { name: "m" },
+            { name: "pthread" }
+        ]
     }
 
     if $sbs.os == win and $sbs.arch == x86 {
@@ -15,7 +25,7 @@ executable sbs-sanitize {
         ]
         libraries: [
             {
-                path: "D:\dev\LLVM\x86\lib\clang\8.0.0\lib\windows"
+                path: "D:\dev\LLVM\10.0.0\x86\lib\clang\10.0.0\lib\windows"
             }
         ]
     }
@@ -28,16 +38,8 @@ executable sbs-sanitize {
         ]
         libraries: [
             {
-                path: "D:\dev\LLVM\x86_64\lib\clang\8.0.0\lib\windows"
+                path: "D:\dev\LLVM\10.0.0\x64\lib\clang\10.0.0\lib\windows"
             }
-        ]
-    }
-
-    if $sbs.os == linux {
-        objects: [ "${lib_dir}/fllib/${triplet}/libfl.a" ]
-        libraries: [
-            { name: "m" },
-            { name: "pthread" }
         ]
     }
 }

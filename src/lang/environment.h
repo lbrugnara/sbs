@@ -12,7 +12,7 @@ typedef struct SbsSectionEnv {
     const char *shell_command;
     char **shell_args;
     char **variables;
-    SbsVariableExpr *os;
+    SbsExpression *os;
     SbsExpression *arch;
     SbsPropertyActions actions;
 } SbsSectionEnv;

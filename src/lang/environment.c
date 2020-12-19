@@ -14,7 +14,7 @@ void sbs_section_env_free(SbsSectionEnv *env)
         return;
 
     if (env->os)
-        sbs_expr_free((SbsExpression*) env->os);
+        sbs_expr_free(env->os);
 
     if (env->arch)
         sbs_expr_free(env->arch);
@@ -132,7 +132,7 @@ SbsSectionEnv* sbs_section_env_parse(SbsParser *parser)
         {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
-            env->os = sbs_expr_parse_variable(parser);
+            env->os = sbs_expr_parse(parser);
         }
         else if (sbs_token_equals(token, "arch"))
         {

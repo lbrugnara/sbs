@@ -42,18 +42,30 @@ void sbs_env_free(SbsEnv *env)
 }
 
 
-static SbsOs variable_to_os(SbsVariableExpr *os_variable)
+static SbsOs eval_os_expression(SbsEvalContext *evalctx, SbsExpression *os_expression)
 {
-    if (os_variable == NULL)
+    if (os_expression == NULL)
         return SBS_OS_UNK;
 
-    if (flm_cstring_equals(os_variable->name, "win"))
-        return SBS_OS_WIN;
+    SbsValueExpr *os_value = sbs_eval_expr(evalctx, os_expression);
 
-    if (flm_cstring_equals(os_variable->name, "linux"))
-        return SBS_OS_LINUX;
+    if (os_value == NULL)
+        return SBS_OS_UNK;
 
-    return SBS_OS_UNK;
+    SbsOs os = SBS_OS_UNK;
+
+    if (flm_cstring_equals("win", os_value->value.s))
+    {
+        os = SBS_OS_WIN;
+    }
+    else if (flm_cstring_equals("linux", os_value->value.s))
+    {
+        os = SBS_OS_LINUX;
+    }
+
+    sbs_expr_free((SbsExpression*) os_value);
+
+    return os;
 }
 
 static SbsArch eval_arch_expression(SbsEvalContext *evalctx, SbsExpression *arch_expression)
@@ -123,7 +135,7 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name, const 
     env_object->shell_command = sbs_cstring_set(env_object->shell_command, env_section->shell_command);
     env_object->shell_args = sbs_cstring_array_extend(env_object->shell_args, env_section->shell_args);
     env_object->variables = sbs_cstring_array_extend(env_object->variables, env_section->variables);
-    env_object->os = env_section->os != NULL ? variable_to_os(env_section->os) : context->host->os;
+    env_object->os = env_section->os != NULL ? eval_os_expression(context->evalctx, env_section->os) : context->host->os;
 
     env_object->arch = arch != NULL ? sbs_arch_from_str(arch) 
                                     : env_section->arch != NULL ? eval_arch_expression(context->evalctx, env_section->arch) 

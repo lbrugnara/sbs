@@ -56,10 +56,10 @@ SbsResult sbs_command_list(int argc, char **argv, char **env, size_t argv_offset
 
     struct SbsListArguments args = { 0 };
     
-    // A boolean to pass to the sbs_args_parse macro to save the parsing result
+    // A variable to pass to the sbs_args_parse macro to save the parsing result
     SbsArgsResult parsed_args = SBS_ARGS_OK;
     
-    // args+2: skip program name and "build" argument
+    // args + argv_offset: skip arguments not intended for this subcommand
     sbs_args_parse(argv + argv_offset, {
         sbs_args_retval(&parsed_args);
         sbs_args_error_fn(sbs_cli_print_error);
@@ -89,14 +89,14 @@ SbsResult sbs_command_list(int argc, char **argv, char **env, size_t argv_offset
         return SBS_RES_MISSING_RESOURCE_ARG;
     }
 
-    // If present the file argument, make sure the filename is valid
+    // If the file argument is present, make sure the filename is valid
     if (args.file && strlen(args.file) == 0)
     {
         sbs_cli_print_error("File name cannot be empty");
         return SBS_RES_INVALID_FILE;
     }
 
-    // If present the file argument, make sure the file exists
+    // If the file argument is present, make sure the file exists
     char *file_abspath = sbs_io_realpath((args.file ? args.file : ".sbs/build.sbs"));
 
     if (file_abspath && !fl_io_file_exists(file_abspath))

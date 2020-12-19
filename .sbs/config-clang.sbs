@@ -35,7 +35,10 @@ config clang-config for toolchain(clang, gcc) {
     # Specific overrides for linux envs
     if $sbs.os == linux {
         compile: { flags: [ "-std=gnu99", "-fPIC" ] },
-        archive: { extension: ".a", flags: [ "rcs" ] },
+        archive: { 
+            extension: ".a", 
+            flags: [ "rcs", "${sbs.output_file}" ] 
+        },
         shared: {
             extension: ".so",
             flags: [ "-shared", "-o ${sbs.output_file}" ]

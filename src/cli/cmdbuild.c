@@ -65,7 +65,7 @@ SbsResult sbs_command_build(int argc, char **argv, char **env, size_t argv_offse
     char *build_file_path = NULL;
 
     SbsArgsResult parsed_args = SBS_ARGS_OK;
-    // args+2: skip program name and "build" argument
+    // args + argv_offset: skip arguments not intended for this subcommand
     sbs_args_parse(argv + argv_offset, {
         sbs_args_retval(&parsed_args);
         sbs_args_error_fn(sbs_cli_print_error);
@@ -102,13 +102,14 @@ SbsResult sbs_command_build(int argc, char **argv, char **env, size_t argv_offse
         return SBS_RES_WRONG_ARGS;
     }
 
-    // If present the file argument, make sure the filename is valid
+    // If the file argument is present, make sure the filename is valid
     if (build_file_path != NULL && strlen(build_file_path) == 0)
     {
         sbs_cli_print_error("File name cannot be empty");
         return SBS_RES_INVALID_FILE;
     }
 
+    // If the cwd flag is present, try to set the working directory
     if (args.cwd)
     {
         if (!fl_system_set_working_dir(args.cwd))
