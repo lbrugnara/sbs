@@ -144,7 +144,7 @@ char** sbs_build_target_archive(SbsBuild *build)
     {
         if (build->context->toolchain->archiver.bin != NULL)
         {
-            fl_hashtable_add(build->context->evalctx->variables, "sbs.output_file", output_filename);
+            sbs_eval_context_add_variable(build->context->evalctx, "sbs.output_file", output_filename);
 
             char *flags = fl_cstring_dup(readonly_flags);
             if (config_archive->flags)
@@ -194,7 +194,7 @@ char** sbs_build_target_archive(SbsBuild *build)
 
             fl_cstring_free(command);
             fl_cstring_free(flags);
-            fl_hashtable_remove(build->context->evalctx->variables, "sbs.output_file", true, true);
+            sbs_eval_context_remove_variable(build->context->evalctx, "sbs.output_file");
         }
         else
         {

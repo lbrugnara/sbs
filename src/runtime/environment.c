@@ -146,9 +146,9 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name, const 
 
     env_object->host = sbs_host_new(env_object->os, env_object->arch);
 
-    fl_hashtable_add(context->evalctx->variables, "sbs.env", env_object->name);
-    fl_hashtable_add(context->evalctx->variables, "sbs.os", sbs_os_to_str(env_object->os));
-    fl_hashtable_add(context->evalctx->variables, "sbs.arch", sbs_arch_to_str(env_object->arch));
+    sbs_eval_context_add_variable(context->evalctx, "sbs.env", env_object->name);
+    sbs_eval_context_add_variable(context->evalctx, "sbs.os", sbs_os_to_str(env_object->os));
+    sbs_eval_context_add_variable(context->evalctx, "sbs.arch", sbs_arch_to_str(env_object->arch));
 
     char *shell_type = NULL;
     switch (env_object->shell_type)
@@ -170,7 +170,7 @@ SbsEnv* sbs_env_resolve(SbsResolveContext *context, const char *env_name, const 
     }
 
     if (shell_type != NULL)
-        fl_hashtable_add(context->evalctx->variables, "sbs.shell", shell_type);
+        sbs_eval_context_add_variable(context->evalctx, "sbs.shell", shell_type);
 
     return env_object;
 }

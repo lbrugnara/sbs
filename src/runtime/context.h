@@ -39,7 +39,7 @@ static inline char* sbs_context_interpolate_string_realloc(SbsContext *context, 
     for (size_t i=0; i < fl_array_length(keys); i++)
     {
         char *key = fl_cstring_vdup("${%s}", keys[i]);
-        char *value = (char*) fl_hashtable_get(context->evalctx->variables, keys[i]);
+        char *value = sbs_eval_context_get_variable(context->evalctx, keys[i]);
 
         if (value == NULL)
             value = "(null)";

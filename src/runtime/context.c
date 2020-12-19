@@ -22,13 +22,13 @@ SbsContext* sbs_context_new(const SbsFile *file)
         goto error;
 
     // Init sbs variables
-    fl_hashtable_add(context->evalctx->variables, "sbs.host.os", sbs_os_to_str(context->host->os));
-    fl_hashtable_add(context->evalctx->variables, "sbs.host.arch", sbs_arch_to_str(context->host->arch));
-    fl_hashtable_add(context->evalctx->variables, "sbs.win", "win");
-    fl_hashtable_add(context->evalctx->variables, "sbs.linux", "linux");
-    fl_hashtable_add(context->evalctx->variables, "sbs.x86", "x86");
-    fl_hashtable_add(context->evalctx->variables, "sbs.x86_64", "x86_64");
-    fl_hashtable_add(context->evalctx->variables, "sbs.armv7l", "armv7l");
+    sbs_eval_context_add_variable(context->evalctx, "sbs.host.os", sbs_os_to_str(context->host->os));
+    sbs_eval_context_add_variable(context->evalctx, "sbs.host.arch", sbs_arch_to_str(context->host->arch));
+    sbs_eval_context_add_variable(context->evalctx, "sbs.win", "win");
+    sbs_eval_context_add_variable(context->evalctx, "sbs.linux", "linux");
+    sbs_eval_context_add_variable(context->evalctx, "sbs.x86", "x86");
+    sbs_eval_context_add_variable(context->evalctx, "sbs.x86_64", "x86_64");
+    sbs_eval_context_add_variable(context->evalctx, "sbs.armv7l", "armv7l");
 
     return context;
 
@@ -71,13 +71,7 @@ SbsContext* sbs_context_copy(const SbsContext *ctx)
     if (ctx->config != NULL)
         copy->config = sbs_config_resolve(copy->resolvectx, ctx->config->name);
 
-    // We copy first the variables
-    char **variables = fl_hashtable_keys(ctx->evalctx->variables);
-
-    for (size_t i=0; i < fl_array_length(variables); i++)
-        fl_hashtable_add(copy->evalctx->variables, variables[i], fl_hashtable_get(ctx->evalctx->variables, variables[i]));
-
-    fl_array_free(variables);
+    sbs_eval_context_merge(copy->evalctx, ctx->evalctx);
 
     return copy;
 }

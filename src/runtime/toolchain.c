@@ -73,16 +73,16 @@ SbsToolchain* sbs_toolchain_resolve(SbsResolveContext *context, const char *tool
         toolchain_object->linker.lib_flag = sbs_cstring_set(toolchain_object->linker.lib_flag, toolchain_node->linker.lib_flag);
     }
 
-    fl_hashtable_add(context->evalctx->variables, "sbs.toolchain", toolchain_object->name);
+    sbs_eval_context_add_variable(context->evalctx, "sbs.toolchain", toolchain_object->name);
 
     if (toolchain_object->compiler.bin != NULL)
-        fl_hashtable_add(context->evalctx->variables, "sbs.compiler", toolchain_object->compiler.bin);
+        sbs_eval_context_add_variable(context->evalctx, "sbs.compiler", toolchain_object->compiler.bin);
 
     if (toolchain_object->archiver.bin != NULL)
-        fl_hashtable_add(context->evalctx->variables, "sbs.archiver", toolchain_object->archiver.bin);
+        sbs_eval_context_add_variable(context->evalctx, "sbs.archiver", toolchain_object->archiver.bin);
 
     if (toolchain_object->linker.bin != NULL)
-        fl_hashtable_add(context->evalctx->variables, "sbs.linker", toolchain_object->linker.bin);
+        sbs_eval_context_add_variable(context->evalctx, "sbs.linker", toolchain_object->linker.bin);
 
     return toolchain_object;
 }

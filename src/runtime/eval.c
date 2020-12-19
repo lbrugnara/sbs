@@ -31,6 +31,31 @@ SbsEvalContext* sbs_eval_context_new(void)
     return ctx;
 }
 
+char* sbs_eval_context_add_variable(SbsEvalContext *context, const char *name, const char *value)
+{
+    return (char*) fl_hashtable_add(context->variables, name, value);
+}
+
+char* sbs_eval_context_get_variable(SbsEvalContext *context, const char *name)
+{
+    return (char*) fl_hashtable_get(context->variables, name);
+}
+
+void sbs_eval_context_remove_variable(SbsEvalContext *context, const char *name)
+{
+    fl_hashtable_remove(context->variables, name, true, true);
+}
+
+void sbs_eval_context_merge(SbsEvalContext *dest_context, SbsEvalContext *src_context)
+{
+    char **variables = fl_hashtable_keys(src_context->variables);
+
+    for (size_t i=0; i < fl_array_length(variables); i++)
+        sbs_eval_context_add_variable(dest_context, variables[i], sbs_eval_context_get_variable(src_context, variables[i]));
+
+    fl_array_free(variables);
+}
+
 void sbs_eval_context_free(SbsEvalContext *context)
 {
     fl_hashtable_free(context->variables);

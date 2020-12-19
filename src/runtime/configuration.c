@@ -51,33 +51,25 @@ void sbs_config_free(SbsConfiguration *config)
 
 static void merge_compile_config(SbsResolveContext *context, SbsConfigCompile *extend, const SbsNodeConfigCompile *source)
 {
-    if (source->extension)
-        extend->extension = sbs_expr_set_string(extend->extension, source->extension);
-    
+    extend->extension = sbs_expr_set_string(extend->extension, source->extension);
     extend->flags = sbs_expr_extend_string_array(extend->flags, source->flags);
 }
 
 static void merge_archive_config(SbsResolveContext *context, SbsConfigArchive *extend, const SbsNodeConfigArchive *source)
 {
-    if (source->extension)
-        extend->extension = sbs_expr_set_string(extend->extension, source->extension);
-
+    extend->extension = sbs_expr_set_string(extend->extension, source->extension);
     extend->flags = sbs_expr_extend_string_array(extend->flags, source->flags);
 }
 
 static void merge_shared_config(SbsResolveContext *context, SbsConfigShared *extend, const SbsNodeConfigShared *source)
 {
-    if (source->extension)
-        extend->extension = sbs_expr_set_string(extend->extension, source->extension);
-
+    extend->extension = sbs_expr_set_string(extend->extension, source->extension);
     extend->flags = sbs_expr_extend_string_array(extend->flags, source->flags);
 }
 
 static void merge_executable_config(SbsResolveContext *context, SbsConfigExecutable *extend, const SbsNodeConfigExecutable *source)
 {
-    if (source->extension)
-        extend->extension = sbs_expr_set_string(extend->extension, source->extension);
-
+    extend->extension = sbs_expr_set_string(extend->extension, source->extension);
     extend->flags = sbs_expr_extend_string_array(extend->flags, source->flags);
 }
 
@@ -128,7 +120,7 @@ SbsConfiguration* sbs_config_resolve(SbsResolveContext *context, const char *con
         return NULL;
     }
 
-    fl_hashtable_add(context->evalctx->variables, "sbs.config", configuration->name);
+    sbs_eval_context_add_variable(context->evalctx, "sbs.config", configuration->name);
     
     return configuration;
 }

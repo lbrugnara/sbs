@@ -47,7 +47,6 @@ void sbs_target_free(SbsTarget *target)
 void sbs_target_base_resolve_members(SbsTarget *extend, const SbsAbstractNodeTarget *source)
 {
     extend->output_dir = sbs_cstring_set(extend->output_dir, source->output_dir);
-
     extend->actions.before = sbs_command_array_extend(extend->actions.before, source->actions.before);
     extend->actions.after = sbs_command_array_extend(extend->actions.after, source->actions.after);
 }

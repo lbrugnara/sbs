@@ -134,7 +134,7 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
 
     // Add a built-in variable with the sbs binary
     fl_scoped_resource(char* sbs_bin = fl_io_realpath(args->argv[0]), fl_cstring_free(sbs_bin)) {
-        fl_hashtable_add(triplet->context->evalctx->variables, "sbs.bin", sbs_bin);
+        sbs_eval_context_add_variable(triplet->context->evalctx, "sbs.bin", sbs_bin);
     }
 
     // Resolve all the targets
@@ -162,14 +162,14 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
     if (result != SBS_RES_OK)
         goto error_before_targets;
 
-    // Run the build: we assume targets are not dependant between each other. Dependencies must be explicit
+    // Run the build process: we assume targets are not dependant between each other. Dependencies must be made explicit
     // in the targets, not in presets
     SbsResult *targets_result = fl_array_new(sizeof(SbsResult), fl_array_length(build.context->targets));
     for (size_t i=0; i < fl_array_length(build.context->targets); i++)
     {
         build.current_target = build.context->targets[i];
 
-        fl_hashtable_add(build.context->evalctx->variables, "sbs.target", build.current_target->name);
+        sbs_eval_context_add_variable(build.context->evalctx, "sbs.target", build.current_target->name);
 
         targets_result[i] = sbs_build_run_target_actions(&build, SBS_BUILD_ACTION_BEFORE);
 
@@ -178,7 +178,7 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
 
         char **target_output = sbs_build_target(&build);
         
-        fl_hashtable_remove(build.context->evalctx->variables, "sbs.target", true, true);
+        sbs_eval_context_remove_variable(build.context->evalctx, "sbs.target");
 
         if (target_output == NULL)
         {

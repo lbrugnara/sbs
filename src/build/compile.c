@@ -370,8 +370,8 @@ char** sbs_build_compile(SbsBuild *build)
 
         if (build->context->toolchain->compiler.bin)
         {
-            fl_hashtable_add(build->context->evalctx->variables, "sbs.input_file", source_file);
-            fl_hashtable_add(build->context->evalctx->variables, "sbs.output_file", object_file);
+            sbs_eval_context_add_variable(build->context->evalctx, "sbs.input_file", source_file);
+            sbs_eval_context_add_variable(build->context->evalctx, "sbs.output_file", object_file);
 
             // Process the flags
             char *flags = fl_cstring_dup(readonly_flags);
@@ -420,8 +420,8 @@ char** sbs_build_compile(SbsBuild *build)
             fl_cstring_free(command);
             fl_cstring_free(flags);
 
-            fl_hashtable_remove(build->context->evalctx->variables, "sbs.input_file", true, true);
-            fl_hashtable_remove(build->context->evalctx->variables, "sbs.output_file", true, true);
+            sbs_eval_context_remove_variable(build->context->evalctx, "sbs.input_file");
+            sbs_eval_context_remove_variable(build->context->evalctx, "sbs.output_file");
         }
         else
         {
