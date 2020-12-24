@@ -32,6 +32,7 @@ v0.2.0:
         [ ] Check that "system" executor and custom executors correctly set and retrieve ENV variables
         [ ] Allow defining/extending variable in the command line
             Example: a $my.flags variable within a compile's flag property can be extended/overridden by a command line argument
+        [x] Add $sbs.version.major, $sbs.version.minor, $sbs.version.patch, and $sbs.version.string
         [x] Add more builtin variables: sbs.host.os and sbs.host
         [x] Add constant-like variables: sbs.linux, sbs.win, sbs.x86, sbs.x86_64
         [x] Define variables at the top-level scope
@@ -52,7 +53,8 @@ v0.2.0:
             Example 1: "The variable {{$sbs.env}} is not interpolated" -> The variable {$sbs.env} is not interpolated
             Example 2: "The expression {{$sbs.env == win-cmd}} is not interpolated" -> The expression {$sbs.env == win-cmd} is not interpolated
         [x] Fix bug with escaped characters (\" \` and \\)
-    [ ] Eval context: create the API to avoid directly using fl_hashtable_* functions
+    [x] Eval context: create the API to avoid directly using fl_hashtable_* functions
+        Notes: There is a remaining usage of the context->variables member that should be removed once the "String interpolation for variables" is implemented
     [ ] All types: Add specific inline functions to interop with FlHashtables and FlArrays
     [ ] sbs init command (scaffolding): Add basic elements and common toolchains
         [ ] Init specific "identifier"? -e=my-env1,my-env2 --> my-env1{} my-env2{}

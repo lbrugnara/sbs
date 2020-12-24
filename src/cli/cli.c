@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "cli.h"
+#include "../version.h"
 
 void sbs_cli_print_header(void)
 {

@@ -2,6 +2,7 @@
 #include <fllib/Array.h>
 #include <fllib/containers/Hashtable.h>
 #include "context.h"
+#include "../version.h"
 #include "../result.h"
 #include "../lang/file.h"
 
@@ -29,6 +30,10 @@ SbsContext* sbs_context_new(const SbsFile *file)
     sbs_eval_context_add_variable(context->evalctx, "sbs.x86", "x86");
     sbs_eval_context_add_variable(context->evalctx, "sbs.x86_64", "x86_64");
     sbs_eval_context_add_variable(context->evalctx, "sbs.armv7l", "armv7l");
+    sbs_eval_context_add_variable(context->evalctx, "sbs.version.patch", FL_STRINGIFY(SBS_VERSION_PATCH));
+    sbs_eval_context_add_variable(context->evalctx, "sbs.version.minor", FL_STRINGIFY(SBS_VERSION_MINOR));
+    sbs_eval_context_add_variable(context->evalctx, "sbs.version.major", FL_STRINGIFY(SBS_VERSION_MAJOR));
+    sbs_eval_context_add_variable(context->evalctx, "sbs.version.string", FL_STRINGIFY(SBS_VERSION_MAJOR)"."FL_STRINGIFY(SBS_VERSION_MINOR)"."FL_STRINGIFY(SBS_VERSION_PATCH));
 
     return context;
 

@@ -2,6 +2,7 @@
 #include "cmdbuild.h"
 #include "args.h"
 #include "cli.h"
+#include "../version.h"
 #include "../io.h"
 #include "../result.h"
 #include "../build/build.h"

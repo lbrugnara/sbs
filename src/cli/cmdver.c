@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "cli.h"
+#include "../version.h"
 #include "../result.h"
 
 #ifndef SBS_BUILD_HOST_OS
@@ -16,6 +17,18 @@
 
 #ifndef SBS_BUILD_ARCH
 #define SBS_BUILD_ARCH "(unk)"
+#endif
+
+#ifndef SBS_BUILD_COMPILER
+#define SBS_BUILD_COMPILER "(unk)"
+#endif
+
+#ifndef SBS_BUILD_LINKER
+#define SBS_BUILD_LINKER "(unk)"
+#endif
+
+#ifndef SBS_BUILD_CONFIGURATION
+#define SBS_BUILD_CONFIGURATION "(unk)"
 #endif
 
 

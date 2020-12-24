@@ -6,6 +6,7 @@
 #include "cmdlist.h"
 #include "args.h"
 #include "cli.h"
+#include "../version.h"
 #include "../io.h"
 #include "../result.h"
 #include "../lang/file.h"

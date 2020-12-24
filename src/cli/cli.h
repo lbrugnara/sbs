@@ -1,9 +1,5 @@
 #ifndef SBS_CLI_H
 
-#define SBS_VERSION_MAJOR 0
-#define SBS_VERSION_MINOR 1
-#define SBS_VERSION_PATCH 2
-
 #define CLI_HEADER "sbs build system (%d.%d.%d)\n\n"
 
 void sbs_cli_print_header(void);

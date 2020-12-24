@@ -1,0 +1,7 @@
+#ifndef SBS_VERSION_H
+
+#define SBS_VERSION_MAJOR 0
+#define SBS_VERSION_MINOR 1
+#define SBS_VERSION_PATCH 2
+
+#endif /* SBS_VERSION_H */
