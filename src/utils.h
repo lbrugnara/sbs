@@ -5,8 +5,8 @@
 #include <fllib/Cstring.h>
 #include <fllib/Slice.h>
 
-typedef void(*SbsArrayCopyElementFn)(void*, const void*);
-typedef void*(*SbsArrayCopyPointerFn)(const void*);
+typedef void(*SbsArrayCopyElementFn)(void *dest, const void *src);
+typedef void*(*SbsArrayCopyPointerFn)(const void *src);
 
 FlArray* sbs_array_extend_copy_element(FlArray *dest, const FlArray *src, SbsArrayCopyElementFn copy_fn);
 FlArray* sbs_array_extend_copy_pointer(FlArray *dest, const FlArray *src, SbsArrayCopyPointerFn copy_fn);

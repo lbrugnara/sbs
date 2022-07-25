@@ -279,6 +279,17 @@ char** sbs_build_compile(SbsBuild *build)
         }
     }
 
+    if (target_compile->base.flags) {
+        for (size_t i=0; i < fl_array_length(target_compile->base.flags); i++) {
+            if (!target_compile->base.flags[i]->is_constant) {
+                continue;
+            }
+
+            fl_cstring_append(&readonly_flags, target_compile->base.flags[i]->format);
+            fl_cstring_append(&readonly_flags, " ");
+        }
+    }
+
     // Create the includes string gluing the include directories with the include_dir_flag
     char *includes = fl_cstring_new(0);
     for (size_t i = 0; target_compile->includes && i < fl_array_length(target_compile->includes); i++)
@@ -383,6 +394,19 @@ char** sbs_build_compile(SbsBuild *build)
                         continue;
 
                     char *flag = sbs_eval_expr_string_to_cstring(build->context->evalctx, config_compile->flags[i]);
+                    fl_cstring_append(&flags, flag);
+                    fl_cstring_append(&flags, " ");
+                    fl_cstring_free(flag);
+                }
+            }
+
+            if (target_compile->base.flags) {
+                for (size_t i = 0; i < fl_array_length(target_compile->base.flags); i++) {
+                    if (target_compile->base.flags[i]->is_constant) {
+                        continue;
+                    }
+
+                    char *flag = sbs_eval_expr_string_to_cstring(build->context->evalctx, target_compile->base.flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);

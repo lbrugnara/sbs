@@ -48,13 +48,6 @@ SbsResult sbs_command_list(int argc, char **argv, char **env, size_t argv_offset
 {
     sbs_cli_print_header();
 
-    // If the are no arguments, print the help message
-    if (argc == 2)
-    {
-        sbs_cli_print_message(list_help, SBS_VERSION_MAJOR, SBS_VERSION_MINOR, SBS_VERSION_PATCH);
-        return SBS_RES_WRONG_ARGS;
-    }
-
     struct SbsListArguments args = { 0 };
     
     // A variable to pass to the sbs_args_parse macro to save the parsing result
@@ -64,9 +57,9 @@ SbsResult sbs_command_list(int argc, char **argv, char **env, size_t argv_offset
     sbs_args_parse(argv + argv_offset, {
         sbs_args_retval(&parsed_args);
         sbs_args_error_fn(sbs_cli_print_error);
-        sbs_args_help("--help", "-h");
         sbs_args_list(
             sbs_args_word(args.resource)
+            sbs_args_help("--help", "-h")
             sbs_args_string("--file", "-f", &args.file)
         );
     });
@@ -86,14 +79,15 @@ SbsResult sbs_command_list(int argc, char **argv, char **env, size_t argv_offset
     // If the resource is not present, show the help message and return an error
     if (args.resource == NULL)
     {
-        sbs_cli_print_message(list_help, SBS_VERSION_MAJOR, SBS_VERSION_MINOR, SBS_VERSION_PATCH);
+        sbs_cli_print_message(list_help);
+        sbs_cli_print_error("\n%s", "<resource> cannot be empty");
         return SBS_RES_MISSING_RESOURCE_ARG;
     }
 
     // If the file argument is present, make sure the filename is valid
     if (args.file && strlen(args.file) == 0)
     {
-        sbs_cli_print_error("File name cannot be empty");
+        sbs_cli_print_error("\n%s", "Argument --file= cannot be empty");
         return SBS_RES_INVALID_FILE;
     }
 

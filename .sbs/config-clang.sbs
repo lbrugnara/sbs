@@ -122,18 +122,25 @@ config clang-debug extends clang-config {
     }
 }
 
+# The sanitize config adds the -fsanitize flag to compile with Clang's sanitizers
+config clang-debug-sanitize extends clang-debug {
+
+    if $sbs.os == win {
+        compile: { flags: [ "-fsanitize=address,undefined" ] }
+    }
+
+    if $sbs.os == linux {
+        compile: { flags: [ "-fsanitize=address,undefined,function" ] }
+        executable: { flags: [ "-fsanitize=address,undefined,function" ] }
+    }
+}
+
 # The release configuration adds specifc flags to get optimized code
 config clang-release extends clang-config {
     compile: { flags: [ "-O3" ] }
 }
 
-# The sanitize config adds the -fsanitize flag to compile with Clang's sanitizers
-config clang-sanitize extends clang-release {
-    compile: { flags: [ "-O0", "-fsanitize=address,undefined" ] },
-}
-
-# The sanitize config adds the -fsanitize flag to compile with Clang's sanitizers
-config clang-debug-sanitize extends clang-debug {
+config clang-release-sanitize extends clang-release {
 
     if $sbs.os == win {
         compile: { flags: [ "-fsanitize=address,undefined" ] }

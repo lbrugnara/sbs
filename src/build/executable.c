@@ -58,6 +58,17 @@ char** sbs_build_target_executable(SbsBuild *build)
         }
     }
 
+    if (target_executable->base.flags) {
+        for (size_t i = 0; i < fl_array_length(target_executable->base.flags); i++) {
+            if (!target_executable->base.flags[i]->is_constant) {
+                continue;
+            }
+
+            fl_cstring_append(&readonly_flags, target_executable->base.flags[i]->format);
+            fl_cstring_append(&readonly_flags, " ");
+        }
+    }
+
     char *executable_libraries = fl_cstring_new(0);
     if (target_executable->libraries)
     {
@@ -183,6 +194,19 @@ char** sbs_build_target_executable(SbsBuild *build)
                         continue;
 
                     char *flag = sbs_eval_expr_string_to_cstring(build->context->evalctx, config_executable->flags[i]);
+                    fl_cstring_append(&flags, flag);
+                    fl_cstring_append(&flags, " ");
+                    fl_cstring_free(flag);
+                }
+            }
+
+            if (target_executable->base.flags) {
+                for (size_t i = 0; i < fl_array_length(target_executable->base.flags); i++) {
+                    if (target_executable->base.flags[i]->is_constant) {
+                        continue;
+                    }
+
+                    char *flag = sbs_eval_expr_string_to_cstring(build->context->evalctx, target_executable->base.flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);

@@ -2,26 +2,25 @@
 #include <fllib/Array.h>
 #include <fllib/containers/Hashtable.h>
 #include "build.h"
+#include "action.h"
 #include "archive.h"
 #include "compile.h"
 #include "executable.h"
 #include "shared.h"
-#include "action.h"
 #include "../lang/expr.h"
 #include "../lang/expr-vardef.h"
 #include "../lang/expr-variable.h"
-#include "../runtime/eval.h"
 #include "../runtime/context.h"
-#include "../runtime/triplet.h"
+#include "../runtime/eval.h"
 #include "../runtime/target.h"
+#include "../runtime/triplet.h"
 
 static inline bool init_variables(SbsContext *context, SbsResult *result)
 {
     // Init the user-defined variables
     SbsVariableExpr **var_names = fl_hashtable_keys(context->file->variables);
 
-    for (size_t i = 0; i < fl_array_length(var_names); i++)
-    {
+    for (size_t i=0; i < fl_array_length(var_names); i++) {
         SbsVarDefinitionExpr *var_def = fl_hashtable_get(context->file->variables, var_names[i]);
         sbs_eval_expr(context->evalctx, (SbsExpression*) var_def);
     }
@@ -33,37 +32,30 @@ static inline bool init_variables(SbsContext *context, SbsResult *result)
 
 static inline bool resolve_target(SbsResolveContext *resolvectx, SbsContext *context, const char *targetarg, SbsResult *result)
 {
-    if (targetarg == NULL)
-    {
+    if (targetarg == NULL) {
         // If the user did not provide a target name, the "targets" property within the preset must be
         // valid and it must contain at least 1 target
-        if (context->preset == NULL || context->preset->targets == NULL || fl_array_length(context->preset->targets) == 0)
-        {
+        if (context->preset == NULL || context->preset->targets == NULL || fl_array_length(context->preset->targets) == 0) {
             *result = sbs_result_print_reason(SBS_RES_MISSING_TARGET_ARG);
             return false;
         }
 
         context->targets = fl_array_new(sizeof(SbsTarget*), fl_array_length(context->preset->targets));
-        for (size_t i = 0; i < fl_array_length(context->preset->targets); i++)
-        {
+        for (size_t i=0; i < fl_array_length(context->preset->targets); i++) {
             char *target_name = context->preset->targets[i];
 
             // Resolve target
             SbsTarget *tmp = sbs_target_resolve(resolvectx, target_name, NULL);
-            if (tmp == NULL)
-            {
+            if (tmp == NULL) {
                 *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, target_name);
                 return false;
-            }   
+            }
 
             context->targets[i] = tmp;
         }
-    }
-    else
-    {
+    } else {
         SbsTarget *tmp = sbs_target_resolve(resolvectx, targetarg, NULL);
-        if (tmp == NULL)
-        {
+        if (tmp == NULL) {
             *result = sbs_result_print_reason(SBS_RES_INVALID_TARGET, targetarg);
             return false;
         }
@@ -75,24 +67,17 @@ static inline bool resolve_target(SbsResolveContext *resolvectx, SbsContext *con
     return true;
 }
 
-char** sbs_build_target(SbsBuild *build)
+char **sbs_build_target(SbsBuild *build)
 {
     char **result = NULL;
 
-    if (build->current_target->type == SBS_TARGET_COMPILE)
-    {
+    if (build->current_target->type == SBS_TARGET_COMPILE) {
         result = sbs_build_compile(build);
-    }
-    else if (build->current_target->type == SBS_TARGET_ARCHIVE)
-    {
+    } else if (build->current_target->type == SBS_TARGET_ARCHIVE) {
         result = sbs_build_target_archive(build);
-    }
-    else if (build->current_target->type == SBS_TARGET_SHARED)
-    {
+    } else if (build->current_target->type == SBS_TARGET_SHARED) {
         result = sbs_build_target_shared(build);
-    }
-    else if (build->current_target->type == SBS_TARGET_EXECUTABLE)
-    {
+    } else if (build->current_target->type == SBS_TARGET_EXECUTABLE) {
         result = sbs_build_target_executable(build);
     }
 
@@ -107,8 +92,7 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
     // Get all the available combinations of environments, toolchains, and configurations.
     SbsTriplet **triplets = sbs_triplet_find(file, args->preset, args->environment, args->arch, args->toolchain, args->config, args->script_mode);
 
-    if (triplets == NULL || fl_array_length(triplets) == 0)
-    {
+    if (triplets == NULL || fl_array_length(triplets) == 0) {
         result = SBS_RES_ERROR;
         goto error_before_targets;
     }
@@ -117,12 +101,10 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
     SbsTriplet *triplet = triplets[0];
 
     // If there is no --env|-e argument, we should search for the most appropriate
-    // environment: the one matching its OS and architecture properties with the 
+    // environment: the one matching its OS and architecture properties with the
     // host machine. If there is no environment, we try with the first one.
-    if (args->env == NULL)
-    {
-        for (size_t i=0; i < fl_array_length(triplets); i++)
-        {
+    if (args->env == NULL) {
+        for (size_t i=0; i < fl_array_length(triplets); i++) {
             SbsContext *tripletctx = triplets[i]->context;
 
             if (tripletctx->host->os == tripletctx->env->host->os) {
@@ -133,16 +115,18 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
     }
 
     // Add a built-in variable with the sbs binary
-    fl_scoped_resource(char* sbs_bin = fl_io_realpath(args->argv[0]), fl_cstring_free(sbs_bin)) {
+    fl_scoped_resource(char *sbs_bin = fl_io_realpath(args->argv[0]), fl_cstring_free(sbs_bin)) {
         sbs_eval_context_add_variable(triplet->context->evalctx, "sbs.bin", sbs_bin);
     }
 
     // Resolve all the targets
-    if (!resolve_target(triplet->context->resolvectx, triplet->context, args->target, &result))
+    if (!resolve_target(triplet->context->resolvectx, triplet->context, args->target, &result)) {
         goto error_before_targets;
+    }
 
-    if (!init_variables(triplet->context, &result))
+    if (!init_variables(triplet->context, &result)) {
         goto error_before_targets;
+    }
 
     // Create the build object needed by the build process
     SbsBuild build = {
@@ -154,48 +138,48 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
     // we start executing the build actions:
     result = sbs_build_run_preset_actions(&build, SBS_BUILD_ACTION_BEFORE);
 
-    if (result != SBS_RES_OK)
+    if (result != SBS_RES_OK) {
         goto error_before_targets;
+    }
 
     result = sbs_build_run_env_actions(&build, SBS_BUILD_ACTION_BEFORE);
 
-    if (result != SBS_RES_OK)
+    if (result != SBS_RES_OK) {
         goto error_before_targets;
+    }
 
     // Run the build process: we assume targets are not dependant between each other. Dependencies must be made explicit
     // in the targets, not in presets
     SbsResult *targets_result = fl_array_new(sizeof(SbsResult), fl_array_length(build.context->targets));
-    for (size_t i=0; i < fl_array_length(build.context->targets); i++)
-    {
+    for (size_t i=0; i < fl_array_length(build.context->targets); i++) {
         build.current_target = build.context->targets[i];
 
         sbs_eval_context_add_variable(build.context->evalctx, "sbs.target", build.current_target->name);
 
         targets_result[i] = sbs_build_run_target_actions(&build, SBS_BUILD_ACTION_BEFORE);
 
-        if (targets_result[i] != SBS_RES_OK)
-            continue;
-
-        char **target_output = sbs_build_target(&build);
-        
-        sbs_eval_context_remove_variable(build.context->evalctx, "sbs.target");
-
-        if (target_output == NULL)
-        {
-            targets_result[i] = SBS_RES_TARGET_FAILED;
+        if (targets_result[i] != SBS_RES_OK) {
             continue;
         }
 
-        targets_result[i] = sbs_build_run_target_actions(&build, SBS_BUILD_ACTION_AFTER);
-        fl_array_free_each_pointer(target_output, (FlArrayFreeElementFunc) fl_cstring_free);
+        char **target_output = sbs_build_target(&build);
+
+        if (target_output != NULL) {
+            targets_result[i] = sbs_build_run_target_actions(&build, SBS_BUILD_ACTION_AFTER);
+            fl_array_free_each_pointer(target_output, (FlArrayFreeElementFunc)fl_cstring_free);
+        } else {
+            targets_result[i] = SBS_RES_TARGET_FAILED;
+        }
+
+        sbs_eval_context_remove_variable(build.context->evalctx, "sbs.target");
     }
 
-    for (size_t i = 0; i < fl_array_length(targets_result); i++)
-    {
+    for (size_t i=0; i < fl_array_length(targets_result); i++) {
         SbsResult target_result = targets_result[i];
 
-        if (target_result == SBS_RES_OK)
+        if (target_result == SBS_RES_OK) {
             continue;
+        }
 
         result = SBS_RES_TARGET_FAILED;
 
@@ -205,24 +189,29 @@ SbsResult sbs_build_run(const SbsFile *file, SbsBuildArgs *args)
 
     SbsResult action_result = sbs_build_run_env_actions(&build, SBS_BUILD_ACTION_AFTER);
 
-    if (result == SBS_RES_OK && action_result != SBS_RES_OK)
+    if (result == SBS_RES_OK && action_result != SBS_RES_OK) {
         result = action_result;
+    }
 
-    if (result != SBS_RES_OK)
+    if (result != SBS_RES_OK) {
         goto error_after_targets;
+    }
 
     action_result = sbs_build_run_preset_actions(&build, SBS_BUILD_ACTION_AFTER);
 
-    if (result == SBS_RES_OK && action_result != SBS_RES_OK)
+    if (result == SBS_RES_OK && action_result != SBS_RES_OK) {
         result = action_result;
+    }
 
 error_after_targets:
-    if (targets_result != NULL)
+    if (targets_result != NULL) {
         fl_array_free(targets_result);
+    }
 
 error_before_targets:
-    if (triplets != NULL)
-        fl_array_free_each_pointer(triplets, (FlArrayFreeElementFunc) sbs_triplet_free);
+    if (triplets != NULL) {
+        fl_array_free_each_pointer(triplets, (FlArrayFreeElementFunc)sbs_triplet_free);
+    }
 
     return result;
 }

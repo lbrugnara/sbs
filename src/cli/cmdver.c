@@ -34,17 +34,16 @@
 
 static const char *version_message = 
     CLI_HEADER
-    "                                                                               \n"
-    "    Build information:                                                         \n"
-    "       - Host OS: %s                                                           \n"
-    "       - Host architecture: %s                                                 \n"
-    "       - Target OS: %s                                                         \n"
-    "       - Target architecture: %s                                               \n"
-    "       - Toolchain:                                                            \n"
-    "           - Compiler: %s                                                      \n"
-    "           - Linker: %s                                                        \n"
-    "       - Configuration: %s                                                     \n"
-    "                                                                               "
+    "Build information:                                                             \n"
+    "   - Host OS: %s                                                               \n"
+    "   - Host architecture: %s                                                     \n"
+    "   - Target OS: %s                                                             \n"
+    "   - Target architecture: %s                                                   \n"
+    "   - Toolchain:                                                                \n"
+    "       - Compiler: %s                                                          \n"
+    "       - Linker: %s                                                            \n"
+    "   - Configuration: %s                                                         \n"
+    "                                                                                 "
 ;
 
 SbsResult sbs_command_version(int argc, char **argv, char **env, size_t argv_offset)

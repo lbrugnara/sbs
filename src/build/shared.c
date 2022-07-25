@@ -58,6 +58,17 @@ char** sbs_build_target_shared(SbsBuild *build)
         }
     }
 
+    if (target_shared->base.flags) {
+        for (size_t i = 0; i < fl_array_length(target_shared->base.flags); i++) {
+            if (!target_shared->base.flags[i]->is_constant) {
+                continue;
+            }
+
+            fl_cstring_append(&readonly_flags, target_shared->base.flags[i]->format);
+            fl_cstring_append(&readonly_flags, " ");
+        }
+    }
+
     // Build the target's output filename
     char *output_filename = build_output_filename(build, config_shared, target_shared->base.output_dir, target_shared->output_name);
 
@@ -156,6 +167,19 @@ char** sbs_build_target_shared(SbsBuild *build)
                         continue;
 
                     char *flag = sbs_eval_expr_string_to_cstring(build->context->evalctx, config_shared->flags[i]);
+                    fl_cstring_append(&flags, flag);
+                    fl_cstring_append(&flags, " ");
+                    fl_cstring_free(flag);
+                }
+            }
+
+            if (target_shared->base.flags) {
+                for (size_t i = 0; i < fl_array_length(target_shared->base.flags); i++) {
+                    if (target_shared->base.flags[i]->is_constant) {
+                        continue;
+                    }
+
+                    char *flag = sbs_eval_expr_string_to_cstring(build->context->evalctx, target_shared->base.flags[i]);
                     fl_cstring_append(&flags, flag);
                     fl_cstring_append(&flags, " ");
                     fl_cstring_free(flag);

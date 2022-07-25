@@ -23,6 +23,12 @@ static const char *build_help =
     "       --help, -h                  Prints this message                         \n"
     "       --file=<path>, -f=<path>    Build file's path. Default value is         \n"
     "                                   .sbs/build.sbs                              \n"
+    "       --working-dir=, -cwd=       Changes the working dir                     \n"
+    "       --script-mode, -s           Dry run that outputs the build commands     \n"
+    "                                   that would be executed if this argument     \n"
+    "                                   wouldn't be provided                        \n"
+    "       --arch=, -a=                Allows to override the host's default       \n"
+    "                                   architecture when compiling                 \n"
     "                                                                               \n"
     "    resources:                                                                 \n"
     "       Resources to be used in the build process. If the preset name is not    \n"
@@ -70,9 +76,9 @@ SbsResult sbs_command_build(int argc, char **argv, char **env, size_t argv_offse
     sbs_args_parse(argv + argv_offset, {
         sbs_args_retval(&parsed_args);
         sbs_args_error_fn(sbs_cli_print_error);
-        sbs_args_help("--help", "-h");
         sbs_args_list(
             sbs_args_word(args.preset)
+            sbs_args_help("--help", "-h")
             sbs_args_string("--env", "-e", &args.environment)
             sbs_args_string("--toolchain", "-tc", &args.toolchain)
             sbs_args_string("--config", "-c", &args.config)
@@ -99,25 +105,22 @@ SbsResult sbs_command_build(int argc, char **argv, char **env, size_t argv_offse
     // Check if the processed arguments are valid
     if (args.preset == NULL  && (args.environment == NULL || args.toolchain == NULL || args.config == NULL || args.target == NULL))
     {
-        sbs_cli_print_message(build_help, SBS_VERSION_MAJOR, SBS_VERSION_MINOR, SBS_VERSION_PATCH);
+        sbs_cli_print_message(build_help);
         return SBS_RES_WRONG_ARGS;
     }
 
     // If the file argument is present, make sure the filename is valid
     if (build_file_path != NULL && strlen(build_file_path) == 0)
     {
-        sbs_cli_print_error("File name cannot be empty");
+        sbs_cli_print_error("Argument --file cannot be empty");
         return SBS_RES_INVALID_FILE;
     }
 
     // If the cwd flag is present, try to set the working directory
-    if (args.cwd)
+    if (args.cwd && !fl_system_set_working_dir(args.cwd))
     {
-        if (!fl_system_set_working_dir(args.cwd))
-        {
-            sbs_cli_print_error("Could not change working directory to %s", args.cwd);
-            return SBS_RES_INVALID_FILE;
-        }
+        sbs_cli_print_error("Could not change working directory to %s", args.cwd);
+        return SBS_RES_INVALID_FILE;
     }
 
     // Convert the file path to an absolute path
@@ -138,6 +141,7 @@ SbsResult sbs_command_build(int argc, char **argv, char **env, size_t argv_offse
     // If the preset argument is present, make sure it exists
     if (args.preset != NULL && !fl_hashtable_has_key(file->presets, args.preset))
     {
+        sbs_cli_print_error("Preset '%s' does not exist. Run \"sbs list presets\" to list the available presets", args.preset);
         sbs_file_free(file);
         return SBS_RES_INVALID_PRESET;
     }

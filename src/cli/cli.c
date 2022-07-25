@@ -5,7 +5,7 @@
 
 void sbs_cli_print_header(void)
 {
-    fprintf(stderr, CLI_HEADER, SBS_VERSION_MAJOR, SBS_VERSION_MINOR, SBS_VERSION_PATCH);
+    fprintf(stdout, CLI_HEADER, SBS_VERSION_MAJOR, SBS_VERSION_MINOR, SBS_VERSION_PATCH);
 }
 
 void sbs_cli_print_message(const char *message, ...)

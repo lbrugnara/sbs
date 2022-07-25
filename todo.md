@@ -1,4 +1,6 @@
 v0.2.0:
+    [x] Add a `flags` key to the targets so that they can add target specific flags (e.g.: /DEF: files for windows)
+    [ ] sbs info or sbs host command that shows information about the host OS
     [ ] Environments
         [ ] Create a "default" environment for the current os-arch that uses "system" if there is no environment defined in the build file
         [ ] Fix and improve the shell drivers (currently "system" is the only reliable way of using sbs)
@@ -33,7 +35,7 @@ v0.2.0:
         [ ] Allow defining/extending variable in the command line
             Example: a $my.flags variable within a compile's flag property can be extended/overridden by a command line argument
         [x] Add $sbs.version.major, $sbs.version.minor, $sbs.version.patch, and $sbs.version.string
-        [x] Add more builtin variables: sbs.host.os and sbs.host
+        [x] Add more builtin variables: sbs.host.os and sbs.host.arch
         [x] Add constant-like variables: sbs.linux, sbs.win, sbs.x86, sbs.x86_64
         [x] Define variables at the top-level scope
         [x] Add builtin variables: $sbs.compiler, $sbs.archiver, $sbs.linker
@@ -103,6 +105,30 @@ v0.2.x:
         [ ] Targets: show the type of target next to the name
 
 backlog:
+    [ ] Add a way to process an string to change it, particularly for paths:
+        Examples:
+            - `.\build\${triplet}\tests.exe` to `.\build\{$triplet | sbs.to-windows-path}\tests.exe`
+            - `./build/${triplet}/tests.exe` to `./build/{$triplet | sbs.to-linux-path}/tests.exe`
+    [ ] Add string command blocks (```) to avoid using the '\''\n' combination to continue the line
+        Example:
+        ```
+        <first command> && <second command>
+        && <third command>
+        ```
+        Instead of
+        `<first command> && <second command> \
+        && <third command>`
+    [ ] Add "multi presets" or a new concept related to it. Now this can be done through actions
+        Example `sbs build win-debug` preset could run other presets like:
+            - `sbs build debug -e=win-cmd-x64 -tc=clang`    
+            - `sbs build debug-coverage -e=win-cmd-x64 -tc=clang`
+            - `sbs build debug-sanitize -e=win-cmd-x64 -tc=clang`
+            - `sbs build debug -e=win-cmd-x86 -tc=clang`    
+            - `sbs build debug-coverage -e=win-cmd-x86 -tc=clang`
+            - `sbs build debug-sanitize -e=win-cmd-x86 -tc=clang`
+            - `sbs build debug -e=win-wsl-x64-tc=gcc`    
+            - `sbs build debug-coverage -e=win-wsl-x64-tc=gcc`
+            - `sbs build debug-sanitize -e=win-wsl-x86-tc=gcc`
     [ ] Find a workaround for the limitation of Windows' cmd to run commands larger than 8192 characters
     [ ] A custom/binary/command target able to run a program to generate the output of the target
         Notes: If you need to run a specific/custom step in the build process (different to compile, archive, shared, and executable) you can do it through actions, 
@@ -126,3 +152,4 @@ backlog:
     [ ] Validate SbsFile object once it is completely parsed
     [ ] Add "extends" support for targets (Rationale behind this?)
     [ ] Build targets: a lot of code to reuse and/or encapsulate between the different targets
+    [ ] TESTS TESTS TESTS

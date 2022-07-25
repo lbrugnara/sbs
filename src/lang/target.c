@@ -22,6 +22,9 @@ void sbs_node_target_free_members(SbsAbstractNodeTarget *node)
 
     if (node->output_dir)
         fl_cstring_free(node->output_dir);
+
+    if (node->flags)
+        fl_array_free_each_pointer(node->flags, (FlArrayFreeElementFunc) sbs_expr_free_string);
 }
 
 void sbs_section_target_free_members(SbsAbstractSectionTarget *section)

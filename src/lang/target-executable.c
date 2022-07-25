@@ -79,28 +79,21 @@ static SbsPropertyLibrary* parse_library_array(SbsParser *parser)
     SbsPropertyLibrary *libraries = fl_array_new(sizeof(SbsPropertyLibrary), 0);
 
     const SbsToken *token;
-    while ((token = sbs_parser_peek(parser))->type != SBS_TOKEN_RBRACKET)
-    {
+    while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACKET) {
         sbs_parser_consume(parser, SBS_TOKEN_LBRACE);
 
         SbsPropertyLibrary library = { 0 };
 
-        while ((token = sbs_parser_peek(parser))->type != SBS_TOKEN_RBRACE)
-        {
-            if (sbs_token_equals(token, "path"))
-            {
+        while ((token = sbs_parser_peek(parser))->type != SBS_TOKEN_RBRACE) {
+            if (sbs_token_equals(token, "path")) {
                 sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                 sbs_parser_consume(parser, SBS_TOKEN_COLON);
                 library.path = sbs_cstring_parse(parser);
-            }
-            else if (sbs_token_equals(token, "name"))
-            {
+            } else if (sbs_token_equals(token, "name")) {
                 sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
                 sbs_parser_consume(parser, SBS_TOKEN_COLON);
                 library.name = sbs_cstring_parse(parser);
-            }
-            else
-            {
+            } else {
                 sbs_parser_error(parser, token, "while parsing a target library node");
             }
         }
@@ -119,50 +112,38 @@ static SbsPropertyLibrary* parse_library_array(SbsParser *parser)
 
 void sbs_section_executable_body_parse(SbsParser *parser, SbsSectionExecutable *target_section, SbsNodeExecutable *target)
 {
-    while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE)
-    {
+    while (sbs_parser_peek(parser)->type != SBS_TOKEN_RBRACE) {
         const SbsToken *token = sbs_parser_peek(parser);
 
-        if (sbs_token_equals(token, "objects"))
-        {
+        if (sbs_token_equals(token, "objects")) {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->objects = sbs_source_array_parse(parser);
-        }
-        else if (sbs_token_equals(token, "output_name"))
-        {
+        } else if (sbs_token_equals(token, "output_name")) {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->output_name = sbs_cstring_parse(parser);
-        }
-        else if (sbs_token_equals(token, "output_dir"))
-        {
+        } else if (sbs_token_equals(token, "output_dir")) {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->base.output_dir = sbs_cstring_parse(parser);
-        }
-        else if (sbs_token_equals(token, "actions"))
-        {
+        } else if (sbs_token_equals(token, "actions")) {
             target->base.actions = sbs_property_actions_parse(parser);
-        }
-        else if (sbs_token_equals(token, "libraries"))
-        {
+        } else if (sbs_token_equals(token, "libraries")) {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->libraries = parse_library_array(parser);
-        }
-        else if (sbs_token_equals(token, "defines"))
-        {
+        } else if (sbs_token_equals(token, "defines")) {
             sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
             sbs_parser_consume(parser, SBS_TOKEN_COLON);
             target->defines = sbs_cstring_array_parse(parser);
-        }
-        else if (token->type == SBS_TOKEN_IF)
-        {
+        } else if (sbs_token_equals(token, "flags")) {
+            sbs_parser_consume(parser, SBS_TOKEN_IDENTIFIER);
+            sbs_parser_consume(parser, SBS_TOKEN_COLON);
+            target->base.flags = sbs_expr_parse_string_array(parser);
+        } else if (token->type == SBS_TOKEN_IF) {
             sbs_section_target_if_stmt_parse(parser, (SbsAbstractSectionTarget*) target_section, SBS_SECTION_TARGET_EXECUTABLE);
-        }
-        else
-        {
+        } else {
             sbs_parser_error(parser, token, "while parsing a target executable block");
         }
 

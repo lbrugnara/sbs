@@ -17,6 +17,7 @@ typedef struct SbsAbstractNodeTarget {
     SbsPropertyActions actions;
     const char *output_dir;
     SbsExpression *condition;
+    SbsStringExpr **flags;
 } SbsAbstractNodeTarget;
 
 typedef struct SbsAbstractSectionTarget {

@@ -22,6 +22,7 @@ typedef struct SbsTarget {
         SbsCommand **before;
         SbsCommand **after;
     } actions;
+    SbsStringExpr **flags;
 } SbsTarget;
 
 SbsTarget* sbs_target_resolve(SbsResolveContext *context, const char *target_name, const SbsTarget *parent);
